@@ -1,0 +1,68 @@
+{
+  "ranks": [
+    {
+      "name": "Bronze",
+      "minXp": 0,
+      "maxXp": 500,
+      "order": 1
+    },
+    {
+      "name": "Silver",
+      "minXp": 500,
+      "maxXp": 1500,
+      "order": 2
+    },
+    {
+      "name": "Gold",
+      "minXp": 1500,
+      "maxXp": 3000,
+      "order": 3
+    },
+    {
+      "name": "Platinum",
+      "minXp": 3000,
+      "maxXp": 6000,
+      "order": 4
+    },
+    {
+      "name": "Diamond",
+      "minXp": 6000,
+      "maxXp": 99999,
+      "order": 5
+    }
+  ],
+  "dailyQuests": [
+    {
+      "title": "Quiz Master",
+      "description": "Hoàn thành 3 bài quiz",
+      "type": "quiz",
+      "goal": 3,
+      "rewardXp": 50,
+      "rewardTrophy": 30
+    },
+    {
+      "title": "Writing Champion",
+      "description": "Luyện viết 5 câu",
+      "type": "writing",
+      "goal": 5,
+      "rewardXp": 60,
+      "rewardTrophy": 75
+    },
+    {
+      "title": "Speaking Master",
+      "description": "Phát âm 5 từ",
+      "type": "speaking",
+      "goal": 5,
+      "rewardXp": 70,
+      "rewardTrophy": 100
+    },
+    {
+      "title": "Consistent Learner",
+      "description": "Hoàn thành 2 quiz",
+      "type": "quiz",
+      "goal": 2,
+      "rewardXp": 30,
+      "rewardTrophy": 20
+    }
+  ]
+}

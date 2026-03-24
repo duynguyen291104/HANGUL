@@ -1,0 +1,642 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========================
+// USER MANAGEMENT
+// ========================
+model User {
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  name      String
+  password  String
+  role      Role    @default(USER)
+  
+  // Profile
+  avatar    String?
+  level     String  @default("NEWBIE")
+  levelLocked Boolean @default(false)
+  totalXP   Int     @default(0)
+  currentStreak Int @default(0)
+  lastCheckinDate DateTime?
+  
+  // Relations
+  vocabularyLearned Vocabulary[]
+  quizSessions QuizSession[]
+  quizAnswers QuizAnswer[]
+  writingPractices WritingPractice[]
+  pronunciationAttempts PronunciationAttempt[]
+  handwritingAttempts HandwritingAttempt[]
+  listeningAttempts ListeningAttempt[]
+  achievements UserAchievement[]
+  feedPosts FeedPost[]
+  comments Comment[]
+  cameraDetections CameraDetection[]
+  
+  // Game System
+  stats         UserStats?
+  rank          UserRank?
+  userQuests    UserQuest[]
+  battleRooms1  BattleRoom[] @relation("player1")
+  battleRooms2  BattleRoom[] @relation("player2")
+  tournament    TournamentPlayer[]
+  league        LeaguePlayer[]
+  nodeProgress  UserNodeProgress[]
+  
+  // Social
+  friendOf      Friend[]     @relation("friendOf")
+  friendWith    Friend[]     @relation("friendWith")
+  sentChallenges Challenge[]  @relation("sentChallenges")
+  receivedChallenges Challenge[] @relation("receivedChallenges")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+// ========================
+// CONTENT MANAGEMENT (ADMIN)
+// ========================
+model Topic {
+  id      Int     @id @default(autoincrement())
+  name    String
+  description String?
+  level   String  // NEWBIE, BEGINNER, INTERMEDIATE, UPPER_INTERMEDIATE, ADVANCED
+  order   Int     @default(0)
+  
+  // Relations
+  vocabulary Vocabulary[]
+  questions Question[]
+  writingPractices WritingPractice[]
+  listeningQuestions ListeningQuestion[]
+  handwritingExercises HandwritingExercise[]
+  pronunciationWords PronunciationWord[]
+  learningNodes LearningNode[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Vocabulary {
+  id          Int        @id @default(autoincrement())
+  korean      String
+  vietnamese  String
+  english     String
+  romanization String?
+  audioUrl    String?
+  imageUrl    String?
+  type        String     @default("noun")  // noun, verb, adjective, etc.
+  tags        String[]   @default([])      // ["school", "place", "building"]
+  level       String     @default("NEWBIE")
+  topic       Topic      @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId     Int
+  
+  // Status
+  isActive    Boolean    @default(true)
+  version     Int        @default(1)
+  
+  // Relations
+  examples    VocabExample[]
+  usersLearned User[]
+  pronunciationWords PronunciationWord[]
+  cameraDetections CameraDetection[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ========================
+// VOCABULARY EXAMPLES
+// ========================
+model VocabExample {
+  id          Int      @id @default(autoincrement())
+  korean      String
+  vietnamese  String
+  english     String?
+  vocabulary  Vocabulary @relation(fields: [vocabId], references: [id], onDelete: Cascade)
+  vocabId     Int
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ========================
+// QUIZ SYSTEM
+// ========================
+model Question {
+  id            Int     @id @default(autoincrement())
+  questionText  String
+  correctAnswer String
+  options       String[] // JSON array
+  language_from String  // "korean" or "english"
+  language_to   String  // "english" or "korean"
+  difficulty    String  @default("easy") // easy, medium, hard
+  topic         Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId       Int
+  
+  // Status
+  isActive      Boolean @default(true)
+  version       Int     @default(1)
+  
+  // Relations
+  quizAnswers   QuizAnswer[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model QuizSession {
+  id                Int     @id @default(autoincrement())
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            Int
+  score             Int     @default(0)
+  totalQuestions    Int
+  correctAnswers    Int     @default(0)
+  
+  // Relations
+  answers           QuizAnswer[]
+  
+  createdAt         DateTime @default(now())
+  endedAt           DateTime?
+}
+
+model QuizAnswer {
+  id                Int     @id @default(autoincrement())
+  session           QuizSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId         Int
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            Int
+  question          Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId        Int
+  selectedAnswer    String
+  isCorrect         Boolean
+  
+  createdAt         DateTime @default(now())
+}
+
+// ========================
+// LISTENING EXERCISES
+// ========================
+model ListeningQuestion {
+  id          Int     @id @default(autoincrement())
+  contentText String  // English or Korean text
+  language    String  // "english" or "korean"
+  audioUrl    String
+  difficulty  String  @default("easy")
+  topic       Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId     Int
+  
+  isActive    Boolean @default(true)
+  version     Int     @default(1)
+  
+  attempts    ListeningAttempt[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ListeningAttempt {
+  id            Int     @id @default(autoincrement())
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int
+  question      ListeningQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId    Int
+  userAnswer    String
+  isCorrect     Boolean
+  score         Int     @default(0)
+  
+  createdAt     DateTime @default(now())
+}
+
+// ========================
+// WRITING PRACTICE
+// ========================
+model WritingPractice {
+  id          Int     @id @default(autoincrement())
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int
+  topic       Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId     Int
+  
+  level       String  // NEWBIE, BEGINNER, INTERMEDIATE
+  userText    String  // What user wrote
+  score       Int     // 0-10
+  corrected   String? // Corrected version
+  feedback    String? // JSON feedback from AI
+  
+  createdAt   DateTime @default(now())
+}
+
+// ========================
+// HANDWRITING PRACTICE
+// ========================
+model HandwritingExercise {
+  id          Int     @id @default(autoincrement())
+  hangulChar  String  // Single Hangul character
+  strokes     Int     // Number of strokes
+  level       String
+  topic       Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId     Int
+  
+  isActive    Boolean @default(true)
+  
+  attempts    HandwritingAttempt[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model HandwritingAttempt {
+  id          Int     @id @default(autoincrement())
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int
+  exercise    HandwritingExercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  exerciseId  Int
+  drawingData String  // JSON storing stroke data
+  score       Int     // 0-100
+  feedback    String?
+  
+  createdAt   DateTime @default(now())
+}
+
+// ========================
+// PRONUNCIATION PRACTICE
+// ========================
+model PronunciationWord {
+  id          Int     @id @default(autoincrement())
+  vocabulary  Vocabulary @relation(fields: [vocabId], references: [id], onDelete: Cascade)
+  vocabId     Int
+  nativeAudioUrl String
+  level       String
+  topic       Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId     Int
+  
+  attempts    PronunciationAttempt[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PronunciationAttempt {
+  id          Int     @id @default(autoincrement())
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int
+  word        PronunciationWord @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  wordId      Int
+  audioUrl    String  // User's recorded audio
+  transcript  String?
+  accuracyScore Int?   // 0-100
+  fluencyScore  Int?   // 0-100
+  completenessScore Int? // 0-100
+  overallScore Int?    // 0-100
+  feedback    String?
+  phoneticErrors String? // JSON array of phoneme errors
+  
+  createdAt   DateTime @default(now())
+}
+
+// ========================
+// CAMERA DETECTION
+// ========================
+model CameraDetection {
+  id            Int     @id @default(autoincrement())
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int
+  detectedObjects String[] // Array of detected object names
+  vocabulary    Vocabulary[] // Matched vocabulary
+  imageUrl      String  // Saved detected image
+  confidence    Float
+  
+  createdAt     DateTime @default(now())
+}
+
+// ========================
+// ACHIEVEMENTS & GAMIFICATION
+// ========================
+model Achievement {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String
+  badge       String? // URL or emoji
+  criteria    String  // JSON describing unlock criteria
+  
+  users       UserAchievement[]
+  
+  createdAt   DateTime @default(now())
+}
+
+model UserAchievement {
+  id            Int     @id @default(autoincrement())
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  achievementId Int
+  unlockedAt    DateTime @default(now())
+}
+
+// ========================
+// COMMUNITY & FEED
+// ========================
+model FeedPost {
+  id          Int     @id @default(autoincrement())
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int
+  content     String
+  likes       Int     @default(0)
+  
+  comments    Comment[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Comment {
+  id          Int     @id @default(autoincrement())
+  post        FeedPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId      Int
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int
+  content     String
+  
+  createdAt   DateTime @default(now())
+}
+
+// ========================
+// MONTHLY TASKS
+// ========================
+model MonthlyTask {
+  id            Int     @id @default(autoincrement())
+  name          String
+  description   String
+  criteria      String  // JSON describing task criteria
+  reward        Int     // XP reward
+  level         String
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ========================
+// GAME ECONOMY - USER STATS (TROPHY SYSTEM)
+// ========================
+model UserStats {
+  id        String @id @default(uuid())
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int    @unique
+  
+  xp        Int @default(0)
+  trophy    Int @default(0)
+  
+  quizCount     Int @default(0)
+  writeCount    Int @default(0)
+  speakCount    Int @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ========================
+// RANKING SYSTEM (MATCHMAKING)
+// ========================
+model Rank {
+  id     String @id @default(uuid())
+  name   String @unique
+  minXp  Int
+  maxXp  Int
+  order  Int
+  
+  userRanks UserRank[]
+  
+  createdAt DateTime @default(now())
+}
+
+model UserRank {
+  id     String @id @default(uuid())
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int    @unique
+  
+  rank   Rank @relation(fields: [rankId], references: [id])
+  rankId String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ========================
+// DAILY QUEST SYSTEM
+// ========================
+model DailyQuest {
+  id         String @id @default(uuid())
+  title      String
+  description String?
+  type       String // quiz, writing, speaking
+  goal       Int
+  rewardXp   Int
+  rewardTrophy Int @default(0)
+  
+  userQuests UserQuest[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserQuest {
+  id        String @id @default(uuid())
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  
+  quest     DailyQuest @relation(fields: [questId], references: [id], onDelete: Cascade)
+  questId   String
+  
+  progress  Int @default(0)
+  completed Boolean @default(false)
+  completedAt DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, questId])
+}
+
+// ========================
+// BATTLE SYSTEM
+// ========================
+model BattleRoom {
+  id        String @id @default(uuid())
+  
+  player1   User   @relation("player1", fields: [player1Id], references: [id], onDelete: Cascade)
+  player1Id Int
+  player1Score Int @default(0)
+  
+  player2   User?  @relation("player2", fields: [player2Id], references: [id], onDelete: SetNull)
+  player2Id Int?
+  player2Score Int @default(0)
+  
+  status    String @default("waiting") // waiting, playing, finished
+  winnerId  Int?
+  
+  createdAt DateTime @default(now())
+  endedAt   DateTime?
+}
+
+// ========================
+// TOURNAMENT SYSTEM
+// ========================
+model Tournament {
+  id        String @id @default(uuid())
+  name      String
+  description String?
+  startAt   DateTime
+  endAt     DateTime
+  
+  players   TournamentPlayer[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TournamentPlayer {
+  id           String @id @default(uuid())
+  
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       Int
+  
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId String
+  
+  score        Int @default(0)
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@unique([userId, tournamentId])
+}
+
+// ========================
+// LEAGUE SYSTEM (WEEKLY RANKING)
+// ========================
+model League {
+  id        String @id @default(uuid())
+  name      String
+  startAt   DateTime
+  endAt     DateTime
+  
+  players   LeaguePlayer[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LeaguePlayer {
+  id        String @id @default(uuid())
+  
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  
+  league    League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  leagueId  String
+  
+  score     Int @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, leagueId])
+}
+
+// ========================
+// LEARNING MAP / PROGRESS TREE
+// ========================
+model LearningPath {
+  id     String @id @default(uuid())
+  name   String
+  level  String
+  
+  nodes  LearningNode[]
+  
+  createdAt DateTime @default(now())
+}
+
+model LearningNode {
+  id        String @id @default(uuid())
+  title     String
+  description String?
+  
+  path      LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  pathId    String
+  
+  topic     Topic? @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  topicId   Int?
+  
+  order     Int
+  
+  userProgress UserNodeProgress[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserNodeProgress {
+  id        String @id @default(uuid())
+  
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  
+  node      LearningNode @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  nodeId    String
+  
+  completed Boolean @default(false)
+  completedAt DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, nodeId])
+}
+
+// ========================
+// SOCIAL SYSTEM
+// ========================
+model Friend {
+  id       String @id @default(uuid())
+  
+  user     User   @relation("friendOf", fields: [userId], references: [id], onDelete: Cascade)
+  userId   Int
+  
+  friend   User   @relation("friendWith", fields: [friendId], references: [id], onDelete: Cascade)
+  friendId Int
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, friendId])
+}
+
+model Challenge {
+  id        String @id @default(uuid())
+  
+  fromUser  User   @relation("sentChallenges", fields: [fromUserId], references: [id], onDelete: Cascade)
+  fromUserId Int
+  
+  toUser    User   @relation("receivedChallenges", fields: [toUserId], references: [id], onDelete: Cascade)
+  toUserId  Int
+  
+  status    String @default("pending") // pending, accepted, declined, completed
+  
+  winnerId  Int?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

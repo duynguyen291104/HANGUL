@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: hangul-postgres
+    environment:
+      POSTGRES_USER: ${DB_USER:-hangul}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-hangul123}
+      POSTGRES_DB: ${DB_NAME:-hangul_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-hangul}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./BE
+      dockerfile: Dockerfile
+    container_name: hangul-backend
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-hangul}:${DB_PASSWORD:-hangul123}@postgres:5432/${DB_NAME:-hangul_db}
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key}
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 5000
+      FLASK_API_URL: http://flask:5001
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./BE/src:/app/src
+
+  # Flask AI Backend
+  flask:
+    build:
+      context: ./AI
+      dockerfile: Dockerfile
+    container_name: hangul-flask
+    environment:
+      FLASK_ENV: development
+      FLASK_APP: app.py
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./AI:/app
+    expose:
+      - "5001"
+
+  # Frontend (optional - for development)
+  frontend:
+    build:
+      context: ./FE
+      dockerfile: Dockerfile.dev
+    container_name: hangul-frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:5000/api
+      NEXT_PUBLIC_FLASK_API_URL: http://localhost:5001
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./FE/src:/app/src
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    name: hangul-network

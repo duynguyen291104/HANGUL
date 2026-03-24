@@ -1,0 +1,986 @@
+[
+  {
+    "korean": "머리",
+    "english": "head",
+    "vietnamese": "đầu",
+    "romanization": "meori",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 머리는 건강하다.",
+        "vietnamese": "đầu của tôi khỏe.",
+        "english": "My head is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "눈",
+    "english": "eye",
+    "vietnamese": "mắt",
+    "romanization": "nun",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 눈는 건강하다.",
+        "vietnamese": "mắt của tôi khỏe.",
+        "english": "My eye is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "귀",
+    "english": "ear",
+    "vietnamese": "tai",
+    "romanization": "gwi",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 귀는 건강하다.",
+        "vietnamese": "tai của tôi khỏe.",
+        "english": "My ear is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "코",
+    "english": "nose",
+    "vietnamese": "mũi",
+    "romanization": "ko",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 코는 건강하다.",
+        "vietnamese": "mũi của tôi khỏe.",
+        "english": "My nose is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "입",
+    "english": "mouth",
+    "vietnamese": "miệng",
+    "romanization": "ip",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 입는 건강하다.",
+        "vietnamese": "miệng của tôi khỏe.",
+        "english": "My mouth is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "혀",
+    "english": "tongue",
+    "vietnamese": "lưỡi",
+    "romanization": "hyeo",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "나의 혀는 건강하다.",
+        "vietnamese": "lưỡi của tôi khỏe.",
+        "english": "My tongue is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "이",
+    "english": "tooth",
+    "vietnamese": "răng",
+    "romanization": "i",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 이는 건강하다.",
+        "vietnamese": "răng của tôi khỏe.",
+        "english": "My tooth is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "피부",
+    "english": "skin",
+    "vietnamese": "da",
+    "romanization": "pibu",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 피부는 건강하다.",
+        "vietnamese": "da của tôi khỏe.",
+        "english": "My skin is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "얼굴",
+    "english": "face",
+    "vietnamese": "mặt",
+    "romanization": "eolgul",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 얼굴는 건강하다.",
+        "vietnamese": "mặt của tôi khỏe.",
+        "english": "My face is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "목",
+    "english": "neck",
+    "vietnamese": "cổ",
+    "romanization": "mok",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 목는 건강하다.",
+        "vietnamese": "cổ của tôi khỏe.",
+        "english": "My neck is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "어깨",
+    "english": "shoulder",
+    "vietnamese": "vai",
+    "romanization": "eokkaе",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 어깨는 건강하다.",
+        "vietnamese": "vai của tôi khỏe.",
+        "english": "My shoulder is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "팔",
+    "english": "arm",
+    "vietnamese": "tay",
+    "romanization": "pal",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 팔는 건강하다.",
+        "vietnamese": "tay của tôi khỏe.",
+        "english": "My arm is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "손",
+    "english": "hand",
+    "vietnamese": "tay",
+    "romanization": "son",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 손는 건강하다.",
+        "vietnamese": "tay của tôi khỏe.",
+        "english": "My hand is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "손가락",
+    "english": "finger",
+    "vietnamese": "ngón tay",
+    "romanization": "songarak",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 손가락는 건강하다.",
+        "vietnamese": "ngón tay của tôi khỏe.",
+        "english": "My finger is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "손톱",
+    "english": "fingernail",
+    "vietnamese": "móng tay",
+    "romanization": "sontop",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "나의 손톱는 건강하다.",
+        "vietnamese": "móng tay của tôi khỏe.",
+        "english": "My fingernail is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "발",
+    "english": "foot",
+    "vietnamese": "chân",
+    "romanization": "bal",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 발는 건강하다.",
+        "vietnamese": "chân của tôi khỏe.",
+        "english": "My foot is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "다리",
+    "english": "leg",
+    "vietnamese": "chân/cơ chân",
+    "romanization": "dari",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 다리는 건강하다.",
+        "vietnamese": "chân/cơ chân của tôi khỏe.",
+        "english": "My leg is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "발가락",
+    "english": "toe",
+    "vietnamese": "ngón chân",
+    "romanization": "balgarak",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "나의 발가락는 건강하다.",
+        "vietnamese": "ngón chân của tôi khỏe.",
+        "english": "My toe is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "발톱",
+    "english": "toenail",
+    "vietnamese": "móng chân",
+    "romanization": "baltop",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "low",
+    "examples": [
+      {
+        "korean": "나의 발톱는 건강하다.",
+        "vietnamese": "móng chân của tôi khỏe.",
+        "english": "My toenail is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "심장",
+    "english": "heart",
+    "vietnamese": "trái tim",
+    "romanization": "simjang",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 심장는 건강하다.",
+        "vietnamese": "trái tim của tôi khỏe.",
+        "english": "My heart is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "폐",
+    "english": "lung",
+    "vietnamese": "phổi",
+    "romanization": "pye",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 폐는 건강하다.",
+        "vietnamese": "phổi của tôi khỏe.",
+        "english": "My lung is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "위",
+    "english": "stomach",
+    "vietnamese": "dạ dày",
+    "romanization": "wi",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 위는 건강하다.",
+        "vietnamese": "dạ dày của tôi khỏe.",
+        "english": "My stomach is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "간",
+    "english": "liver",
+    "vietnamese": "gan",
+    "romanization": "gan",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "나의 간는 건강하다.",
+        "vietnamese": "gan của tôi khỏe.",
+        "english": "My liver is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "뼈",
+    "english": "bone",
+    "vietnamese": "xương",
+    "romanization": "ppyeo",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 뼈는 건강하다.",
+        "vietnamese": "xương của tôi khỏe.",
+        "english": "My bone is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "근육",
+    "english": "muscle",
+    "vietnamese": "cơ",
+    "romanization": "geun yuk",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 근육는 건강하다.",
+        "vietnamese": "cơ của tôi khỏe.",
+        "english": "My muscle is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "피",
+    "english": "blood",
+    "vietnamese": "máu",
+    "romanization": "pi",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 피는 건강하다.",
+        "vietnamese": "máu của tôi khỏe.",
+        "english": "My blood is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "힘",
+    "english": "strength/energy",
+    "vietnamese": "sức mạnh",
+    "romanization": "him",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 힘는 건강하다.",
+        "vietnamese": "sức mạnh của tôi khỏe.",
+        "english": "My strength/energy is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "열",
+    "english": "fever/heat",
+    "vietnamese": "sốt",
+    "romanization": "yeol",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 열는 건강하다.",
+        "vietnamese": "sốt của tôi khỏe.",
+        "english": "My fever/heat is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "감기",
+    "english": "cold",
+    "vietnamese": "cúm",
+    "romanization": "gamgi",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 감기는 건강하다.",
+        "vietnamese": "cúm của tôi khỏe.",
+        "english": "My cold is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "알레르기",
+    "english": "allergy",
+    "vietnamese": "dị ứng",
+    "romanization": "allereugi",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "나의 알레르기는 건강하다.",
+        "vietnamese": "dị ứng của tôi khỏe.",
+        "english": "My allergy is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "통증",
+    "english": "pain",
+    "vietnamese": "đau",
+    "romanization": "tongseung",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 통증는 건강하다.",
+        "vietnamese": "đau của tôi khỏe.",
+        "english": "My pain is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "의사",
+    "english": "doctor",
+    "vietnamese": "bác sỹ",
+    "romanization": "uisa",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 의사는 건강하다.",
+        "vietnamese": "bác sỹ của tôi khỏe.",
+        "english": "My doctor is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "약",
+    "english": "medicine",
+    "vietnamese": "thuốc",
+    "romanization": "yak",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 약는 건강하다.",
+        "vietnamese": "thuốc của tôi khỏe.",
+        "english": "My medicine is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "병원",
+    "english": "hospital",
+    "vietnamese": "bệnh viện",
+    "romanization": "byeongwon",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 병원는 건강하다.",
+        "vietnamese": "bệnh viện của tôi khỏe.",
+        "english": "My hospital is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "건강",
+    "english": "health",
+    "vietnamese": "sức khỏe",
+    "romanization": "geongang",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 건강는 건강하다.",
+        "vietnamese": "sức khỏe của tôi khỏe.",
+        "english": "My health is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "아프다",
+    "english": "to hurt/ache",
+    "vietnamese": "đau",
+    "romanization": "apeuda",
+    "type": "verb",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 아프다는 건강하다.",
+        "vietnamese": "đau của tôi khỏe.",
+        "english": "My to hurt/ache is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "verb",
+      "action",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "피곤하다",
+    "english": "to be tired",
+    "vietnamese": "mệt",
+    "romanization": "pigonhada",
+    "type": "verb",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 피곤하다는 건강하다.",
+        "vietnamese": "mệt của tôi khỏe.",
+        "english": "My to be tired is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "verb",
+      "action",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "쉬다",
+    "english": "to rest",
+    "vietnamese": "nghỉ",
+    "romanization": "swida",
+    "type": "verb",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 쉬다는 건강하다.",
+        "vietnamese": "nghỉ của tôi khỏe.",
+        "english": "My to rest is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "verb",
+      "action",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "자다",
+    "english": "to sleep",
+    "vietnamese": "ngủ",
+    "romanization": "jada",
+    "type": "verb",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 자다는 건강하다.",
+        "vietnamese": "ngủ của tôi khỏe.",
+        "english": "My to sleep is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "verb",
+      "action",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "깨어나다",
+    "english": "to wake up",
+    "vietnamese": "thức dậy",
+    "romanization": "kkaeeonada",
+    "type": "verb",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 깨어나다는 건강하다.",
+        "vietnamese": "thức dậy của tôi khỏe.",
+        "english": "My to wake up is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "verb",
+      "action",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "건강하다",
+    "english": "to be healthy",
+    "vietnamese": "khỏe",
+    "romanization": "geonganghada",
+    "type": "adjective",
+    "level": "BEGINNER",
+    "topic": "body",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 건강하다는 건강하다.",
+        "vietnamese": "khỏe của tôi khỏe.",
+        "english": "My to be healthy is healthy."
+      }
+    ],
+    "tags": [
+      "body",
+      "adjective",
+      "description",
+      "intermediate"
+    ]
+  }
+]

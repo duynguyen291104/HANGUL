@@ -1,0 +1,922 @@
+[
+  {
+    "korean": "안녕하세요",
+    "english": "hello (formal)",
+    "vietnamese": "xin chào (trang trọng)",
+    "romanization": "annyeonghaseyo",
+    "type": "expression",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "안녕하세요. 저는 새로운 친구입니다.",
+        "vietnamese": "xin chào (trang trọng). Tôi là học sinh.",
+        "english": "hello (formal). I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "expression",
+      "phrase",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "안녕",
+    "english": "hi (casual)",
+    "vietnamese": "chào (thân thiết)",
+    "romanization": "annyeong",
+    "type": "expression",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "안녕. 저는 학생입니다.",
+        "vietnamese": "chào (thân thiết). Tôi là học sinh.",
+        "english": "hi (casual). I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "expression",
+      "phrase",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "좋은 아침입니다",
+    "english": "good morning (formal)",
+    "vietnamese": "chào buổi sáng (trang trọng)",
+    "romanization": "joeun achimimnida",
+    "type": "expression",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "좋은 아침입니다. 저는 학생입니다.",
+        "vietnamese": "chào buổi sáng (trang trọng). Tôi là học sinh.",
+        "english": "good morning (formal). I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "expression",
+      "phrase",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "좋은 아침",
+    "english": "good morning (casual)",
+    "vietnamese": "chào buổi sáng",
+    "romanization": "joeun achim",
+    "type": "expression",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "좋은 아침. 저는 학생입니다.",
+        "vietnamese": "chào buổi sáng. Tôi là học sinh.",
+        "english": "good morning (casual). I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "expression",
+      "phrase",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "좋은 오후입니다",
+    "english": "good afternoon (formal)",
+    "vietnamese": "chào buổi chiều (trang trọng)",
+    "romanization": "joeun ohwu-imnida",
+    "type": "expression",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "좋은 오후입니다. 저는 학생입니다.",
+        "vietnamese": "chào buổi chiều (trang trọng). Tôi là học sinh.",
+        "english": "good afternoon (formal). I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "expression",
+      "phrase",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "좋은 저녁입니다",
+    "english": "good evening (formal)",
+    "vietnamese": "chào buổi tối (trang trọng)",
+    "romanization": "joeun jeonyeok-imnida",
+    "type": "expression",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "좋은 저녁입니다. 저는 학생입니다.",
+        "vietnamese": "chào buổi tối (trang trọng). Tôi là học sinh.",
+        "english": "good evening (formal). I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "expression",
+      "phrase",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "좋은 밤",
+    "english": "good night",
+    "vietnamese": "chúc ngủ ngon",
+    "romanization": "joeun bam",
+    "type": "expression",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "좋은 밤. 저는 학생입니다.",
+        "vietnamese": "chúc ngủ ngon. Tôi là học sinh.",
+        "english": "good night. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "expression",
+      "phrase",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "안녕히 가세요",
+    "english": "goodbye (to someone leaving - formal)",
+    "vietnamese": "tạm biệt (người đi - trang trọng)",
+    "romanization": "annyeonghi gaseyo",
+    "type": "expression",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "안녕히 가세요. 저는 학생입니다.",
+        "vietnamese": "tạm biệt (người đi - trang trọng). Tôi là học sinh.",
+        "english": "goodbye (to someone leaving - formal). I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "expression",
+      "phrase",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "안녕히 계세요",
+    "english": "goodbye (to someone staying - formal)",
+    "vietnamese": "tạm biệt (người ở lại - trang trọng)",
+    "romanization": "annyeonghi gyeseyo",
+    "type": "expression",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "안녕히 계세요. 저는 학생입니다.",
+        "vietnamese": "tạm biệt (người ở lại - trang trọng). Tôi là học sinh.",
+        "english": "goodbye (to someone staying - formal). I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "expression",
+      "phrase",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "가야 해요",
+    "english": "I have to go",
+    "vietnamese": "tôi phải đi",
+    "romanization": "gaya haeyo",
+    "type": "sentence",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "가야 해요. 저는 학생입니다.",
+        "vietnamese": "tôi phải đi. Tôi là học sinh.",
+        "english": "I have to go. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "반갑습니다",
+    "english": "nice to meet you (formal)",
+    "vietnamese": "rất vui được gặp bạn (trang trọng)",
+    "romanization": "bangapseumnida",
+    "type": "expression",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "반갑습니다. 저는 학생입니다.",
+        "vietnamese": "rất vui được gặp bạn (trang trọng). Tôi là học sinh.",
+        "english": "nice to meet you (formal). I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "expression",
+      "phrase",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "반가워요",
+    "english": "nice to meet you (casual)",
+    "vietnamese": "rất vui được gặp bạn",
+    "romanization": "bangawoyo",
+    "type": "expression",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "반가워요. 저는 학생입니다.",
+        "vietnamese": "rất vui được gặp bạn. Tôi là học sinh.",
+        "english": "nice to meet you (casual). I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "expression",
+      "phrase",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "만나서 반가워요",
+    "english": "pleased to meet you",
+    "vietnamese": "gặp bạn mà vui quá",
+    "romanization": "mannaseo bangawoyo",
+    "type": "expression",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "만나서 반가워요. 저는 학생입니다.",
+        "vietnamese": "gặp bạn mà vui quá. Tôi là học sinh.",
+        "english": "pleased to meet you. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "expression",
+      "phrase",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "오늘 어떤 하루였어요?",
+    "english": "how was your day?",
+    "vietnamese": "hôm nay bạn thế nào?",
+    "romanization": "oneul eotteon haruyeosseoseo",
+    "type": "sentence",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 3,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "오늘 어떤 하루였어요?. 저는 학생입니다.",
+        "vietnamese": "hôm nay bạn thế nào?. Tôi là học sinh.",
+        "english": "how was your day?. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "잘 지내요?",
+    "english": "how are you? (casual)",
+    "vietnamese": "bạn khỏe không?",
+    "romanization": "jal jinaeyo",
+    "type": "sentence",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "잘 지내요?. 저는 학생입니다.",
+        "vietnamese": "bạn khỏe không?. Tôi là học sinh.",
+        "english": "how are you? (casual). I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "잘 지내셨어요?",
+    "english": "how have you been? (formal)",
+    "vietnamese": "bạn đã khỏe không? (trang trọng)",
+    "romanization": "jal jinaesyeosseoseo",
+    "type": "sentence",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 3,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "잘 지내셨어요?. 저는 학생입니다.",
+        "vietnamese": "bạn đã khỏe không? (trang trọng). Tôi là học sinh.",
+        "english": "how have you been? (formal). I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "네, 잘 지내고 있어요",
+    "english": "yes, I'm doing well",
+    "vietnamese": "vâng, tôi khỏe",
+    "romanization": "ne, jal jinago isseoyo",
+    "type": "sentence",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "네, 잘 지내고 있어요. 저는 학생입니다.",
+        "vietnamese": "vâng, tôi khỏe. Tôi là học sinh.",
+        "english": "yes, I'm doing well. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "저도 잘 지내고 있어요",
+    "english": "I'm doing well too",
+    "vietnamese": "tôi cũng khỏe",
+    "romanization": "jeodo jal jinago isseoyo",
+    "type": "sentence",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "저도 잘 지내고 있어요. 저는 학생입니다.",
+        "vietnamese": "tôi cũng khỏe. Tôi là học sinh.",
+        "english": "I'm doing well too. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "당신의 이름이 뭐예요?",
+    "english": "what is your name?",
+    "vietnamese": "tên bạn là gì?",
+    "romanization": "dangsinui ireumi mwoyeyo",
+    "type": "sentence",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "당신의 이름이 뭐예요?. 저는 학생입니다.",
+        "vietnamese": "tên bạn là gì?. Tôi là học sinh.",
+        "english": "what is your name?. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "저는 Huy입니다",
+    "english": "I am Huy",
+    "vietnamese": "tôi là Huy",
+    "romanization": "jeoneun Huy-imnida",
+    "type": "sentence",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "저는 Huy입니다. 저는 학생입니다.",
+        "vietnamese": "tôi là Huy. Tôi là học sinh.",
+        "english": "I am Huy. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "만나서 반갑습니다",
+    "english": "it's a pleasure to meet you (formal)",
+    "vietnamese": "gặp bạn rất vui (trang trọng)",
+    "romanization": "mannaseo bangapseumnida",
+    "type": "expression",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "만나서 반갑습니다. 저는 학생입니다.",
+        "vietnamese": "gặp bạn rất vui (trang trọng). Tôi là học sinh.",
+        "english": "it's a pleasure to meet you (formal). I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "expression",
+      "phrase",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "어디서 왔어요?",
+    "english": "where are you from?",
+    "vietnamese": "bạn từ đâu?",
+    "romanization": "eodiseo wasseoseo",
+    "type": "sentence",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "어디서 왔어요?. 저는 학생입니다.",
+        "vietnamese": "bạn từ đâu?. Tôi là học sinh.",
+        "english": "where are you from?. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "저는 베트남에서 왔어요",
+    "english": "I'm from Vietnam",
+    "vietnamese": "tôi đến từ Việt Nam",
+    "romanization": "jeoneun Beteunam-eseo wasseoseo",
+    "type": "sentence",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "저는 베트남에서 왔어요. 저는 학생입니다.",
+        "vietnamese": "tôi đến từ Việt Nam. Tôi là học sinh.",
+        "english": "I'm from Vietnam. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "한국에서 오셨어요?",
+    "english": "are you from Korea? (formal)",
+    "vietnamese": "bạn từ Hàn Quốc? (trang trọng)",
+    "romanization": "hangug-eseo osyeosseoseo",
+    "type": "sentence",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "한국에서 오셨어요?. 저는 학생입니다.",
+        "vietnamese": "bạn từ Hàn Quốc? (trang trọng). Tôi là học sinh.",
+        "english": "are you from Korea? (formal). I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "네, 서울에서 왔어요",
+    "english": "yes, I'm from Seoul",
+    "vietnamese": "vâng, tôi từ Seoul",
+    "romanization": "ne, seoul-eseo wasseoseo",
+    "type": "sentence",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "네, 서울에서 왔어요. 저는 학생입니다.",
+        "vietnamese": "vâng, tôi từ Seoul. Tôi là học sinh.",
+        "english": "yes, I'm from Seoul. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "만나서 정말 좋았어요",
+    "english": "it was really nice meeting you",
+    "vietnamese": "gặp bạn thật vui",
+    "romanization": "mannaseo jeongmal joasseoseo",
+    "type": "sentence",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "만나서 정말 좋았어요. 저는 학생입니다.",
+        "vietnamese": "gặp bạn thật vui. Tôi là học sinh.",
+        "english": "it was really nice meeting you. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "또 만나요",
+    "english": "see you again",
+    "vietnamese": "gặp bạn lần nữa",
+    "romanization": "tto mannayo",
+    "type": "expression",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "또 만나요. 저는 학생입니다.",
+        "vietnamese": "gặp bạn lần nữa. Tôi là học sinh.",
+        "english": "see you again. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "expression",
+      "phrase",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "내일 봐요",
+    "english": "see you tomorrow",
+    "vietnamese": "ngày mai gặp bạn",
+    "romanization": "naeil bwayo",
+    "type": "expression",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "내일 봐요. 저는 학생입니다.",
+        "vietnamese": "ngày mai gặp bạn. Tôi là học sinh.",
+        "english": "see you tomorrow. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "expression",
+      "phrase",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "나중에 봐요",
+    "english": "see you later",
+    "vietnamese": "sau gặp bạn",
+    "romanization": "najung-e bwayo",
+    "type": "expression",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "나중에 봐요. 저는 학생입니다.",
+        "vietnamese": "sau gặp bạn. Tôi là học sinh.",
+        "english": "see you later. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "expression",
+      "phrase",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "반갑습니다, 저는 Kim입니다",
+    "english": "nice to meet you, I'm Kim (formal)",
+    "vietnamese": "vui được gặp, tôi là Kim (trang trọng)",
+    "romanization": "bangapseumnida, jeoneun Kim-imnida",
+    "type": "sentence",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "반갑습니다, 저는 Kim입니다. 저는 학생입니다.",
+        "vietnamese": "vui được gặp, tôi là Kim (trang trọng). Tôi là học sinh.",
+        "english": "nice to meet you, I'm Kim (formal). I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "당신은 어디에 사세요?",
+    "english": "where do you live? (formal)",
+    "vietnamese": "bạn sống ở đâu? (trang trọng)",
+    "romanization": "dangshineun eodiae saseyo",
+    "type": "sentence",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "당신은 어디에 사세요?. 저는 학생입니다.",
+        "vietnamese": "bạn sống ở đâu? (trang trọng). Tôi là học sinh.",
+        "english": "where do you live? (formal). I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "저는 하노이에 살고 있어요",
+    "english": "I live in Hanoi",
+    "vietnamese": "tôi sống ở Hà Nội",
+    "romanization": "jeoneun Hanoi-e salgo isseoyo",
+    "type": "sentence",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "저는 하노이에 살고 있어요. 저는 학생입니다.",
+        "vietnamese": "tôi sống ở Hà Nội. Tôi là học sinh.",
+        "english": "I live in Hanoi. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "당신은 뭐 하세요?",
+    "english": "what do you do? (formal)",
+    "vietnamese": "bạn làm gì? (trang trọng)",
+    "romanization": "dangshineun mwo haseyo",
+    "type": "sentence",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "당신은 뭐 하세요?. 저는 학생입니다.",
+        "vietnamese": "bạn làm gì? (trang trọng). Tôi là học sinh.",
+        "english": "what do you do? (formal). I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "저는 학생입니다",
+    "english": "I am a student",
+    "vietnamese": "tôi là học sinh",
+    "romanization": "jeoneun haksaeng-imnida",
+    "type": "sentence",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "저는 학생입니다. 저는 학생입니다.",
+        "vietnamese": "tôi là học sinh. Tôi là học sinh.",
+        "english": "I am a student. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "저는 직장인이에요",
+    "english": "I work in an office",
+    "vietnamese": "tôi làm việc văn phòng",
+    "romanization": "jeoneun jikjangin-ieyo",
+    "type": "sentence",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "저는 직장인이에요. 저는 학생입니다.",
+        "vietnamese": "tôi làm việc văn phòng. Tôi là học sinh.",
+        "english": "I work in an office. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "뵙게 되어 기쁩니다",
+    "english": "I'm honored to meet you (formal)",
+    "vietnamese": "được gặp bạn tôi rất vinh dự (trang trọng)",
+    "romanization": "boepge doe-eo gippseumnida",
+    "type": "expression",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 3,
+    "frequency": "low",
+    "examples": [
+      {
+        "korean": "뵙게 되어 기쁩니다. 저는 학생입니다.",
+        "vietnamese": "được gặp bạn tôi rất vinh dự (trang trọng). Tôi là học sinh.",
+        "english": "I'm honored to meet you (formal). I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "expression",
+      "phrase",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "계속 연락해요",
+    "english": "let's keep in touch",
+    "vietnamese": "hãy liên lạc tiếp",
+    "romanization": "gyesok yeollakhae yo",
+    "type": "expression",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "계속 연락해요. 저는 학생입니다.",
+        "vietnamese": "hãy liên lạc tiếp. Tôi là học sinh.",
+        "english": "let's keep in touch. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "expression",
+      "phrase",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "소개해 주세요",
+    "english": "please introduce yourself (formal)",
+    "vietnamese": "hãy giới thiệu bạn (trang trọng)",
+    "romanization": "sogae hae juseyo",
+    "type": "expression",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "소개해 주세요. 저는 학생입니다.",
+        "vietnamese": "hãy giới thiệu bạn (trang trọng). Tôi là học sinh.",
+        "english": "please introduce yourself (formal). I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "expression",
+      "phrase",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "저도 소개합니다",
+    "english": "I also introduce myself",
+    "vietnamese": "tôi cũng giới thiệu",
+    "romanization": "jeodo sogae hamnida",
+    "type": "sentence",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "low",
+    "examples": [
+      {
+        "korean": "저도 소개합니다. 저는 학생입니다.",
+        "vietnamese": "tôi cũng giới thiệu. Tôi là học sinh.",
+        "english": "I also introduce myself. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "반가워요, 또 봐요!",
+    "english": "nice to meet you, see you later!",
+    "vietnamese": "vui được gặp, tạm biệt!",
+    "romanization": "bangawoyo, tto bwayo",
+    "type": "expression",
+    "level": "NEWBIE",
+    "topic": "greeting",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "반가워요, 또 봐요!. 저는 학생입니다.",
+        "vietnamese": "vui được gặp, tạm biệt!. Tôi là học sinh.",
+        "english": "nice to meet you, see you later!. I am a student."
+      }
+    ],
+    "tags": [
+      "greeting",
+      "expression",
+      "phrase",
+      "beginner"
+    ]
+  }
+]

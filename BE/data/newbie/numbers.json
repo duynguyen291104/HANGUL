@@ -1,0 +1,962 @@
+[
+  {
+    "korean": "영",
+    "english": "zero",
+    "vietnamese": "không",
+    "romanization": "yeong",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 영",
+        "vietnamese": "Số: không",
+        "english": "Number: zero"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "하나",
+    "english": "one",
+    "vietnamese": "một",
+    "romanization": "hana",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 하나",
+        "vietnamese": "Số: một",
+        "english": "Number: one"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "둘",
+    "english": "two",
+    "vietnamese": "hai",
+    "romanization": "dul",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 둘",
+        "vietnamese": "Số: hai",
+        "english": "Number: two"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "셋",
+    "english": "three",
+    "vietnamese": "ba",
+    "romanization": "set",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 셋",
+        "vietnamese": "Số: ba",
+        "english": "Number: three"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "넷",
+    "english": "four",
+    "vietnamese": "bốn",
+    "romanization": "net",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 넷",
+        "vietnamese": "Số: bốn",
+        "english": "Number: four"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "다섯",
+    "english": "five",
+    "vietnamese": "năm",
+    "romanization": "daseos",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 다섯",
+        "vietnamese": "Số: năm",
+        "english": "Number: five"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "여섯",
+    "english": "six",
+    "vietnamese": "sáu",
+    "romanization": "yeoseos",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 여섯",
+        "vietnamese": "Số: sáu",
+        "english": "Number: six"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "일곱",
+    "english": "seven",
+    "vietnamese": "bảy",
+    "romanization": "ilgop",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 일곱",
+        "vietnamese": "Số: bảy",
+        "english": "Number: seven"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "여덟",
+    "english": "eight",
+    "vietnamese": "tám",
+    "romanization": "yeodeol",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 여덟",
+        "vietnamese": "Số: tám",
+        "english": "Number: eight"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "아홉",
+    "english": "nine",
+    "vietnamese": "chín",
+    "romanization": "ahop",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 아홉",
+        "vietnamese": "Số: chín",
+        "english": "Number: nine"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "열",
+    "english": "ten",
+    "vietnamese": "mười",
+    "romanization": "yeol",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 열",
+        "vietnamese": "Số: mười",
+        "english": "Number: ten"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "일",
+    "english": "one (sino-korean)",
+    "vietnamese": "một (tiếng Hán Việt)",
+    "romanization": "il",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 일",
+        "vietnamese": "Số: một (tiếng Hán Việt)",
+        "english": "Number: one (sino-korean)"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "이",
+    "english": "two (sino-korean)",
+    "vietnamese": "hai (tiếng Hán Việt)",
+    "romanization": "i",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 이",
+        "vietnamese": "Số: hai (tiếng Hán Việt)",
+        "english": "Number: two (sino-korean)"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "삼",
+    "english": "three (sino-korean)",
+    "vietnamese": "ba (tiếng Hán Việt)",
+    "romanization": "sam",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 삼",
+        "vietnamese": "Số: ba (tiếng Hán Việt)",
+        "english": "Number: three (sino-korean)"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "사",
+    "english": "four (sino-korean)",
+    "vietnamese": "bốn (tiếng Hán Việt)",
+    "romanization": "sa",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 사",
+        "vietnamese": "Số: bốn (tiếng Hán Việt)",
+        "english": "Number: four (sino-korean)"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "오",
+    "english": "five (sino-korean)",
+    "vietnamese": "năm (tiếng Hán Việt)",
+    "romanization": "o",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 오",
+        "vietnamese": "Số: năm (tiếng Hán Việt)",
+        "english": "Number: five (sino-korean)"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "육",
+    "english": "six (sino-korean)",
+    "vietnamese": "sáu (tiếng Hán Việt)",
+    "romanization": "yuk",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 육",
+        "vietnamese": "Số: sáu (tiếng Hán Việt)",
+        "english": "Number: six (sino-korean)"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "칠",
+    "english": "seven (sino-korean)",
+    "vietnamese": "bảy (tiếng Hán Việt)",
+    "romanization": "chil",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 칠",
+        "vietnamese": "Số: bảy (tiếng Hán Việt)",
+        "english": "Number: seven (sino-korean)"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "팔",
+    "english": "eight (sino-korean)",
+    "vietnamese": "tám (tiếng Hán Việt)",
+    "romanization": "pal",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 팔",
+        "vietnamese": "Số: tám (tiếng Hán Việt)",
+        "english": "Number: eight (sino-korean)"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "구",
+    "english": "nine (sino-korean)",
+    "vietnamese": "chín (tiếng Hán Việt)",
+    "romanization": "gu",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 구",
+        "vietnamese": "Số: chín (tiếng Hán Việt)",
+        "english": "Number: nine (sino-korean)"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "십",
+    "english": "ten (sino-korean)",
+    "vietnamese": "mười (tiếng Hán Việt)",
+    "romanization": "sip",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 십",
+        "vietnamese": "Số: mười (tiếng Hán Việt)",
+        "english": "Number: ten (sino-korean)"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "백",
+    "english": "hundred",
+    "vietnamese": "một trăm",
+    "romanization": "baek",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 백",
+        "vietnamese": "Số: một trăm",
+        "english": "Number: hundred"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "천",
+    "english": "thousand",
+    "vietnamese": "một nghìn",
+    "romanization": "cheon",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 천",
+        "vietnamese": "Số: một nghìn",
+        "english": "Number: thousand"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "만",
+    "english": "ten thousand",
+    "vietnamese": "mười nghìn",
+    "romanization": "man",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 만",
+        "vietnamese": "Số: mười nghìn",
+        "english": "Number: ten thousand"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "첫",
+    "english": "first",
+    "vietnamese": "thứ nhất",
+    "romanization": "cheot",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 첫",
+        "vietnamese": "Số: thứ nhất",
+        "english": "Number: first"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "두번째",
+    "english": "second",
+    "vietnamese": "thứ hai",
+    "romanization": "dubeun jjae",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 두번째",
+        "vietnamese": "Số: thứ hai",
+        "english": "Number: second"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "세번째",
+    "english": "third",
+    "vietnamese": "thứ ba",
+    "romanization": "sebeun jjae",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "숫자: 세번째",
+        "vietnamese": "Số: thứ ba",
+        "english": "Number: third"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "네번째",
+    "english": "fourth",
+    "vietnamese": "thứ tư",
+    "romanization": "nebeun jjae",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "숫자: 네번째",
+        "vietnamese": "Số: thứ tư",
+        "english": "Number: fourth"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "다섯번째",
+    "english": "fifth",
+    "vietnamese": "thứ năm",
+    "romanization": "daseos beun jjae",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "숫자: 다섯번째",
+        "vietnamese": "Số: thứ năm",
+        "english": "Number: fifth"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "여섯번째",
+    "english": "sixth",
+    "vietnamese": "thứ sáu",
+    "romanization": "yeoseos beun jjae",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "숫자: 여섯번째",
+        "vietnamese": "Số: thứ sáu",
+        "english": "Number: sixth"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "일곱번째",
+    "english": "seventh",
+    "vietnamese": "thứ bảy",
+    "romanization": "ilgop beun jjae",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "숫자: 일곱번째",
+        "vietnamese": "Số: thứ bảy",
+        "english": "Number: seventh"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "여덟번째",
+    "english": "eighth",
+    "vietnamese": "thứ tám",
+    "romanization": "yeodeol beun jjae",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "숫자: 여덟번째",
+        "vietnamese": "Số: thứ tám",
+        "english": "Number: eighth"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "아홉번째",
+    "english": "ninth",
+    "vietnamese": "thứ chín",
+    "romanization": "ahop beun jjae",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "숫자: 아홉번째",
+        "vietnamese": "Số: thứ chín",
+        "english": "Number: ninth"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "열번째",
+    "english": "tenth",
+    "vietnamese": "thứ mười",
+    "romanization": "yeol beun jjae",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "숫자: 열번째",
+        "vietnamese": "Số: thứ mười",
+        "english": "Number: tenth"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "반",
+    "english": "half",
+    "vietnamese": "một nửa",
+    "romanization": "ban",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "숫자: 반",
+        "vietnamese": "Số: một nửa",
+        "english": "Number: half"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "쌍",
+    "english": "pair",
+    "vietnamese": "đôi",
+    "romanization": "ssang",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "숫자: 쌍",
+        "vietnamese": "Số: đôi",
+        "english": "Number: pair"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "더하기",
+    "english": "plus/addition",
+    "vietnamese": "cộng",
+    "romanization": "deohagi",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "숫자: 더하기",
+        "vietnamese": "Số: cộng",
+        "english": "Number: plus/addition"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "빼기",
+    "english": "minus/subtraction",
+    "vietnamese": "trừ",
+    "romanization": "ppaeги",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "숫자: 빼기",
+        "vietnamese": "Số: trừ",
+        "english": "Number: minus/subtraction"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "곱하기",
+    "english": "multiply/multiplication",
+    "vietnamese": "nhân",
+    "romanization": "gophagi",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "숫자: 곱하기",
+        "vietnamese": "Số: nhân",
+        "english": "Number: multiply/multiplication"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "나누기",
+    "english": "divide/division",
+    "vietnamese": "chia",
+    "romanization": "nanugi",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "numbers",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "숫자: 나누기",
+        "vietnamese": "Số: chia",
+        "english": "Number: divide/division"
+      }
+    ],
+    "tags": [
+      "numbers",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  }
+]

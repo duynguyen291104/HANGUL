@@ -1,0 +1,962 @@
+[
+  {
+    "korean": "스포츠",
+    "english": "sports",
+    "vietnamese": "thể thao",
+    "romanization": "seu poteu",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "스포츠를 하다.",
+        "vietnamese": "Chơi thể thao.",
+        "english": "Play sports."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "축구",
+    "english": "soccer/football",
+    "vietnamese": "bóng đá",
+    "romanization": "chukgu",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "축구를 하다.",
+        "vietnamese": "Chơi bóng đá.",
+        "english": "Play soccer/football."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "야구",
+    "english": "baseball",
+    "vietnamese": "bóng chày",
+    "romanization": "yagu",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "야구를 하다.",
+        "vietnamese": "Chơi bóng chày.",
+        "english": "Play baseball."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "농구",
+    "english": "basketball",
+    "vietnamese": "bóng rổ",
+    "romanization": "nonggu",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "농구를 하다.",
+        "vietnamese": "Chơi bóng rổ.",
+        "english": "Play basketball."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "배구",
+    "english": "volleyball",
+    "vietnamese": "bóng chuyền",
+    "romanization": "baegu",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "배구를 하다.",
+        "vietnamese": "Chơi bóng chuyền.",
+        "english": "Play volleyball."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "테니스",
+    "english": "tennis",
+    "vietnamese": "quần vợt",
+    "romanization": "teniseu",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "테니스를 하다.",
+        "vietnamese": "Chơi quần vợt.",
+        "english": "Play tennis."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "탁구",
+    "english": "table tennis",
+    "vietnamese": "bóng bàn",
+    "romanization": "takgu",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "탁구를 하다.",
+        "vietnamese": "Chơi bóng bàn.",
+        "english": "Play table tennis."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "배드민턴",
+    "english": "badminton",
+    "vietnamese": "cầu lông",
+    "romanization": "bae deu min teon",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "배드민턴를 하다.",
+        "vietnamese": "Chơi cầu lông.",
+        "english": "Play badminton."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "수영",
+    "english": "swimming",
+    "vietnamese": "bơi lội",
+    "romanization": "suyeong",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "수영를 하다.",
+        "vietnamese": "Chơi bơi lội.",
+        "english": "Play swimming."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "달리기",
+    "english": "running",
+    "vietnamese": "chạy",
+    "romanization": "dalligi",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "달리기를 하다.",
+        "vietnamese": "Chơi chạy.",
+        "english": "Play running."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "걷기",
+    "english": "walking",
+    "vietnamese": "đi bộ",
+    "romanization": "geotgi",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "걷기를 하다.",
+        "vietnamese": "Chơi đi bộ.",
+        "english": "Play walking."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "체조",
+    "english": "gymnastics",
+    "vietnamese": "thể dục",
+    "romanization": "chejo",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "체조를 하다.",
+        "vietnamese": "Chơi thể dục.",
+        "english": "Play gymnastics."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "스케이트",
+    "english": "skating",
+    "vietnamese": "trượt băng",
+    "romanization": "seu kei teu",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "스케이트를 하다.",
+        "vietnamese": "Chơi trượt băng.",
+        "english": "Play skating."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "스키",
+    "english": "skiing",
+    "vietnamese": "trượt tuyết",
+    "romanization": "seu ki",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "스키를 하다.",
+        "vietnamese": "Chơi trượt tuyết.",
+        "english": "Play skiing."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "권투",
+    "english": "boxing",
+    "vietnamese": "quyền anh",
+    "romanization": "gwontu",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "권투를 하다.",
+        "vietnamese": "Chơi quyền anh.",
+        "english": "Play boxing."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "유도",
+    "english": "judo",
+    "vietnamese": "judo",
+    "romanization": "yudo",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "유도를 하다.",
+        "vietnamese": "Chơi judo.",
+        "english": "Play judo."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "태권도",
+    "english": "taekwondo",
+    "vietnamese": "taekwondo",
+    "romanization": "tae gwon do",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "태권도를 하다.",
+        "vietnamese": "Chơi taekwondo.",
+        "english": "Play taekwondo."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "승리",
+    "english": "victory",
+    "vietnamese": "chiến thắng",
+    "romanization": "seungni",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "승리를 하다.",
+        "vietnamese": "Chơi chiến thắng.",
+        "english": "Play victory."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "패배",
+    "english": "defeat",
+    "vietnamese": "thất bại",
+    "romanization": "paebae",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "패배를 하다.",
+        "vietnamese": "Chơi thất bại.",
+        "english": "Play defeat."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "경기",
+    "english": "game/match",
+    "vietnamese": "trận đấu",
+    "romanization": "gyeonggi",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "경기를 하다.",
+        "vietnamese": "Chơi trận đấu.",
+        "english": "Play game/match."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "선수",
+    "english": "player",
+    "vietnamese": "vận động viên",
+    "romanization": "seonsu",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "선수를 하다.",
+        "vietnamese": "Chơi vận động viên.",
+        "english": "Play player."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "감독",
+    "english": "coach",
+    "vietnamese": "huấn luyện viên",
+    "romanization": "gamdok",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "감독를 하다.",
+        "vietnamese": "Chơi huấn luyện viên.",
+        "english": "Play coach."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "주심",
+    "english": "referee",
+    "vietnamese": "trọng tài",
+    "romanization": "jusim",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "주심를 하다.",
+        "vietnamese": "Chơi trọng tài.",
+        "english": "Play referee."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "점수",
+    "english": "score",
+    "vietnamese": "điểm",
+    "romanization": "jeomsoo",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "점수를 하다.",
+        "vietnamese": "Chơi điểm.",
+        "english": "Play score."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "골",
+    "english": "goal",
+    "vietnamese": "bàn thắng",
+    "romanization": "gol",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "골를 하다.",
+        "vietnamese": "Chơi bàn thắng.",
+        "english": "Play goal."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "경기장",
+    "english": "stadium",
+    "vietnamese": "sân vận động",
+    "romanization": "gyeonggi jang",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "경기장를 하다.",
+        "vietnamese": "Chơi sân vận động.",
+        "english": "Play stadium."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "관중",
+    "english": "spectator",
+    "vietnamese": "khán giả",
+    "romanization": "gwanjung",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "관중를 하다.",
+        "vietnamese": "Chơi khán giả.",
+        "english": "Play spectator."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "팀",
+    "english": "team",
+    "vietnamese": "đội",
+    "romanization": "tim",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "팀를 하다.",
+        "vietnamese": "Chơi đội.",
+        "english": "Play team."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "공",
+    "english": "ball",
+    "vietnamese": "quả bóng",
+    "romanization": "gong",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "공를 하다.",
+        "vietnamese": "Chơi quả bóng.",
+        "english": "Play ball."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "라켓",
+    "english": "racket",
+    "vietnamese": "vợt",
+    "romanization": "raket",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "라켓를 하다.",
+        "vietnamese": "Chơi vợt.",
+        "english": "Play racket."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "모임",
+    "english": "gathering/hobby",
+    "vietnamese": "sở thích",
+    "romanization": "moim",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "모임를 하다.",
+        "vietnamese": "Chơi sở thích.",
+        "english": "Play gathering/hobby."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "악기",
+    "english": "musical instrument",
+    "vietnamese": "nhạc cụ",
+    "romanization": "akgi",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "악기를 하다.",
+        "vietnamese": "Chơi nhạc cụ.",
+        "english": "Play musical instrument."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "그림",
+    "english": "painting",
+    "vietnamese": "tranh",
+    "romanization": "geurim",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "그림를 하다.",
+        "vietnamese": "Chơi tranh.",
+        "english": "Play painting."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "노래",
+    "english": "song",
+    "vietnamese": "bài hát",
+    "romanization": "norae",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "노래를 하다.",
+        "vietnamese": "Chơi bài hát.",
+        "english": "Play song."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "춤",
+    "english": "dance",
+    "vietnamese": "nhảy",
+    "romanization": "chum",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "춤를 하다.",
+        "vietnamese": "Chơi nhảy.",
+        "english": "Play dance."
+      }
+    ],
+    "tags": [
+      "sports",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "운동하다",
+    "english": "to exercise",
+    "vietnamese": "tập luyện",
+    "romanization": "undong hada",
+    "type": "verb",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "운동하다를 하다.",
+        "vietnamese": "Chơi tập luyện.",
+        "english": "Play to exercise."
+      }
+    ],
+    "tags": [
+      "sports",
+      "verb",
+      "action",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "이기다",
+    "english": "to win",
+    "vietnamese": "thắng",
+    "romanization": "igida",
+    "type": "verb",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "이기다를 하다.",
+        "vietnamese": "Chơi thắng.",
+        "english": "Play to win."
+      }
+    ],
+    "tags": [
+      "sports",
+      "verb",
+      "action",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "지다",
+    "english": "to lose",
+    "vietnamese": "thua",
+    "romanization": "jida",
+    "type": "verb",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "지다를 하다.",
+        "vietnamese": "Chơi thua.",
+        "english": "Play to lose."
+      }
+    ],
+    "tags": [
+      "sports",
+      "verb",
+      "action",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "연주하다",
+    "english": "to play (instrument)",
+    "vietnamese": "chơi nhạc",
+    "romanization": "yeoljuhada",
+    "type": "verb",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "연주하다를 하다.",
+        "vietnamese": "Chơi chơi nhạc.",
+        "english": "Play to play (instrument)."
+      }
+    ],
+    "tags": [
+      "sports",
+      "verb",
+      "action",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "노래하다",
+    "english": "to sing",
+    "vietnamese": "hát",
+    "romanization": "noraehada",
+    "type": "verb",
+    "level": "BEGINNER",
+    "topic": "sports",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "노래하다를 하다.",
+        "vietnamese": "Chơi hát.",
+        "english": "Play to sing."
+      }
+    ],
+    "tags": [
+      "sports",
+      "verb",
+      "action",
+      "intermediate"
+    ]
+  }
+]

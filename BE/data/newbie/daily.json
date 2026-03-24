@@ -1,0 +1,962 @@
+[
+  {
+    "korean": "아침",
+    "english": "morning",
+    "vietnamese": "buổi sáng",
+    "romanization": "achim",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 아침한다.",
+        "vietnamese": "Hàng ngày buổi sáng.",
+        "english": "morning every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "오전",
+    "english": "AM/before noon",
+    "vietnamese": "buổi sáng",
+    "romanization": "ojeon",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 오전한다.",
+        "vietnamese": "Hàng ngày buổi sáng.",
+        "english": "AM/before noon every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "정오",
+    "english": "noon",
+    "vietnamese": "buổi trưa",
+    "romanization": "jeongo",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "매일 정오한다.",
+        "vietnamese": "Hàng ngày buổi trưa.",
+        "english": "noon every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "오후",
+    "english": "PM/afternoon",
+    "vietnamese": "buổi chiều",
+    "romanization": "ohu",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 오후한다.",
+        "vietnamese": "Hàng ngày buổi chiều.",
+        "english": "PM/afternoon every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "저녁",
+    "english": "evening",
+    "vietnamese": "buổi tối",
+    "romanization": "jeonyeok",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 저녁한다.",
+        "vietnamese": "Hàng ngày buổi tối.",
+        "english": "evening every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "밤",
+    "english": "night",
+    "vietnamese": "đêm",
+    "romanization": "bam",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 밤한다.",
+        "vietnamese": "Hàng ngày đêm.",
+        "english": "night every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "일어나다",
+    "english": "to wake up",
+    "vietnamese": "thức dậy",
+    "romanization": "ireonada",
+    "type": "verb",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 일어나다한다.",
+        "vietnamese": "Hàng ngày thức dậy.",
+        "english": "to wake up every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "verb",
+      "action",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "씻다",
+    "english": "to wash",
+    "vietnamese": "rửa",
+    "romanization": "sseotda",
+    "type": "verb",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 씻다한다.",
+        "vietnamese": "Hàng ngày rửa.",
+        "english": "to wash every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "verb",
+      "action",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "양치질하다",
+    "english": "to brush teeth",
+    "vietnamese": "đánh răng",
+    "romanization": "yangchijil hada",
+    "type": "verb",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 양치질하다한다.",
+        "vietnamese": "Hàng ngày đánh răng.",
+        "english": "to brush teeth every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "verb",
+      "action",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "옷을 입다",
+    "english": "to get dressed",
+    "vietnamese": "mặc quần áo",
+    "romanization": "oseul ipda",
+    "type": "verb",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 옷을 입다한다.",
+        "vietnamese": "Hàng ngày mặc quần áo.",
+        "english": "to get dressed every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "verb",
+      "action",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "아침 식사를 하다",
+    "english": "to have breakfast",
+    "vietnamese": "ăn sáng",
+    "romanization": "achim siksa-reul hada",
+    "type": "verb",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 아침 식사를 하다한다.",
+        "vietnamese": "Hàng ngày ăn sáng.",
+        "english": "to have breakfast every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "verb",
+      "action",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "학교에 가다",
+    "english": "to go to school",
+    "vietnamese": "đi học",
+    "romanization": "hakgyoe gada",
+    "type": "verb",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 학교에 가다한다.",
+        "vietnamese": "Hàng ngày đi học.",
+        "english": "to go to school every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "verb",
+      "action",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "일하다",
+    "english": "to work",
+    "vietnamese": "làm việc",
+    "romanization": "ilhada",
+    "type": "verb",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 일하다한다.",
+        "vietnamese": "Hàng ngày làm việc.",
+        "english": "to work every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "verb",
+      "action",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "공부하다",
+    "english": "to study",
+    "vietnamese": "học",
+    "romanization": "gongbuhada",
+    "type": "verb",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 공부하다한다.",
+        "vietnamese": "Hàng ngày học.",
+        "english": "to study every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "verb",
+      "action",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "점심 식사를 하다",
+    "english": "to have lunch",
+    "vietnamese": "ăn trưa",
+    "romanization": "jeopsim siksa-reul hada",
+    "type": "verb",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 점심 식사를 하다한다.",
+        "vietnamese": "Hàng ngày ăn trưa.",
+        "english": "to have lunch every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "verb",
+      "action",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "쉬다",
+    "english": "to rest",
+    "vietnamese": "nghỉ ngơi",
+    "romanization": "swida",
+    "type": "verb",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 쉬다한다.",
+        "vietnamese": "Hàng ngày nghỉ ngơi.",
+        "english": "to rest every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "verb",
+      "action",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "놀다",
+    "english": "to play",
+    "vietnamese": "chơi",
+    "romanization": "nolda",
+    "type": "verb",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 놀다한다.",
+        "vietnamese": "Hàng ngày chơi.",
+        "english": "to play every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "verb",
+      "action",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "책을 읽다",
+    "english": "to read a book",
+    "vietnamese": "đọc sách",
+    "romanization": "chaegeul ikda",
+    "type": "verb",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 책을 읽다한다.",
+        "vietnamese": "Hàng ngày đọc sách.",
+        "english": "to read a book every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "verb",
+      "action",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "텔레비전을 보다",
+    "english": "to watch TV",
+    "vietnamese": "xem tivi",
+    "romanization": "tellebijeon-eul boda",
+    "type": "verb",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 텔레비전을 보다한다.",
+        "vietnamese": "Hàng ngày xem tivi.",
+        "english": "to watch TV every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "verb",
+      "action",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "컴퓨터를 하다",
+    "english": "to use computer",
+    "vietnamese": "dùng máy tính",
+    "romanization": "keompyuteo-reul hada",
+    "type": "verb",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 컴퓨터를 하다한다.",
+        "vietnamese": "Hàng ngày dùng máy tính.",
+        "english": "to use computer every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "verb",
+      "action",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "저녁 식사를 하다",
+    "english": "to have dinner",
+    "vietnamese": "ăn tối",
+    "romanization": "jeonyeok siksa-reul hada",
+    "type": "verb",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 저녁 식사를 하다한다.",
+        "vietnamese": "Hàng ngày ăn tối.",
+        "english": "to have dinner every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "verb",
+      "action",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "샤워하다",
+    "english": "to take a shower",
+    "vietnamese": "tắm vòi",
+    "romanization": "syawoohada",
+    "type": "verb",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 샤워하다한다.",
+        "vietnamese": "Hàng ngày tắm vòi.",
+        "english": "to take a shower every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "verb",
+      "action",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "자다",
+    "english": "to sleep",
+    "vietnamese": "ngủ",
+    "romanization": "jada",
+    "type": "verb",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 자다한다.",
+        "vietnamese": "Hàng ngày ngủ.",
+        "english": "to sleep every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "verb",
+      "action",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "시간",
+    "english": "hour/time",
+    "vietnamese": "giờ",
+    "romanization": "sigan",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 시간한다.",
+        "vietnamese": "Hàng ngày giờ.",
+        "english": "hour/time every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "분",
+    "english": "minute",
+    "vietnamese": "phút",
+    "romanization": "bun",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 분한다.",
+        "vietnamese": "Hàng ngày phút.",
+        "english": "minute every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "초",
+    "english": "second",
+    "vietnamese": "giây",
+    "romanization": "cho",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "매일 초한다.",
+        "vietnamese": "Hàng ngày giây.",
+        "english": "second every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "시간표",
+    "english": "schedule/timetable",
+    "vietnamese": "thời khóa biểu",
+    "romanization": "siganhyo",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 시간표한다.",
+        "vietnamese": "Hàng ngày thời khóa biểu.",
+        "english": "schedule/timetable every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "약속",
+    "english": "appointment/promise",
+    "vietnamese": "hẹn",
+    "romanization": "yaksok",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 약속한다.",
+        "vietnamese": "Hàng ngày hẹn.",
+        "english": "appointment/promise every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "꿈",
+    "english": "dream",
+    "vietnamese": "giấc mơ",
+    "romanization": "kkum",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "매일 꿈한다.",
+        "vietnamese": "Hàng ngày giấc mơ.",
+        "english": "dream every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "피곤하다",
+    "english": "to be tired",
+    "vietnamese": "mệt",
+    "romanization": "pigonhada",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 피곤하다한다.",
+        "vietnamese": "Hàng ngày mệt.",
+        "english": "to be tired every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "피곤해요",
+    "english": "I am tired",
+    "vietnamese": "tôi mệt",
+    "romanization": "pigonhaeyo",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 피곤해요한다.",
+        "vietnamese": "Hàng ngày tôi mệt.",
+        "english": "I am tired every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "바쁘다",
+    "english": "to be busy",
+    "vietnamese": "bận",
+    "romanization": "bappuda",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 바쁘다한다.",
+        "vietnamese": "Hàng ngày bận.",
+        "english": "to be busy every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "한가하다",
+    "english": "to be free",
+    "vietnamese": "rảnh",
+    "romanization": "hangahada",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "매일 한가하다한다.",
+        "vietnamese": "Hàng ngày rảnh.",
+        "english": "to be free every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "행복하다",
+    "english": "to be happy",
+    "vietnamese": "hạnh phúc",
+    "romanization": "haengbokada",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 행복하다한다.",
+        "vietnamese": "Hàng ngày hạnh phúc.",
+        "english": "to be happy every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "슬프다",
+    "english": "to be sad",
+    "vietnamese": "buồn",
+    "romanization": "seulpeuda",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "매일 슬프다한다.",
+        "vietnamese": "Hàng ngày buồn.",
+        "english": "to be sad every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "기쁘다",
+    "english": "to be glad",
+    "vietnamese": "vui",
+    "romanization": "gippuda",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "매일 기쁘다한다.",
+        "vietnamese": "Hàng ngày vui.",
+        "english": "to be glad every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "화나다",
+    "english": "to be angry",
+    "vietnamese": "tức giận",
+    "romanization": "hwanada",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "매일 화나다한다.",
+        "vietnamese": "Hàng ngày tức giận.",
+        "english": "to be angry every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "무섭다",
+    "english": "to be scared/afraid",
+    "vietnamese": "sợ",
+    "romanization": "museoptda",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "매일 무섭다한다.",
+        "vietnamese": "Hàng ngày sợ.",
+        "english": "to be scared/afraid every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "흥분되다",
+    "english": "to be excited",
+    "vietnamese": "hồi hộp",
+    "romanization": "heungbun doeda",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "매일 흥분되다한다.",
+        "vietnamese": "Hàng ngày hồi hộp.",
+        "english": "to be excited every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "지루하다",
+    "english": "to be bored",
+    "vietnamese": "chán",
+    "romanization": "jiruhada",
+    "type": "adjective",
+    "level": "NEWBIE",
+    "topic": "daily",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "매일 지루하다한다.",
+        "vietnamese": "Hàng ngày chán.",
+        "english": "to be bored every day."
+      }
+    ],
+    "tags": [
+      "daily",
+      "adjective",
+      "description",
+      "beginner"
+    ]
+  }
+]

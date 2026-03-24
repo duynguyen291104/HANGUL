@@ -1,0 +1,962 @@
+[
+  {
+    "korean": "어머니",
+    "english": "mother",
+    "vietnamese": "mẹ",
+    "romanization": "eomeoni",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 어머니는 착하다.",
+        "vietnamese": "mẹ của tôi rất tốt.",
+        "english": "My mother is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "아버지",
+    "english": "father",
+    "vietnamese": "bố",
+    "romanization": "abeoji",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 아버지는 착하다.",
+        "vietnamese": "bố của tôi rất tốt.",
+        "english": "My father is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "형",
+    "english": "older brother (for males)",
+    "vietnamese": "anh trai",
+    "romanization": "hyeong",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 형는 착하다.",
+        "vietnamese": "anh trai của tôi rất tốt.",
+        "english": "My older brother (for males) is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "오빠",
+    "english": "older brother (for females)",
+    "vietnamese": "anh trai (gọi từ em gái)",
+    "romanization": "oppa",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 오빠는 착하다.",
+        "vietnamese": "anh trai (gọi từ em gái) của tôi rất tốt.",
+        "english": "My older brother (for females) is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "누나",
+    "english": "older sister (for males)",
+    "vietnamese": "chị gái (gọi từ em trai)",
+    "romanization": "nuna",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 누나는 착하다.",
+        "vietnamese": "chị gái (gọi từ em trai) của tôi rất tốt.",
+        "english": "My older sister (for males) is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "언니",
+    "english": "older sister (for females)",
+    "vietnamese": "chị gái",
+    "romanization": "eoni",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 언니는 착하다.",
+        "vietnamese": "chị gái của tôi rất tốt.",
+        "english": "My older sister (for females) is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "동생",
+    "english": "younger sibling",
+    "vietnamese": "em (em trai/em gái)",
+    "romanization": "dongsaeng",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 동생는 착하다.",
+        "vietnamese": "em (em trai/em gái) của tôi rất tốt.",
+        "english": "My younger sibling is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "남동생",
+    "english": "younger brother",
+    "vietnamese": "em trai",
+    "romanization": "namdongsaeng",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 남동생는 착하다.",
+        "vietnamese": "em trai của tôi rất tốt.",
+        "english": "My younger brother is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "여동생",
+    "english": "younger sister",
+    "vietnamese": "em gái",
+    "romanization": "yeodongsaeng",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 여동생는 착하다.",
+        "vietnamese": "em gái của tôi rất tốt.",
+        "english": "My younger sister is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "할머니",
+    "english": "grandmother",
+    "vietnamese": "bà ngoại/bà nội",
+    "romanization": "halmeoni",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 할머니는 착하다.",
+        "vietnamese": "bà ngoại/bà nội của tôi rất tốt.",
+        "english": "My grandmother is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "할아버지",
+    "english": "grandfather",
+    "vietnamese": "ông ngoại/ông nội",
+    "romanization": "harabeoji",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 할아버지는 착하다.",
+        "vietnamese": "ông ngoại/ông nội của tôi rất tốt.",
+        "english": "My grandfather is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "아내",
+    "english": "wife",
+    "vietnamese": "vợ",
+    "romanization": "anae",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "나의 아내는 착하다.",
+        "vietnamese": "vợ của tôi rất tốt.",
+        "english": "My wife is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "남편",
+    "english": "husband",
+    "vietnamese": "chồng",
+    "romanization": "nampyeon",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "나의 남편는 착하다.",
+        "vietnamese": "chồng của tôi rất tốt.",
+        "english": "My husband is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "아들",
+    "english": "son",
+    "vietnamese": "con trai",
+    "romanization": "adeul",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 아들는 착하다.",
+        "vietnamese": "con trai của tôi rất tốt.",
+        "english": "My son is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "딸",
+    "english": "daughter",
+    "vietnamese": "con gái",
+    "romanization": "ddal",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 딸는 착하다.",
+        "vietnamese": "con gái của tôi rất tốt.",
+        "english": "My daughter is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "자식",
+    "english": "child/children",
+    "vietnamese": "con cái",
+    "romanization": "jasik",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "나의 자식는 착하다.",
+        "vietnamese": "con cái của tôi rất tốt.",
+        "english": "My child/children is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "부모",
+    "english": "parents",
+    "vietnamese": "bố mẹ",
+    "romanization": "bumo",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 부모는 착하다.",
+        "vietnamese": "bố mẹ của tôi rất tốt.",
+        "english": "My parents is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "삼촌",
+    "english": "uncle",
+    "vietnamese": "chú/bác",
+    "romanization": "samchon",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 삼촌는 착하다.",
+        "vietnamese": "chú/bác của tôi rất tốt.",
+        "english": "My uncle is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "이모",
+    "english": "aunt (mother's sister)",
+    "vietnamese": "dì",
+    "romanization": "imo",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "나의 이모는 착하다.",
+        "vietnamese": "dì của tôi rất tốt.",
+        "english": "My aunt (mother's sister) is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "고모",
+    "english": "aunt (father's sister)",
+    "vietnamese": "cô",
+    "romanization": "gomo",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "나의 고모는 착하다.",
+        "vietnamese": "cô của tôi rất tốt.",
+        "english": "My aunt (father's sister) is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "조카",
+    "english": "nephew/niece",
+    "vietnamese": "cháu trai/cháu gái",
+    "romanization": "joka",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "나의 조카는 착하다.",
+        "vietnamese": "cháu trai/cháu gái của tôi rất tốt.",
+        "english": "My nephew/niece is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "사촌",
+    "english": "cousin",
+    "vietnamese": "anh chị em họ",
+    "romanization": "sachon",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 사촌는 착하다.",
+        "vietnamese": "anh chị em họ của tôi rất tốt.",
+        "english": "My cousin is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "가족",
+    "english": "family",
+    "vietnamese": "gia đình",
+    "romanization": "gajok",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 가족는 착하다.",
+        "vietnamese": "gia đình của tôi rất tốt.",
+        "english": "My family is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "친척",
+    "english": "relatives",
+    "vietnamese": "họ hàng",
+    "romanization": "chinchok",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 친척는 착하다.",
+        "vietnamese": "họ hàng của tôi rất tốt.",
+        "english": "My relatives is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "집",
+    "english": "house/home",
+    "vietnamese": "nhà",
+    "romanization": "jip",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 집는 착하다.",
+        "vietnamese": "nhà của tôi rất tốt.",
+        "english": "My house/home is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "아파트",
+    "english": "apartment",
+    "vietnamese": "căn hộ",
+    "romanization": "apateu",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "나의 아파트는 착하다.",
+        "vietnamese": "căn hộ của tôi rất tốt.",
+        "english": "My apartment is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "방",
+    "english": "room",
+    "vietnamese": "phòng",
+    "romanization": "bang",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 방는 착하다.",
+        "vietnamese": "phòng của tôi rất tốt.",
+        "english": "My room is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "거실",
+    "english": "living room",
+    "vietnamese": "phòng khách",
+    "romanization": "geosil",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 거실는 착하다.",
+        "vietnamese": "phòng khách của tôi rất tốt.",
+        "english": "My living room is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "부엌",
+    "english": "kitchen",
+    "vietnamese": "nhà bếp",
+    "romanization": "bueok",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 부엌는 착하다.",
+        "vietnamese": "nhà bếp của tôi rất tốt.",
+        "english": "My kitchen is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "침실",
+    "english": "bedroom",
+    "vietnamese": "phòng ngủ",
+    "romanization": "chimsil",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 침실는 착하다.",
+        "vietnamese": "phòng ngủ của tôi rất tốt.",
+        "english": "My bedroom is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "욕실",
+    "english": "bathroom",
+    "vietnamese": "phòng tắm",
+    "romanization": "yoksil",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 욕실는 착하다.",
+        "vietnamese": "phòng tắm của tôi rất tốt.",
+        "english": "My bathroom is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "화장실",
+    "english": "toilet",
+    "vietnamese": "nhà vệ sinh",
+    "romanization": "hwajangshil",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 화장실는 착하다.",
+        "vietnamese": "nhà vệ sinh của tôi rất tốt.",
+        "english": "My toilet is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "식탁",
+    "english": "dining table",
+    "vietnamese": "bàn ăn",
+    "romanization": "shiktab",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 식탁는 착하다.",
+        "vietnamese": "bàn ăn của tôi rất tốt.",
+        "english": "My dining table is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "소파",
+    "english": "sofa",
+    "vietnamese": "ghế sofa",
+    "romanization": "sofa",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "나의 소파는 착하다.",
+        "vietnamese": "ghế sofa của tôi rất tốt.",
+        "english": "My sofa is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "침대",
+    "english": "bed",
+    "vietnamese": "giường",
+    "romanization": "chimdae",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 침대는 착하다.",
+        "vietnamese": "giường của tôi rất tốt.",
+        "english": "My bed is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "의자",
+    "english": "chair",
+    "vietnamese": "ghế",
+    "romanization": "uija",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 의자는 착하다.",
+        "vietnamese": "ghế của tôi rất tốt.",
+        "english": "My chair is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "책상",
+    "english": "desk/table",
+    "vietnamese": "bàn",
+    "romanization": "chaeksang",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 책상는 착하다.",
+        "vietnamese": "bàn của tôi rất tốt.",
+        "english": "My desk/table is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "문",
+    "english": "door",
+    "vietnamese": "cửa",
+    "romanization": "mun",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 문는 착하다.",
+        "vietnamese": "cửa của tôi rất tốt.",
+        "english": "My door is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "창문",
+    "english": "window",
+    "vietnamese": "cửa sổ",
+    "romanization": "changmun",
+    "type": "noun",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 창문는 착하다.",
+        "vietnamese": "cửa sổ của tôi rất tốt.",
+        "english": "My window is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "noun",
+      "thing",
+      "beginner"
+    ]
+  },
+  {
+    "korean": "사랑하다",
+    "english": "to love",
+    "vietnamese": "yêu",
+    "romanization": "saranghada",
+    "type": "verb",
+    "level": "NEWBIE",
+    "topic": "family",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "나의 사랑하다는 착하다.",
+        "vietnamese": "yêu của tôi rất tốt.",
+        "english": "My to love is nice."
+      }
+    ],
+    "tags": [
+      "family",
+      "verb",
+      "action",
+      "beginner"
+    ]
+  }
+]

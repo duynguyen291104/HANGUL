@@ -1,0 +1,962 @@
+[
+  {
+    "korean": "가게",
+    "english": "shop/store",
+    "vietnamese": "cửa hàng",
+    "romanization": "gage",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "가게를 사다.",
+        "vietnamese": "Mua cửa hàng.",
+        "english": "Buy shop/store."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "마트",
+    "english": "mart/supermarket",
+    "vietnamese": "siêu thị",
+    "romanization": "matu",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "마트를 사다.",
+        "vietnamese": "Mua siêu thị.",
+        "english": "Buy mart/supermarket."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "시장",
+    "english": "market",
+    "vietnamese": "chợ",
+    "romanization": "sijang",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "시장를 사다.",
+        "vietnamese": "Mua chợ.",
+        "english": "Buy market."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "백화점",
+    "english": "department store",
+    "vietnamese": "cửa hàng bách hóa",
+    "romanization": "baekhwajeum",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "백화점를 사다.",
+        "vietnamese": "Mua cửa hàng bách hóa.",
+        "english": "Buy department store."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "옷",
+    "english": "clothes",
+    "vietnamese": "quần áo",
+    "romanization": "ot",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "옷를 사다.",
+        "vietnamese": "Mua quần áo.",
+        "english": "Buy clothes."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "셔츠",
+    "english": "shirt",
+    "vietnamese": "áo sơ mi",
+    "romanization": "syeocheu",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "셔츠를 사다.",
+        "vietnamese": "Mua áo sơ mi.",
+        "english": "Buy shirt."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "바지",
+    "english": "pants",
+    "vietnamese": "quần",
+    "romanization": "baji",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "바지를 사다.",
+        "vietnamese": "Mua quần.",
+        "english": "Buy pants."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "치마",
+    "english": "skirt",
+    "vietnamese": "váy",
+    "romanization": "chima",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "치마를 사다.",
+        "vietnamese": "Mua váy.",
+        "english": "Buy skirt."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "신발",
+    "english": "shoes",
+    "vietnamese": "giày",
+    "romanization": "sinbal",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "신발를 사다.",
+        "vietnamese": "Mua giày.",
+        "english": "Buy shoes."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "모자",
+    "english": "hat",
+    "vietnamese": "mũ",
+    "romanization": "moja",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "모자를 사다.",
+        "vietnamese": "Mua mũ.",
+        "english": "Buy hat."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "장갑",
+    "english": "gloves",
+    "vietnamese": "găng tay",
+    "romanization": "janggap",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "장갑를 사다.",
+        "vietnamese": "Mua găng tay.",
+        "english": "Buy gloves."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "목도리",
+    "english": "scarf",
+    "vietnamese": "khăn quàng",
+    "romanization": "mokdori",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "목도리를 사다.",
+        "vietnamese": "Mua khăn quàng.",
+        "english": "Buy scarf."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "가방",
+    "english": "bag",
+    "vietnamese": "túi xách",
+    "romanization": "gabang",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "가방를 사다.",
+        "vietnamese": "Mua túi xách.",
+        "english": "Buy bag."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "벨트",
+    "english": "belt",
+    "vietnamese": "thắt lưng",
+    "romanization": "beltu",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "벨트를 사다.",
+        "vietnamese": "Mua thắt lưng.",
+        "english": "Buy belt."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "시계",
+    "english": "watch",
+    "vietnamese": "đồng hồ",
+    "romanization": "sigye",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "시계를 사다.",
+        "vietnamese": "Mua đồng hồ.",
+        "english": "Buy watch."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "반지",
+    "english": "ring",
+    "vietnamese": "chiếc nhẫn",
+    "romanization": "banji",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "반지를 사다.",
+        "vietnamese": "Mua chiếc nhẫn.",
+        "english": "Buy ring."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "목걸이",
+    "english": "necklace",
+    "vietnamese": "dây chuyền",
+    "romanization": "mokgeori",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "목걸이를 사다.",
+        "vietnamese": "Mua dây chuyền.",
+        "english": "Buy necklace."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "귀걸이",
+    "english": "earring",
+    "vietnamese": "bông tai",
+    "romanization": "gwiggeori",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "귀걸이를 사다.",
+        "vietnamese": "Mua bông tai.",
+        "english": "Buy earring."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "팔찌",
+    "english": "bracelet",
+    "vietnamese": "vòng tay",
+    "romanization": "palji",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "팔찌를 사다.",
+        "vietnamese": "Mua vòng tay.",
+        "english": "Buy bracelet."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "안경",
+    "english": "glasses",
+    "vietnamese": "kính mắt",
+    "romanization": "angyeong",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "안경를 사다.",
+        "vietnamese": "Mua kính mắt.",
+        "english": "Buy glasses."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "가격",
+    "english": "price",
+    "vietnamese": "giá",
+    "romanization": "gagyeok",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "가격를 사다.",
+        "vietnamese": "Mua giá.",
+        "english": "Buy price."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "할인",
+    "english": "discount",
+    "vietnamese": "giảm giá",
+    "romanization": "harin",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "할인를 사다.",
+        "vietnamese": "Mua giảm giá.",
+        "english": "Buy discount."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "정가",
+    "english": "regular price",
+    "vietnamese": "giá niêm yết",
+    "romanization": "jeongga",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "정가를 사다.",
+        "vietnamese": "Mua giá niêm yết.",
+        "english": "Buy regular price."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "판매",
+    "english": "sale",
+    "vietnamese": "bán hàng",
+    "romanization": "panmae",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "판매를 사다.",
+        "vietnamese": "Mua bán hàng.",
+        "english": "Buy sale."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "계산",
+    "english": "bill/payment",
+    "vietnamese": "thanh toán",
+    "romanization": "gyesan",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "계산를 사다.",
+        "vietnamese": "Mua thanh toán.",
+        "english": "Buy bill/payment."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "돈",
+    "english": "money",
+    "vietnamese": "tiền",
+    "romanization": "don",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "돈를 사다.",
+        "vietnamese": "Mua tiền.",
+        "english": "Buy money."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "신용카드",
+    "english": "credit card",
+    "vietnamese": "thẻ tín dụng",
+    "romanization": "sinyong kadeu",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "신용카드를 사다.",
+        "vietnamese": "Mua thẻ tín dụng.",
+        "english": "Buy credit card."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "현금",
+    "english": "cash",
+    "vietnamese": "tiền mặt",
+    "romanization": "hyeongeum",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "현금를 사다.",
+        "vietnamese": "Mua tiền mặt.",
+        "english": "Buy cash."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "영수증",
+    "english": "receipt",
+    "vietnamese": "hóa đơn",
+    "romanization": "yeongsujung",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 2,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "영수증를 사다.",
+        "vietnamese": "Mua hóa đơn.",
+        "english": "Buy receipt."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "사이즈",
+    "english": "size",
+    "vietnamese": "kích cỡ",
+    "romanization": "saijeu",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "사이즈를 사다.",
+        "vietnamese": "Mua kích cỡ.",
+        "english": "Buy size."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "색",
+    "english": "color",
+    "vietnamese": "màu sắc",
+    "romanization": "saek",
+    "type": "noun",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "색를 사다.",
+        "vietnamese": "Mua màu sắc.",
+        "english": "Buy color."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "noun",
+      "thing",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "사다",
+    "english": "to buy",
+    "vietnamese": "mua",
+    "romanization": "sada",
+    "type": "verb",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "사다를 사다.",
+        "vietnamese": "Mua mua.",
+        "english": "Buy to buy."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "verb",
+      "action",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "팔다",
+    "english": "to sell",
+    "vietnamese": "bán",
+    "romanization": "palda",
+    "type": "verb",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "팔다를 사다.",
+        "vietnamese": "Mua bán.",
+        "english": "Buy to sell."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "verb",
+      "action",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "값을 매기다",
+    "english": "to price",
+    "vietnamese": "định giá",
+    "romanization": "gapseul maegida",
+    "type": "verb",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 2,
+    "frequency": "low",
+    "examples": [
+      {
+        "korean": "값을 매기다를 사다.",
+        "vietnamese": "Mua định giá.",
+        "english": "Buy to price."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "verb",
+      "action",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "고르다",
+    "english": "to choose",
+    "vietnamese": "chọn",
+    "romanization": "gorida",
+    "type": "verb",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "고르다를 사다.",
+        "vietnamese": "Mua chọn.",
+        "english": "Buy to choose."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "verb",
+      "action",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "맞다",
+    "english": "to fit",
+    "vietnamese": "vừa vặn",
+    "romanization": "matda",
+    "type": "verb",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "맞다를 사다.",
+        "vietnamese": "Mua vừa vặn.",
+        "english": "Buy to fit."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "verb",
+      "action",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "환불하다",
+    "english": "to refund",
+    "vietnamese": "hoàn lại tiền",
+    "romanization": "hwanbul hada",
+    "type": "verb",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 2,
+    "frequency": "medium",
+    "examples": [
+      {
+        "korean": "환불하다를 사다.",
+        "vietnamese": "Mua hoàn lại tiền.",
+        "english": "Buy to refund."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "verb",
+      "action",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "비싸다",
+    "english": "to be expensive",
+    "vietnamese": "đắt",
+    "romanization": "bissada",
+    "type": "adjective",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "비싸다를 사다.",
+        "vietnamese": "Mua đắt.",
+        "english": "Buy to be expensive."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "adjective",
+      "description",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "싸다",
+    "english": "to be cheap",
+    "vietnamese": "rẻ",
+    "romanization": "ssada",
+    "type": "adjective",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "싸다를 사다.",
+        "vietnamese": "Mua rẻ.",
+        "english": "Buy to be cheap."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "adjective",
+      "description",
+      "intermediate"
+    ]
+  },
+  {
+    "korean": "편하다",
+    "english": "to be comfortable",
+    "vietnamese": "thoải mái",
+    "romanization": "pyeonhada",
+    "type": "adjective",
+    "level": "BEGINNER",
+    "topic": "shopping",
+    "difficulty": 1,
+    "frequency": "high",
+    "examples": [
+      {
+        "korean": "편하다를 사다.",
+        "vietnamese": "Mua thoải mái.",
+        "english": "Buy to be comfortable."
+      }
+    ],
+    "tags": [
+      "shopping",
+      "adjective",
+      "description",
+      "intermediate"
+    ]
+  }
+]
