@@ -127,7 +127,7 @@ const levelLabels: Record<string, string> = {
 export default function LearningMapPage() {
   const { token, user, setUser } = useAuthStore();
   const router = useRouter();
-  const [nodes, setNodes] = useState<LearningNode[]>(learningPath);
+  const [nodes] = useState<LearningNode[]>(learningPath);
   const [currentLevel, setCurrentLevel] = useState<string>('NEWBIE');
   const [stats, setStats] = useState({ totalCompleted: 0, totalProgress: 0 });
   const [changingLevel, setChangingLevel] = useState(false);
@@ -274,7 +274,7 @@ export default function LearningMapPage() {
             {levelLabels[currentLevel]} - {currentLevelNodes.length} Chủ Đề
           </h2>
 
-          {currentLevelNodes.map((node, index) => (
+          {currentLevelNodes.map((node) => (
             <div
               key={node.id}
               className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition"

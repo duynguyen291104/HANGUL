@@ -39,7 +39,9 @@ model User {
   achievements UserAchievement[]
   feedPosts FeedPost[]
   comments Comment[]
-  cameraDetections CameraDetection[]
+  cameraDetections YOLODetection[] @relation("cameraDetections")
+  detectionStats DetectionStats? @relation("detectionStats")
+  batchJobs BatchJob[] @relation("batchJobs")
   
   // Game System
   stats         UserStats?
@@ -112,7 +114,6 @@ model Vocabulary {
   examples    VocabExample[]
   usersLearned User[]
   pronunciationWords PronunciationWord[]
-  cameraDetections CameraDetection[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -310,19 +311,6 @@ model PronunciationAttempt {
 
 // ========================
 // CAMERA DETECTION
-// ========================
-model CameraDetection {
-  id            Int     @id @default(autoincrement())
-  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId        Int
-  detectedObjects String[] // Array of detected object names
-  vocabulary    Vocabulary[] // Matched vocabulary
-  imageUrl      String  // Saved detected image
-  confidence    Float
-  
-  createdAt     DateTime @default(now())
-}
-
 // ========================
 // ACHIEVEMENTS & GAMIFICATION
 // ========================
@@ -639,4 +627,112 @@ model Challenge {
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+// ========================
+// YOLO DETECTION SYSTEM
+// ========================
+model YOLODetection {
+  id              Int     @id @default(autoincrement())
+  userId          Int?
+  user            User?   @relation("cameraDetections", fields: [userId], references: [id], onDelete: SetNull)
+  
+  // Detection info
+  label           String  // Korean label (e.g., "사람", "자동차")
+  confidence      Float   // 0.0 - 1.0
+  bbox            String  // "[x1, y1, x2, y2]" as JSON string
+  
+  // Context
+  sessionId       String? // Group detections from same session
+  frameNumber     Int?    // Frame number in video
+  videoUrl        String? // URL to recorded video
+  
+  // Metadata
+  source          String  @default("webcam") // webcam, batch, video
+  status          String  @default("processed") // raw, processed, validated
+  
+  // Analytics
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
+model DetectionSession {
+  id              String  @id @default(cuid())
+  userId          Int?
+  
+  // Session info
+  startTime       DateTime @default(now())
+  endTime         DateTime?
+  duration        Int? // seconds
+  
+  // Stats
+  totalFrames     Int @default(0)
+  totalDetections Int @default(0)
+  videoUrl        String?
+  
+  // Metadata
+  deviceInfo      String? // JSON string with device info
+  settings        String? // JSON string with detection settings
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model DetectionStats {
+  id              Int     @id @default(autoincrement())
+  userId          Int     @unique
+  user            User    @relation("detectionStats", fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Counters
+  totalDetections Int @default(0)
+  uniqueLabels    Int @default(0)
+  sessionsCount   Int @default(0)
+  
+  // Top detections
+  topLabel        String? // Most detected label
+  topLabelCount   Int @default(0)
+  
+  // Time-based
+  lastDetectionAt DateTime?
+  totalTime       Int @default(0) // seconds
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model BatchJob {
+  id              String  @id @default(cuid())
+  userId          Int?
+  user            User?   @relation("batchJobs", fields: [userId], references: [id], onDelete: SetNull)
+  
+  // Job info
+  name            String
+  status          String  @default("pending") // pending, processing, completed, failed
+  progress        Int @default(0) // 0-100
+  
+  // Input
+  inputPath       String // Path to video/image directory
+  inputType       String // video, image, directory
+  fileCount       Int @default(0)
+  
+  // Output
+  resultCount     Int @default(0)
+  outputPath      String?
+  logPath         String?
+  
+  // Timing
+  startedAt       DateTime?
+  completedAt     DateTime?
+  
+  // Error handling
+  errorMessage    String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([status])
 }

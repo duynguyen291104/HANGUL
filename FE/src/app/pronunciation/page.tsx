@@ -5,214 +5,422 @@ import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+interface VocabularyWord {
+  id: string;
+  korean: string;
+  english: string;
+  romanization: string;
+}
+
 export default function PronunciationPage() {
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
   const router = useRouter();
+  
+  const [isRecording, setIsRecording] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [score, setScore] = useState<number | null>(null);
+  const [transcribed, setTranscribed] = useState<string>('');
+  const [message, setMessage] = useState<string>('');
+  const [currentWord, setCurrentWord] = useState<VocabularyWord | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [vocabulary, setVocabulary] = useState<VocabularyWord[]>([]);
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const [isRecording, setIsRecording] = useState(false);
-  const [_word] = useState('안녕하세요');
-  const [scores, setScores] = useState<any>(null);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [wordIndex, setWordIndex] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const words = [
-    { korean: '안녕하세요', english: 'Xin chào', pronunciation: 'An-nyeong-ha-se-yo' },
-    { korean: '감사합니다', english: 'Cảm ơn', pronunciation: 'Gam-sa-ham-ni-da' },
-    { korean: '미안합니다', english: 'Xin lỗi', pronunciation: 'Mi-an-ham-ni-da' },
-    { korean: '예', english: 'Vâng', pronunciation: 'Ye' },
-    { korean: '아니오', english: 'Không', pronunciation: 'A-ni-o' },
-  ];
+  // Fetch vocabulary by level
+  const fetchVocabulary = async (level: string) => {
+    try {
+      setMessage('⏳ Đang tải từ vựng...');
+      const response = await fetch(`http://localhost:5000/api/pronunciation/vocabulary/${level}?limit=20`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch vocabulary');
+      }
+      
+      const data = await response.json();
+      if (data.success && data.vocabulary) {
+        setVocabulary(data.vocabulary);
+        setMessage('');
+        
+        // Select random word
+        const randomWord = data.vocabulary[Math.floor(Math.random() * data.vocabulary.length)];
+        setCurrentWord(randomWord);
+      } else {
+        throw new Error('Invalid vocabulary data');
+      }
+    } catch (error) {
+      console.error('Error fetching vocabulary:', error);
+      setMessage('❌ Không thể tải từ vựng');
+      // Fallback to sample vocabulary
+      const sampleVocabulary: VocabularyWord[] = [
+        { id: '1', korean: '안녕하세요', english: 'Hello (formal)', romanization: 'annyeonghaseyo' },
+        { id: '2', korean: '감사합니다', english: 'Thank you', romanization: 'gamsahamnida' },
+        { id: '3', korean: '미안합니다', english: 'I am sorry', romanization: 'mianhamnida' },
+        { id: '4', korean: '물', english: 'Water', romanization: 'mul' },
+        { id: '5', korean: '밥', english: 'Rice/Food', romanization: 'bap' },
+      ];
+      setVocabulary(sampleVocabulary);
+      const randomWord = sampleVocabulary[Math.floor(Math.random() * sampleVocabulary.length)];
+      setCurrentWord(randomWord);
+    }
+  };
 
   useEffect(() => {
     if (!token) {
       router.push('/login');
+      return;
     }
-  }, [token, router]);
+    
+    // Fetch vocabulary for user's level
+    const userLevel = user?.level || 'NEWBIE';
+    fetchVocabulary(userLevel);
+  }, [token, router, user?.level]);
 
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
+      
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
-
+      
       mediaRecorder.ondataavailable = (event) => {
         audioChunksRef.current.push(event.data);
       };
-
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-        const url = URL.createObjectURL(audioBlob);
-        setAudioUrl(url);
-        
-        // Mock feedback
-        setScores({
-          pronunciation: Math.floor(Math.random() * 30 + 70),
-          confidence: Math.floor(Math.random() * 20 + 80),
-          feedback: 'Phát âm rất tốt! Hãy tiếp tục luyện tập.'
-        });
+      
+      mediaRecorder.onstart = () => {
+        setIsRecording(true);
+        setMessage('🎤 Đang ghi âm... Nói đi!');
       };
-
+      
+      mediaRecorder.onstop = () => {
+        setIsRecording(false);
+      };
+      
       mediaRecorder.start();
-      setIsRecording(true);
     } catch (error) {
-      console.error('Lỗi truy cập microphone:', error);
+      console.error('Error accessing microphone:', error);
+      setMessage('❌ Không thể truy cập microphone');
     }
   };
 
-  const stopRecording = () => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-      setIsRecording(false);
+  const stopRecording = async () => {
+    if (!mediaRecorderRef.current) return;
+    
+    setLoading(true);
+    setMessage('⏳ Đang phân tích...');
+    
+    // Capture currentWord here to avoid closure issues
+    const targetWord = currentWord;
+    
+    mediaRecorderRef.current.onstop = async () => {
+      try {
+        // Create blob and convert to base64
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        const reader = new FileReader();
+        
+        reader.onload = async () => {
+          const base64Audio = reader.result as string;
+          
+          if (!targetWord) {
+            setMessage('❌ Không có từ vựng nào được chọn');
+            setLoading(false);
+            return;
+          }
+          
+          try {
+            // Send to backend for transcription
+            console.log('📤 Gửi âm thanh tới transcribe API...');
+            const response = await fetch('http://localhost:5000/api/pronunciation/transcribe', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                audio: base64Audio,
+                target: targetWord.korean,
+              }),
+            });
+            
+            if (!response.ok) {
+              throw new Error(`API error: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('✅ Kết quả:', data);
+            
+            setTranscribed(data.transcribed_text);
+            
+            if (data.score !== null) {
+              setScore(data.score);
+              
+              if (data.score >= 80) {
+                setMessage(`✅ Tuyệt vời! Bạn phát âm chính xác (${data.score}%)`);
+              } else if (data.score >= 50) {
+                setMessage(`👍 Khá tốt (${data.score}%). Hãy thử lại để cải thiện.`);
+              } else {
+                setMessage(`😅 Cần luyện tập thêm (${data.score}%). Hãy thử lại.`);
+              }
+            }
+          } catch (error) {
+            console.error('Error:', error);
+            setMessage('❌ Lỗi phân tích âm thanh: ' + (error as Error).message);
+          } finally {
+            setLoading(false);
+          }
+        };
+        
+        reader.readAsDataURL(audioBlob);
+      } catch (error) {
+        console.error('Error processing audio:', error);
+        setMessage('❌ Lỗi xử lý âm thanh');
+        setLoading(false);
+      }
+    };
+    
+    mediaRecorderRef.current.stop();
+    
+    // Stop all tracks
+    mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+  };
+
+  const playPronunciation = async () => {
+    if (!currentWord) return;
+    
+    setIsPlaying(true);
+    setMessage('🔊 Đang tải âm thanh...');
+    
+    try {
+      console.log('📤 Yêu cầu TTS cho:', currentWord.korean);
+      const response = await fetch('http://localhost:5000/api/pronunciation/tts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: currentWord.korean,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('✅ TTS generated');
+      
+      // Play audio
+      if (audioRef.current) {
+        audioRef.current.src = data.audio;
+        audioRef.current.onplay = () => {
+          setMessage('🔊 Đang phát âm thanh...');
+        };
+        audioRef.current.onended = () => {
+          setMessage('');
+          setIsPlaying(false);
+        };
+        audioRef.current.play();
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setMessage('❌ Không thể tải âm thanh: ' + (error as Error).message);
+      setIsPlaying(false);
     }
   };
 
   const nextWord = () => {
-    setWordIndex((wordIndex + 1) % words.length);
-    setAudioUrl(null);
-    setScores(null);
+    // Clean up current recording if still active
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+    }
+    
+    // Reset refs
+    mediaRecorderRef.current = null;
+    audioChunksRef.current = [];
+    
+    // Reset states
+    if (vocabulary.length > 0) {
+      const randomWord = vocabulary[Math.floor(Math.random() * vocabulary.length)];
+      setCurrentWord(randomWord);
+    }
+    setScore(null);
+    setTranscribed('');
+    setMessage('');
+    setIsRecording(false);
+    setLoading(false);
   };
 
-  const currentWordData = words[wordIndex];
+  if (!currentWord) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-8">
+        <div className="max-w-2xl mx-auto text-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Đang tải...</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #f5f1e8 0%, #ede4d3 100%)' }}>
-      <div className="flex">
-        {/* Sidebar */}
-        <aside style={{ background: '#2d5d4d', width: '280px', minHeight: '100vh' }} className="sticky top-0 p-6 text-white">
-          <Link href="/" className="flex items-center gap-2 mb-8">
-            <span className="text-2xl">←</span>
-            <span className="font-semibold">Quay lại</span>
-          </Link>
-          <h2 className="text-xl font-bold mb-4">🎤 Phát âm</h2>
-          <p className="text-sm opacity-75">Luyện phát âm tiếng Hàn chuẩn.</p>
-        </aside>
+    <main className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-8">
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-green-900 mb-2">🎤 Luyện phát âm</h1>
+          <p className="text-gray-600 mb-4">Nghe phát âm chuẩn và ghi lại tiếng của bạn</p>
+          <Link href="/" className="text-green-600 hover:text-green-800 underline">← Quay lại trang chính</Link>
+        </div>
 
-        {/* Main Content */}
-        <main className="flex-1 p-8">
-          <div className="max-w-2xl mx-auto">
-            {/* Header */}
-            <div className="mb-8">
-              <h1 className="text-4xl font-bold text-[#2d3436] mb-2">🎤 Luyện phát âm</h1>
-              <p className="text-[#636e72]">Ghi âm tiếng nói của bạn để kiểm tra phát âm.</p>
+        {/* Message */}
+        {message && (
+          <div className={`mb-6 p-4 rounded-lg ${
+            message.includes('❌') ? 'bg-red-100 text-red-700' :
+            message.includes('✅') ? 'bg-green-100 text-green-700' :
+            message.includes('⏳') ? 'bg-blue-100 text-blue-700' :
+            'bg-gray-100 text-gray-700'
+          }`}>
+            {message}
+          </div>
+        )}
+
+        {/* Main Container */}
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="p-8 space-y-8">
+            {/* Vocabulary Word */}
+            <div className="text-center">
+              <div className="mb-4">
+                <h2 className="text-5xl font-bold text-green-700 mb-2">{currentWord.korean}</h2>
+                <p className="text-xl text-gray-600 italic">{currentWord.romanization}</p>
+                <p className="text-lg text-gray-500 mt-2">{currentWord.english}</p>
+              </div>
+              
+              {/* Play Pronunciation Button */}
+              <button
+                onClick={playPronunciation}
+                disabled={isPlaying}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-3 px-8 rounded-lg transition text-lg"
+              >
+                {isPlaying ? '🔊 Đang phát...' : '🔊 Nghe phát âm'}
+              </button>
+              
+              <audio ref={audioRef} hidden />
             </div>
 
-            {/* Main Card */}
-            <div style={{ background: 'white', borderRadius: '20px' }} className="shadow-sm p-12 text-center mb-8">
-              {/* Word Display */}
-              <p className="text-sm text-[#636e72] mb-4 font-semibold">TỪ CẦN LUY ỆN</p>
-              <p style={{ color: '#2d5d4d' }} className="text-5xl font-bold mb-6">{currentWordData.korean}</p>
-              <p className="text-lg text-[#636e72] mb-4">{currentWordData.english}</p>
-              <p className="text-sm text-[#a8d5ba] font-semibold mb-8">Phát âm: {currentWordData.pronunciation}</p>
-
-              {/* Recording Button */}
-              <div className="mb-8">
-                <button
-                  onClick={isRecording ? stopRecording : startRecording}
-                  className="relative inline-block mb-4"
-                >
-                  <div
-                    style={{
-                      width: '120px',
-                      height: '120px',
-                      background: isRecording ? '#e74c3c' : '#2d5d4d',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      fontSize: '48px',
-                      transition: 'all 0.3s ease',
-                      opacity: isRecording ? 0.8 : 1,
-                      animation: isRecording ? 'pulse 1s infinite' : 'none',
-                      boxShadow: isRecording ? '0 0 30px rgba(231, 76, 60, 0.5)' : '0 4px 15px rgba(45, 93, 77, 0.2)',
-                    }}
+            {/* Recording Section */}
+            <div className="border-t border-b py-8">
+              <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">Ghi âm tiếng của bạn</h3>
+              
+              <div className="flex gap-4 justify-center mb-4">
+                {!isRecording ? (
+                  <button
+                    onClick={startRecording}
+                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition text-lg"
                   >
-                    {isRecording ? '⏹️' : '🎤'}
-                  </div>
-                </button>
-                <p className="text-sm text-[#636e72] font-semibold">
-                  {isRecording ? 'Đang ghi âm...' : 'Nhấn để bắt đầu ghi âm'}
-                </p>
+                    🎤 Bắt đầu ghi âm
+                  </button>
+                ) : (
+                  <button
+                    onClick={stopRecording}
+                    disabled={loading}
+                    className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-bold py-3 px-8 rounded-lg transition text-lg"
+                  >
+                    {loading ? '⏳ Đang phân tích...' : '⏹️ Dừng ghi âm'}
+                  </button>
+                )}
               </div>
 
-              {/* Audio Playback */}
-              {audioUrl && (
-                <div className="mb-8 text-center">
-                  <p className="text-sm text-[#636e72] mb-3 font-semibold">GHI ÂM CỦA BẠN</p>
-                  <audio
-                    src={audioUrl}
-                    controls
-                    style={{
-                      width: '100%',
-                      maxWidth: '300px',
-                      borderRadius: '8px',
-                    }}
-                  />
+              {/* Recording Status Indicator */}
+              {isRecording && (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse"></div>
+                  <p className="text-gray-600">Đang ghi âm...</p>
                 </div>
               )}
-
-              {/* Feedback */}
-              {scores && (
-                <div style={{ background: '#f5f1e8', borderRadius: '16px' }} className="p-6 mb-8 text-left">
-                  <p className="font-semibold text-[#2d3436] mb-4 text-center">Đánh giá của bạn</p>
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="text-center">
-                      <p style={{ color: '#2d5d4d' }} className="text-3xl font-bold">{scores.pronunciation}</p>
-                      <p className="text-xs text-[#636e72] mt-1">Phát âm</p>
-                    </div>
-                    <div className="text-center">
-                      <p style={{ color: '#2d5d4d' }} className="text-3xl font-bold">{scores.confidence}%</p>
-                      <p className="text-xs text-[#636e72] mt-1">Độ tự tin</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-[#636e72] text-center italic">"{scores.feedback}"</p>
-                </div>
-              )}
-
-              {/* Button */}
-              <button
-                onClick={nextWord}
-                className="px-8 py-3 rounded-lg font-semibold text-white transition w-full"
-                style={{ background: '#2d5d4d' }}
-              >
-                ➜ Từ tiếp theo
-              </button>
             </div>
 
-            {/* Word List */}
-            <div>
-              <p className="text-sm text-[#636e72] mb-4 font-semibold">CÁC TỪ CÓN LẠI</p>
-              <div className="grid grid-cols-1 gap-3">
-                {words.map((w, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setWordIndex(idx)}
-                    className="text-left p-4 rounded-lg transition"
-                    style={{
-                      background: idx === wordIndex ? '#2d5d4d' : 'white',
-                      color: idx === wordIndex ? 'white' : '#2d3436',
-                      border: `2px solid ${idx === wordIndex ? '#2d5d4d' : '#a8d5ba'}`,
-                    }}
-                  >
-                    <p className="font-semibold">{w.korean}</p>
-                    <p className="text-sm opacity-75">{w.english}</p>
-                  </button>
-                ))}
+            {/* Results Section */}
+            {(transcribed || score !== null) && (
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-bold text-gray-800">📊 Kết quả</h3>
+                
+                {transcribed && (
+                  <div>
+                    <p className="text-sm text-gray-600">Hệ thống nhận được:</p>
+                    <p className="text-lg font-semibold text-gray-800">{transcribed}</p>
+                  </div>
+                )}
+                
+                {score !== null && (
+                  <div>
+                    <p className="text-sm text-gray-600">Độ chính xác:</p>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1">
+                        <div className="w-full bg-gray-200 rounded-full h-4">
+                          <div
+                            className={`h-4 rounded-full transition-all ${
+                              score >= 80 ? 'bg-green-600' :
+                              score >= 50 ? 'bg-yellow-600' :
+                              'bg-red-600'
+                            }`}
+                            style={{ width: `${score}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      <p className="text-2xl font-bold text-gray-800">{score}%</p>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Next Word Button */}
+                <button
+                  onClick={nextWord}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition mt-4"
+                >
+                  ➡️ Từ tiếp theo
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* System Status */}
+          <div className="bg-gray-100 px-8 py-4 border-t">
+            <h3 className="text-sm font-semibold text-gray-700 mb-2">Trạng thái hệ thống:</h3>
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              <div>
+                <span className="text-gray-600">Mic:</span>
+                <span className={`ml-2 font-bold ${isRecording ? 'text-red-600' : 'text-green-600'}`}>
+                  {isRecording ? '🔴 Ghi âm' : '✅ Sẵn sàng'}
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-600">TTS:</span>
+                <span className={`ml-2 font-bold ${isPlaying ? 'text-blue-600' : 'text-green-600'}`}>
+                  {isPlaying ? '🔊 Phát' : '✅ Sẵn sàng'}
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-600">Kết quả:</span>
+                <span className="ml-2 font-bold text-gray-700">{score !== null ? '✅ Có' : '⭕ Chưa'}</span>
               </div>
             </div>
           </div>
-        </main>
-      </div>
+        </div>
 
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.7; }
-        }
-      `}</style>
-    </div>
+        {/* Debug Info */}
+        <div className="mt-8 bg-gray-800 text-gray-100 rounded-lg p-4 font-mono text-xs">
+          <p className="text-gray-400 mb-2">💻 Thông tin debug (F12 để xem chi tiết):</p>
+          <ul className="space-y-1">
+            <li>🌐 Frontend: http://localhost:3000/pronunciation</li>
+            <li>🖥️ Backend TTS: http://localhost:5000/api/pronunciation/tts</li>
+            <li>🖥️ Backend Transcribe: http://localhost:5000/api/pronunciation/transcribe</li>
+            <li>🧠 Flask: http://localhost:5001</li>
+            <li>📸 Nhấn F12 → Console để xem logs</li>
+          </ul>
+        </div>
+      </div>
+    </main>
   );
 }

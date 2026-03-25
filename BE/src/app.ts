@@ -11,6 +11,7 @@ const quizRouter = require('./routes/quiz.routes');
 const listeningRouter = require('./routes/listening.routes');
 const pronunciationRouter = require('./routes/pronunciation.routes');
 const cameraRouter = require('./routes/camera.routes');
+const yoloRouter = require('./routes/yolo.routes.js');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -26,10 +27,6 @@ const PORT = process.env.PORT || 5000;
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:3000',
   'http://localhost:3000',
-  'http://localhost:3001',
-  'http://localhost:3002',
-  'http://localhost:3003',
-  'http://localhost:3004',
 ];
 
 app.use(cors({
@@ -60,8 +57,11 @@ app.use('/api/user', authenticate, userRouter);
 app.use('/api/vocabulary', authenticate, vocabularyRouter);
 app.use('/api/quiz', authenticate, quizRouter);
 app.use('/api/listening', authenticate, listeningRouter);
-app.use('/api/pronunciation', authenticate, pronunciationRouter);
-app.use('/api/camera', authenticate, cameraRouter);
+
+// Pronunciation and Camera detection routes (public for testing)
+app.use('/api/pronunciation', pronunciationRouter);
+app.use('/api/camera', cameraRouter);
+app.use('/api/yolo', authenticate, yoloRouter);
 
 // ========================
 // 404 HANDLER

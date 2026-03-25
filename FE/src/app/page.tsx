@@ -6,15 +6,13 @@ import { useAuthStore } from '@/store/authStore';
 import Link from 'next/link';
 
 interface GameStats {
-  stats: {
-    trophy: number;
-    xp: number;
-    quizCount: number;
-    writeCount: number;
-    speakCount: number;
-  };
-  rank: string;
-  unlockTournament: boolean;
+  trophy?: number;
+  xp?: number;
+  quizCount?: number;
+  writeCount?: number;
+  speakCount?: number;
+  rank?: string;
+  unlockTournament?: boolean;
 }
 
 interface UserData {

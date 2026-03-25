@@ -1,4 +1,4 @@
-import { mockUserStats, mockAchievements, mockLeaderboard, mockQuizProgress, mockDailyChallenge, mockTodayStats } from '@/mocks/data';
+import { mockUserStats, mockAchievements, mockQuizProgress, mockDailyChallenge, mockTodayStats } from '@/mocks/data';
 
 export async function GET() {
   return Response.json({

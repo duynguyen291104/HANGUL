@@ -218,6 +218,62 @@ router.post('/update-level', async (req, res) => {
   }
 });
 
-module.exports = router;
+// ========================
+// SEED TEST USER (DEV ONLY)
+// ========================
+router.post('/seed-test-user', async (req, res) => {
+  try {
+    console.log('🌱 Seeding test user...');
+
+    // Check if test user exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email: 'test@example.com' },
+    });
+
+    if (existingUser) {
+      return res.json({
+        message: 'Test user already exists',
+        email: 'test@example.com',
+        password: 'password123',
+      });
+    }
+
+    // Create test user
+    const hashedPassword = await bcrypt.hash('password123', 10);
+    const user = await prisma.user.create({
+      data: {
+        email: 'test@example.com',
+        name: 'Test User',
+        password: hashedPassword,
+        role: 'USER',
+        level: 'NEWBIE',
+        levelLocked: true,
+        totalXP: 0,
+        currentStreak: 0,
+      },
+    });
+
+    // Create user stats
+    await prisma.userStats.create({
+      data: {
+        userId: user.id,
+        trophy: 0,
+        xp: 0,
+      },
+    });
+
+    console.log('✅ Test user created:', user.email);
+
+    res.json({
+      message: 'Test user created successfully',
+      email: 'test@example.com',
+      password: 'password123',
+      userId: user.id,
+    });
+  } catch (error) {
+    console.error('🔥 SEED ERROR:', error);
+    res.status(500).json({ error: 'Failed to seed test user' });
+  }
+});
 
 module.exports = router;
