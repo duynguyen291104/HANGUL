@@ -48,7 +48,7 @@ export default function AnalyticsDashboard() {
 
   const fetchAllData = async () => {
     if (!user?.id) return;
-    
+
     try {
       setLoading(true);
       await Promise.all([
@@ -71,7 +71,7 @@ export default function AnalyticsDashboard() {
       });
       setStats(response.data);
     } catch (error) {
-      console.error('❌ Fetch stats error:', error);
+      console.error(' Fetch stats error:', error);
     }
   };
 
@@ -92,7 +92,7 @@ export default function AnalyticsDashboard() {
         setLabels(labelsWithPercentage);
       }
     } catch (error) {
-      console.error('❌ Fetch labels error:', error);
+      console.error(' Fetch labels error:', error);
     }
   };
 
@@ -105,7 +105,7 @@ export default function AnalyticsDashboard() {
       });
       setDetections(response.data.detections || []);
     } catch (error) {
-      console.error('❌ Fetch detections error:', error);
+      console.error(' Fetch detections error:', error);
     }
   };
 
@@ -121,7 +121,7 @@ export default function AnalyticsDashboard() {
       );
       setDailyStats(response.data.stats || []);
     } catch (error) {
-      console.error('❌ Fetch daily stats error:', error);
+      console.error(' Fetch daily stats error:', error);
     }
   };
 
@@ -149,7 +149,7 @@ export default function AnalyticsDashboard() {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-gray-800">📊 Phân Tích Detections</h1>
+            <h1 className="text-4xl font-bold text-gray-800"> Phân Tích Detections</h1>
             <p className="text-gray-600 mt-2">Theo dõi lịch sử phát hiện đối tượng của bạn</p>
           </div>
           <button
@@ -163,7 +163,7 @@ export default function AnalyticsDashboard() {
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
-            <div className="text-sm text-gray-600 mb-2">📈 Tổng Detection</div>
+            <div className="text-sm text-gray-600 mb-2"> Tổng Detection</div>
             <div className="text-3xl font-bold text-blue-600">{stats?.totalDetections || 0}</div>
             <div className="text-xs text-gray-500 mt-2">Tất cả phát hiện</div>
           </div>
@@ -198,7 +198,7 @@ export default function AnalyticsDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Label Distribution */}
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-6">📊 Phân Bố Nhãn</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-6"> Phân Bố Nhãn</h2>
             {labels.length > 0 ? (
               <div className="space-y-4">
                 {labels.slice(0, 10).map((label) => (
@@ -229,7 +229,7 @@ export default function AnalyticsDashboard() {
 
           {/* Daily Statistics */}
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-6">📈 Thống Kê Hàng Ngày</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-6"> Thống Kê Hàng Ngày</h2>
             {dailyStats.length > 0 ? (
               <div className="space-y-3">
                 {dailyStats.map((stat) => (

@@ -125,18 +125,18 @@ export default function QuizPage() {
           <div className="text-center py-16">
             <div className="text-6xl mb-6">🎉</div>
             <h1 className="text-4xl font-bold text-gray-800 mb-4">Hoàn Thành!</h1>
-            
+
             <div className="grid grid-cols-3 gap-4 mb-8 mt-8">
               <div className="bg-white rounded-lg p-6 shadow">
                 <div className="text-3xl font-bold text-purple-600">{score}/{questions.length}</div>
                 <p className="text-gray-600 mt-2">Câu Trả Lời Đúng</p>
               </div>
-              
+
               <div className="bg-white rounded-lg p-6 shadow">
-                <div className="text-3xl font-bold text-yellow-500">🏆 +{trophy}</div>
+                <div className="text-3xl font-bold text-yellow-500"> +{trophy}</div>
                 <p className="text-gray-600 mt-2">Trophy</p>
               </div>
-              
+
               <div className="bg-white rounded-lg p-6 shadow">
                 <div className="text-3xl font-bold text-blue-600">⭐ +{xp}</div>
                 <p className="text-gray-600 mt-2">XP</p>
@@ -172,7 +172,7 @@ export default function QuizPage() {
   }
 
   const currentQuestion = questions[currentIndex];
-  
+
   // Guard against undefined currentQuestion
   if (!currentQuestion) {
     return (
@@ -181,7 +181,7 @@ export default function QuizPage() {
       </div>
     );
   }
-  
+
   const progress = ((currentIndex + 1) / questions.length) * 100;
 
   return (
@@ -238,7 +238,7 @@ export default function QuizPage() {
                 } ${showResult ? 'cursor-default' : 'cursor-pointer'}`}
               >
                 {option}
-                {showResult && option === currentQuestion.correctAnswer && ' ✓'}
+                {showResult && option === currentQuestion.correctAnswer && ' '}
                 {showResult && selectedAnswer === option && option !== currentQuestion.correctAnswer && ' ✗'}
               </button>
             ))}

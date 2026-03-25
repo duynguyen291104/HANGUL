@@ -114,7 +114,7 @@ export default function TournamentPage() {
           <Link href="/" className="text-blue-600 hover:text-blue-700 font-semibold">
             ← Quay Lại
           </Link>
-          <h1 className="text-4xl font-bold text-gray-800">🏆 Giải Đấu</h1>
+          <h1 className="text-4xl font-bold text-gray-800"> Giải Đấu</h1>
           <div></div>
         </div>
 
@@ -128,7 +128,7 @@ export default function TournamentPage() {
               </div>
               <div className="text-center">
                 <p className="text-gray-600 text-sm">Hũy Căn</p>
-                <p className="text-2xl font-bold text-yellow-500">🏆 {userStats.stats.trophy}</p>
+                <p className="text-2xl font-bold text-yellow-500"> {userStats.stats.trophy}</p>
               </div>
               <div className="text-center">
                 <p className="text-gray-600 text-sm">Kinh Nghiệm</p>
@@ -137,7 +137,7 @@ export default function TournamentPage() {
               <div className="text-center">
                 <p className="text-gray-600 text-sm">Trạng Thái</p>
                 {userStats.unlockTournament ? (
-                  <p className="text-2xl font-bold text-green-600">✅ Mở Khóa</p>
+                  <p className="text-2xl font-bold text-green-600"> Mở Khóa</p>
                 ) : (
                   <p className="text-lg font-bold text-red-600">🔒 {1000 - userStats.stats.trophy} cần</p>
                 )}
@@ -177,7 +177,7 @@ export default function TournamentPage() {
                     : 'bg-white text-blue-600 hover:bg-gray-100'
                 }`}
               >
-                {joined ? '✅ Đã Tham Gia' : '⚔️ Tham Gia Giải Đấu'}
+                {joined ? ' Đã Tham Gia' : ' Tham Gia Giải Đấu'}
               </button>
             )}
           </div>

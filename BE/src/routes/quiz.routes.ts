@@ -208,10 +208,10 @@ router.get('/generate', async (req: AuthRequest, res: Response) => {
       level: level || 'NEWBIE',
     }));
 
-    console.log(`✅ Generated ${questions.length} quiz questions for level: ${level}`);
+    console.log(` Generated ${questions.length} quiz questions for level: ${level}`);
     res.json(questions);
   } catch (error) {
-    console.error('🔥 GENERATE QUIZ ERROR:', error);
+    console.error(' GENERATE QUIZ ERROR:', error);
     res.status(500).json({ error: 'Failed to generate quiz questions' });
   }
 });

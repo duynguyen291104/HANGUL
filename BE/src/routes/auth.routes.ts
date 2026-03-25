@@ -19,26 +19,26 @@ const generateToken = (userId, email, role) => {
 // ========================
 router.post('/register', async (req, res) => {
   try {
-    console.log('📝 REGISTER REQUEST BODY:', req.body);
+    console.log(' REGISTER REQUEST BODY:', req.body);
 
     const { email, name, password } = req.body;
 
     // Validate input
     if (!email || !name || !password) {
-      console.warn('❌ Missing required fields:', { email: !!email, name: !!name, password: !!password });
+      console.warn(' Missing required fields:', { email: !!email, name: !!name, password: !!password });
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      console.warn('⚠️ Email already exists:', email);
+      console.warn(' Email already exists:', email);
       return res.status(409).json({ error: 'Email already exists' });
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log('✅ Password hashed successfully');
+    console.log(' Password hashed successfully');
 
     // Create user
     const user = await prisma.user.create({
@@ -49,7 +49,7 @@ router.post('/register', async (req, res) => {
         role: 'USER',
       },
     });
-    console.log('✅ User created with ID:', user.id);
+    console.log(' User created with ID:', user.id);
 
     // Generate token
     const token = generateToken(user.id, user.email, user.role);
@@ -67,7 +67,7 @@ router.post('/register', async (req, res) => {
       token,
     });
   } catch (error) {
-    console.error('🔥 REGISTER ERROR:', error);
+    console.error(' REGISTER ERROR:', error);
     if (error instanceof Error) {
       console.error('Error message:', error.message);
       console.error('Error stack:', error.stack);
@@ -87,27 +87,27 @@ router.post('/login', async (req, res) => {
 
     // Validate input
     if (!email || !password) {
-      console.warn('❌ Missing email or password');
+      console.warn(' Missing email or password');
       return res.status(400).json({ error: 'Missing email or password' });
     }
 
     // Find user
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      console.warn('⚠️ User not found:', email);
+      console.warn(' User not found:', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      console.warn('⚠️ Invalid password for:', email);
+      console.warn(' Invalid password for:', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     // Generate token
     const token = generateToken(user.id, user.email, user.role);
-    console.log('✅ Login successful for:', email);
+    console.log(' Login successful for:', email);
 
     res.json({
       message: 'Login successful',
@@ -121,7 +121,7 @@ router.post('/login', async (req, res) => {
       token,
     });
   } catch (error) {
-    console.error('🔥 LOGIN ERROR:', error);
+    console.error(' LOGIN ERROR:', error);
     if (error instanceof Error) {
       console.error('Error message:', error.message);
     }
@@ -262,7 +262,7 @@ router.post('/seed-test-user', async (req, res) => {
       },
     });
 
-    console.log('✅ Test user created:', user.email);
+    console.log(' Test user created:', user.email);
 
     res.json({
       message: 'Test user created successfully',
@@ -271,7 +271,7 @@ router.post('/seed-test-user', async (req, res) => {
       userId: user.id,
     });
   } catch (error) {
-    console.error('🔥 SEED ERROR:', error);
+    console.error(' SEED ERROR:', error);
     res.status(500).json({ error: 'Failed to seed test user' });
   }
 });

@@ -13,7 +13,7 @@ async function seedGameData() {
     const seedData = JSON.parse(fs.readFileSync(seedDataPath, 'utf-8'));
 
     // ===== SEED RANKS =====
-    console.log('📊 Seeding Ranks...');
+    console.log(' Seeding Ranks...');
     for (const rank of seedData.ranks) {
       const existing = await prisma.rank.findUnique({
         where: { name: rank.name },
@@ -28,7 +28,7 @@ async function seedGameData() {
             order: rank.order,
           },
         });
-        console.log(`  ✓ Created rank: ${rank.name}`);
+        console.log(`   Created rank: ${rank.name}`);
       }
     }
 
@@ -50,12 +50,12 @@ async function seedGameData() {
             rewardTrophy: quest.rewardTrophy,
           },
         });
-        console.log(`  ✓ Created quest: ${quest.title}`);
+        console.log(`   Created quest: ${quest.title}`);
       }
     }
 
     // ===== SEED LEARNING PATHS =====
-    console.log('\n📚 Seeding Learning Paths...');
+    console.log('\n Seeding Learning Paths...');
     const levels = ['NEWBIE', 'BEGINNER'];
     
     for (const level of levels) {
@@ -77,7 +77,7 @@ async function seedGameData() {
             nodes: true,
           },
         });
-        console.log(`  ✓ Created path: ${pathName} with ${learningPath.nodes.length} nodes`);
+        console.log(`   Created path: ${pathName} with ${learningPath.nodes.length} nodes`);
       }
     }
 
@@ -96,7 +96,7 @@ async function seedGameData() {
           endAt: endDate,
         },
       });
-      console.log(`  ✓ Created tournament: ${tournament.name}`);
+      console.log(`   Created tournament: ${tournament.name}`);
     }
 
     // ===== SEED LEAGUE =====
@@ -114,12 +114,12 @@ async function seedGameData() {
           endAt: nextMonday,
         },
       });
-      console.log(`  ✓ Created league: ${league.name}`);
+      console.log(`   Created league: ${league.name}`);
     }
 
-    console.log('\n✅ Game data seeding completed successfully!\n');
+    console.log('\n Game data seeding completed successfully!\n');
   } catch (error) {
-    console.error('❌ Error seeding data:', error);
+    console.error(' Error seeding data:', error);
     throw error;
   } finally {
     await prisma.$disconnect();
@@ -157,7 +157,7 @@ function generateNodesForLevel(level: string): any[] {
 
   const beginnerNodes = [
     {
-      title: '📚 Giáo dục',
+      title: ' Giáo dục',
       description: 'Học các từ liên quan đến trường học',
       order: 1,
     },

@@ -17,7 +17,7 @@ export default function LoginPage() {
   // Check if user just registered
   useEffect(() => {
     if (searchParams.get('registered') === 'true') {
-      setSuccess('✅ Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.');
+      setSuccess(' Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.');
     }
   }, [searchParams]);
 
@@ -59,7 +59,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-10">
-          <h1 className="text-5xl mb-2">🇰🇷</h1>
+          <h1 className="text-5xl mb-2"></h1>
           <h2 className="text-4xl font-bold text-white mb-2">HANGUL</h2>
           <p className="text-[#a8d5ba]">Your Korean Herbarium</p>
         </div>

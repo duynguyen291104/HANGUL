@@ -5,7 +5,7 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: '🇰🇷 HANGUL - Học tiếng Hàn',
+  title: ' HANGUL - Học tiếng Hàn',
   description: 'Ứng dụng học tiếng Hàn tương tác với quiz, luyện viết, phát âm, và camera detection',
 };
 

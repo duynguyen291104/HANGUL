@@ -30,7 +30,7 @@ export default function CommunityPage() {
     {
       id: 2,
       author: 'Minh Phạm',
-      avatar: '👨‍💼',
+      avatar: '👨‍',
       content: 'Tiền 한글 lại dễ hơn tôi tưởng. Hôm qua học được 30 từ mới!',
       timestamp: '4 giờ trước',
       likes: 15,
@@ -130,10 +130,10 @@ export default function CommunityPage() {
                   onClick={() => likePost(post.id)}
                   className="flex items-center gap-2 text-gray-600 hover:text-red-600 transition"
                 >
-                  ❤️ {post.likes}
+                   {post.likes}
                 </button>
                 <button className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition">
-                  💬 {post.comments}
+                   {post.comments}
                 </button>
                 <button className="flex items-center gap-2 text-gray-600 hover:text-green-600 transition">
                   🔄 Chia sẻ

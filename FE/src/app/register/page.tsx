@@ -65,7 +65,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-10">
-          <h1 className="text-5xl mb-2">🇰🇷</h1>
+          <h1 className="text-5xl mb-2"></h1>
           <h2 className="text-4xl font-bold text-white mb-2">HANGUL</h2>
           <p className="text-[#a8d5ba]">Your Korean Herbarium</p>
         </div>

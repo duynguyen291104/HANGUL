@@ -147,7 +147,7 @@ async function main() {
         });
       }
     }
-    console.log('✓ Topics and vocabulary seeded');
+    console.log(' Topics and vocabulary seeded');
 
     // Seed Quiz Questions
     console.log('Seeding quiz questions...');
@@ -168,7 +168,7 @@ async function main() {
         },
       });
     }
-    console.log('✓ Quiz questions seeded');
+    console.log(' Quiz questions seeded');
 
     // Seed Achievements
     console.log('Seeding achievements...');
@@ -182,7 +182,7 @@ async function main() {
         },
       });
     }
-    console.log('✓ Achievements seeded');
+    console.log(' Achievements seeded');
 
     // Seed Test Users
     console.log('Seeding test users...');
@@ -242,7 +242,7 @@ async function main() {
       });
       users.push(user);
     }
-    console.log('✓ Test users seeded');
+    console.log(' Test users seeded');
 
     // Seed User Achievements (unlock some for each user)
     console.log('Seeding user achievements...');
@@ -262,7 +262,7 @@ async function main() {
         }).catch(() => {}); // Ignore duplicates
       }
     }
-    console.log('✓ User achievements seeded');
+    console.log(' User achievements seeded');
 
     // Seed User Vocabulary Learning
     console.log('Seeding user vocabulary learning...');
@@ -285,7 +285,7 @@ async function main() {
         }).catch(() => {}); // Ignore if already connected
       }
     }
-    console.log('✓ User vocabulary learning seeded');
+    console.log(' User vocabulary learning seeded');
 
     // Seed Quiz Sessions
     console.log('Seeding quiz sessions...');
@@ -319,7 +319,7 @@ async function main() {
         }
       }
     }
-    console.log('✓ Quiz sessions seeded');
+    console.log(' Quiz sessions seeded');
 
     // Seed Monthly Tasks
     console.log('Seeding monthly tasks...');
@@ -358,18 +358,18 @@ async function main() {
         },
       });
     }
-    console.log('✓ Monthly tasks seeded');
+    console.log(' Monthly tasks seeded');
 
     console.log('\n✨ Database seeding complete!');
-    console.log(`✓ Topics: ${await prisma.topic.count()}`);
-    console.log(`✓ Vocabulary: ${await prisma.vocabulary.count()}`);
-    console.log(`✓ Questions: ${await prisma.question.count()}`);
-    console.log(`✓ Users: ${await prisma.user.count()}`);
-    console.log(`✓ Quiz Sessions: ${await prisma.quizSession.count()}`);
-    console.log(`✓ Achievements: ${await prisma.achievement.count()}`);
-    console.log(`✓ Monthly Tasks: ${await prisma.monthlyTask.count()}`);
+    console.log(` Topics: ${await prisma.topic.count()}`);
+    console.log(` Vocabulary: ${await prisma.vocabulary.count()}`);
+    console.log(` Questions: ${await prisma.question.count()}`);
+    console.log(` Users: ${await prisma.user.count()}`);
+    console.log(` Quiz Sessions: ${await prisma.quizSession.count()}`);
+    console.log(` Achievements: ${await prisma.achievement.count()}`);
+    console.log(` Monthly Tasks: ${await prisma.monthlyTask.count()}`);
   } catch (error) {
-    console.error('❌ Seeding error:', error);
+    console.error(' Seeding error:', error);
     process.exit(1);
   } finally {
     await prisma.$disconnect();

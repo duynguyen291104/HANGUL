@@ -99,8 +99,8 @@ export default function Dashboard() {
     { label: '🎯 Quiz', href: '/quiz', description: 'Trả lời câu hỏi' },
     { label: '✏️ Luyện Viết', href: '/writing', description: 'So sánh với đáp án' },
     { label: '🎤 Phát Âm', href: '/pronunciation', description: 'Ghi âm và kiểm tra' },
-    { label: '🏆 Giải Đấu', href: '/tournament', description: 'Cạnh tranh với người khác', locked: !stats?.unlockTournament },
-    { label: '📚 Học Tập', href: '/learning-map', description: 'Theo dõi tiến độ' },
+    { label: ' Giải Đấu', href: '/tournament', description: 'Cạnh tranh với người khác', locked: !stats?.unlockTournament },
+    { label: ' Học Tập', href: '/learning-map', description: 'Theo dõi tiến độ' },
   ];
 
   return (
@@ -110,7 +110,7 @@ export default function Dashboard() {
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h1 className="text-4xl font-bold">Xin chào, {user.name}! 👋</h1>
+              <h1 className="text-4xl font-bold">Xin chào, {user.name}! </h1>
               <p className="text-purple-100 mt-2">Cấp độ: <span className="font-semibold text-white">{user.level}</span></p>
             </div>
             <button
@@ -149,7 +149,7 @@ export default function Dashboard() {
               {/* Trophy Card */}
               <div className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg p-4 text-white shadow-lg">
                 <p className="text-sm opacity-90 mb-2">Trophy</p>
-                <p className="text-3xl font-bold">🏆 {stats?.trophy ?? 0}</p>
+                <p className="text-3xl font-bold"> {stats?.trophy ?? 0}</p>
                 {!stats?.unlockTournament && (
                   <p className="text-xs mt-2">{(1000 - (stats?.trophy ?? 0))} cần</p>
                 )}
@@ -165,7 +165,7 @@ export default function Dashboard() {
               {/* Quiz Card */}
               <div className="bg-gradient-to-br from-blue-400 to-cyan-500 rounded-lg p-4 text-white shadow-lg">
                 <p className="text-sm opacity-90 mb-2">Quiz</p>
-                <p className="text-3xl font-bold">📊 {stats?.quizCount ?? 0}</p>
+                <p className="text-3xl font-bold"> {stats?.quizCount ?? 0}</p>
                 <p className="text-xs mt-2">Bài hoàn thành</p>
               </div>
 
@@ -182,7 +182,7 @@ export default function Dashboard() {
         {/* Activity Stats */}
         {stats && (
           <div className="mb-8 bg-white rounded-lg shadow p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">📈 Hoạt Động</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4"> Hoạt Động</h3>
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center p-4 bg-purple-50 rounded-lg">
                 <p className="text-gray-600 text-sm">Quiz</p>

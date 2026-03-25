@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * 🚀 AI VOCABULARY GENERATOR
+ *  AI VOCABULARY GENERATOR
  * 
  * Generates Korean vocabulary using OpenAI API
  * Auto-generates topics, validates, and imports to DB
@@ -90,13 +90,13 @@ Requirements:
     return vocab;
 
   } catch (error) {
-    console.error(`    ❌ Error generating ${topic}:`, error.message);
+    console.error(`     Error generating ${topic}:`, error.message);
     return [];
   }
 }
 
 async function generateLevel(level, topicCount = null) {
-  console.log(`\n🚀 Generating ${level} vocabulary...\n`);
+  console.log(`\n Generating ${level} vocabulary...\n`);
 
   const topics = TOPICS[level];
   const topicsToGenerate = topicCount ? topics.slice(0, topicCount) : topics;
@@ -132,7 +132,7 @@ async function generateLevel(level, topicCount = null) {
     console.log(`  💾 Saved ${topic}.json (${items.length} vocab)`);
   }
 
-  console.log(`\n✅ Generated ${allVocab.length} total vocab for ${level}`);
+  console.log(`\n Generated ${allVocab.length} total vocab for ${level}`);
   return allVocab.length;
 }
 
@@ -140,7 +140,7 @@ async function main() {
   const args = process.argv.slice(2);
   
   if (!process.env.OPENAI_API_KEY) {
-    console.error('❌ OPENAI_API_KEY environment variable not set');
+    console.error(' OPENAI_API_KEY environment variable not set');
     process.exit(1);
   }
 
@@ -157,19 +157,19 @@ async function main() {
     }
   }
 
-  console.log(`\n📚 AI VOCABULARY GENERATOR`);
+  console.log(`\n AI VOCABULARY GENERATOR`);
   console.log(`   Level: ${level}`);
   console.log(`   Topics: ${topicCount}\n`);
 
   if (!TOPICS[level]) {
-    console.error(`❌ Unknown level: ${level}`);
+    console.error(` Unknown level: ${level}`);
     process.exit(1);
   }
 
   const count = await generateLevel(level, topicCount);
   
   console.log(`\n🎉 Generation complete!`);
-  console.log(`   📊 Total generated: ${count} vocab`);
+  console.log(`    Total generated: ${count} vocab`);
   console.log(`   📂 Location: /data/${level.toLowerCase()}/`);
   console.log(`   ⏭️  Next: Run 'node scripts/mergeVocabulary.js' to import to DB\n`);
 }

@@ -5,36 +5,31 @@ import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
 import { Level } from '@/mocks/topics';
 
-const levels: { value: Level; label: string; description: string; emoji: string }[] = [
+const levels: { value: Level; label: string; description: string }[] = [
   {
     value: 'NEWBIE',
     label: 'Cực cơ bản',
     description: 'Làm quen với chữ cái và từ vựng đơn giản',
-    emoji: '🌱',
   },
   {
     value: 'BEGINNER',
     label: 'Sơ cấp',
     description: 'Viết được câu đơn hoàn chỉnh',
-    emoji: '🌿',
   },
   {
     value: 'INTERMEDIATE',
     label: 'Trung cấp',
     description: 'Viết được đoạn văn với 5-7 câu',
-    emoji: '🌳',
   },
   {
     value: 'UPPER',
     label: 'Trên trung cấp',
     description: 'Viết được các bài có logic và lập luận',
-    emoji: '🏔️',
   },
   {
     value: 'ADVANCED',
     label: 'Nâng cao',
     description: 'Viết essay, phân tích sâu',
-    emoji: '🏔️❄️',
   },
 ];
 
@@ -82,9 +77,8 @@ export default function LevelSelectionPage() {
       <div className="w-full max-w-2xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl mb-3">🇰🇷</h1>
           <h2 className="text-4xl font-bold text-white mb-3">HANGUL</h2>
-          <p className="text-[#a8d5ba] text-lg">Chào mừng, {user?.name}! 👋</p>
+          <p className="text-[#a8d5ba] text-lg">Chào mừng, {user?.name}!</p>
           <p className="text-[#a8d5ba] mt-4 text-lg">
             Hãy chọn mức độ học tập phù hợp với bạn
           </p>
@@ -107,7 +101,6 @@ export default function LevelSelectionPage() {
                 color: selected === level.value ? '#2d5d4d' : '#2d3436',
               }}
             >
-              <div className="text-4xl mb-3">{level.emoji}</div>
               <h3 className="text-xl font-bold mb-2">{level.label}</h3>
               <p className="text-sm opacity-75">{level.description}</p>
             </button>

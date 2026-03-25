@@ -22,7 +22,7 @@ interface VocabData {
 
 async function seedVocabulary() {
   try {
-    console.log('📚 Starting vocabulary seed...');
+    console.log(' Starting vocabulary seed...');
 
     // Read vocabulary data
     const dataPath = path.join(__dirname, '../data/vocabularies.json');
@@ -51,7 +51,7 @@ async function seedVocabulary() {
             order: topicNames.indexOf(topicName),
           },
         });
-        console.log(`✅ Created topic: ${topicName}`);
+        console.log(` Created topic: ${topicName}`);
       }
       topics[topicName] = topic;
     }
@@ -97,10 +97,10 @@ async function seedVocabulary() {
 
         successCount++;
         if (successCount % 10 === 0) {
-          console.log(`✅ Created ${successCount} vocabularies...`);
+          console.log(` Created ${successCount} vocabularies...`);
         }
       } catch (error) {
-        console.error(`❌ Error importing ${vocab.korean}:`, error);
+        console.error(` Error importing ${vocab.korean}:`, error);
       }
     }
 
@@ -111,12 +111,12 @@ async function seedVocabulary() {
     const totalTopics = await prisma.topic.count();
     const totalExamples = await prisma.vocabExample.count();
 
-    console.log(`\n📊 Database Stats:`);
+    console.log(`\n Database Stats:`);
     console.log(`   - Total Vocabularies: ${totalVocab}`);
     console.log(`   - Total Topics: ${totalTopics}`);
     console.log(`   - Total Examples: ${totalExamples}`);
   } catch (error) {
-    console.error('❌ Seed error:', error);
+    console.error(' Seed error:', error);
     process.exit(1);
   } finally {
     await prisma.$disconnect();

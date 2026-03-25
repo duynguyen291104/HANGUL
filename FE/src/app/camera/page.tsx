@@ -426,7 +426,7 @@ export default function CameraPage() {
 
         {/* Debug Info */}
         <div className="mt-8 bg-gray-800 text-gray-100 rounded-lg p-4 font-mono text-xs">
-          <p className="text-gray-400 mb-2">💻 Thông tin debug:</p>
+          <p className="text-gray-400 mb-2"> Thông tin debug:</p>
           <ul className="space-y-1">
             <li>🌐 Frontend: http://localhost:3000/camera</li>
             <li>🖥️ YOLO Server: {YOLO_SERVER}</li>

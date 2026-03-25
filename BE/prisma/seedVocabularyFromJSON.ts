@@ -65,7 +65,7 @@ async function seedVocabulary() {
         const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 
         if (!Array.isArray(data)) {
-          console.warn(`   ⚠️  Skipping ${file} - not an array`);
+          console.warn(`     Skipping ${file} - not an array`);
           continue;
         }
 
@@ -115,28 +115,28 @@ async function seedVocabulary() {
 
             totalSeeded++;
           } catch (error) {
-            console.warn(`   ⚠️  Error creating vocab "${item.korean}":`, (error as Error).message);
+            console.warn(`     Error creating vocab "${item.korean}":`, (error as Error).message);
           }
         }
 
-        console.log(`   ✅ Processed ${file} - found ${data.length} items`);
+        console.log(`    Processed ${file} - found ${data.length} items`);
       } catch (error) {
-        console.error(`   ❌ Error reading ${file}:`, error);
+        console.error(`    Error reading ${file}:`, error);
       }
     }
   }
 
   console.log('\n========================================');
-  console.log(`📊 Seed Summary:`);
-  console.log(`   ✅ Total seeded: ${totalSeeded}`);
+  console.log(` Seed Summary:`);
+  console.log(`    Total seeded: ${totalSeeded}`);
   console.log(`   ⏭️  Total skipped (duplicates): ${totalSkipped}`);
-  console.log(`   📈 Total in database: ${totalSeeded + totalSkipped}`);
+  console.log(`    Total in database: ${totalSeeded + totalSkipped}`);
   console.log('========================================\n');
 
   await prisma.$disconnect();
 }
 
 seedVocabulary().catch(error => {
-  console.error('❌ Seed failed:', error);
+  console.error(' Seed failed:', error);
   process.exit(1);
 });

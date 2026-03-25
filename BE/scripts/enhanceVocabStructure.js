@@ -150,7 +150,7 @@ async function enhanceFiles() {
           vocabs = [vocabs];
         }
         
-        console.log(`📝 Processing: ${level}/${file}`);
+        console.log(` Processing: ${level}/${file}`);
         
         // Enhance each vocab
         vocabs = vocabs.map(vocab => {
@@ -169,7 +169,7 @@ async function enhanceFiles() {
         
         // Write back
         fs.writeFileSync(filePath, JSON.stringify(vocabs, null, 2), 'utf8');
-        console.log(`   ✅ Enhanced ${vocabs.length} items\n`);
+        console.log(`    Enhanced ${vocabs.length} items\n`);
       }
     }
     
@@ -182,13 +182,13 @@ async function enhanceFiles() {
       console.log('🗑️  Deleted: /data/vocabularies.json\n');
     }
     
-    console.log('✅ All done! Summary:');
-    console.log('   ✓ Added examples to all vocab items');
-    console.log('   ✓ Added tags to all vocab items');
-    console.log('   ✓ Deleted vocabularies.json\n');
+    console.log(' All done! Summary:');
+    console.log('    Added examples to all vocab items');
+    console.log('    Added tags to all vocab items');
+    console.log('    Deleted vocabularies.json\n');
     
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    console.error(' Error:', error.message);
     process.exit(1);
   }
 }

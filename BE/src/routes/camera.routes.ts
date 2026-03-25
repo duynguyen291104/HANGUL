@@ -15,7 +15,7 @@ router.post('/detect', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Image data required' });
     }
 
-    console.log(`🚀 [${new Date().toISOString()}] Sending image to Flask AI detection...`);
+    console.log(` [${new Date().toISOString()}] Sending image to Flask AI detection...`);
     
     try {
       // Call Flask AI detection backend
@@ -32,7 +32,7 @@ router.post('/detect', async (req: Request, res: Response) => {
 
       const detectedObjects = aiResponse.data.objects || [];
       
-      console.log(`✅ Detected ${detectedObjects.length} objects`);
+      console.log(` Detected ${detectedObjects.length} objects`);
       
       // Format results to match frontend expectations
       const response = {
@@ -44,7 +44,7 @@ router.post('/detect', async (req: Request, res: Response) => {
 
       res.json(response);
     } catch (aiError: any) {
-      console.error(`❌ AI Backend error: ${aiError.message}`);
+      console.error(` AI Backend error: ${aiError.message}`);
       
       // Return error response
       res.status(502).json({
@@ -55,7 +55,7 @@ router.post('/detect', async (req: Request, res: Response) => {
       });
     }
   } catch (error: any) {
-    console.error(`❌ Detection error: ${error.message}`);
+    console.error(` Detection error: ${error.message}`);
     res.status(500).json({ 
       success: false,
       error: 'Detection failed',

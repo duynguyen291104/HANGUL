@@ -40,7 +40,7 @@ export const mockAchievements = [
     id: 3,
     name: 'Korean Scholar',
     description: 'Learn 100 vocabulary items',
-    icon: '📚',
+    icon: '',
     difficulty: 'HARD',
     xpReward: 500,
     unlocked: false,

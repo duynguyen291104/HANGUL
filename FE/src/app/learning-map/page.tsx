@@ -13,7 +13,6 @@ interface LearningNode {
   completed: boolean;
   progress: number;
   tasks: number;
-  icon: string;
   link: string;
 }
 
@@ -26,7 +25,6 @@ const learningPath: LearningNode[] = [
     completed: true,
     progress: 100,
     tasks: 8,
-    icon: '🔤',
     link: '/level-selection',
   },
   {
@@ -37,7 +35,6 @@ const learningPath: LearningNode[] = [
     completed: true,
     progress: 85,
     tasks: 15,
-    icon: '📚',
     link: '/vocabulary',
   },
   {
@@ -48,7 +45,6 @@ const learningPath: LearningNode[] = [
     completed: false,
     progress: 45,
     tasks: 12,
-    icon: '🎤',
     link: '/pronunciation',
   },
   {
@@ -59,7 +55,6 @@ const learningPath: LearningNode[] = [
     completed: false,
     progress: 30,
     tasks: 20,
-    icon: '✏️',
     link: '/writing',
   },
   {
@@ -70,7 +65,6 @@ const learningPath: LearningNode[] = [
     completed: false,
     progress: 60,
     tasks: 25,
-    icon: '🎯',
     link: '/quiz',
   },
   {
@@ -81,7 +75,6 @@ const learningPath: LearningNode[] = [
     completed: false,
     progress: 0,
     tasks: 18,
-    icon: '👂',
     link: '/listening',
   },
   {
@@ -92,7 +85,6 @@ const learningPath: LearningNode[] = [
     completed: false,
     progress: 0,
     tasks: 30,
-    icon: '📸',
     link: '/camera',
   },
   {
@@ -103,7 +95,6 @@ const learningPath: LearningNode[] = [
     completed: false,
     progress: 0,
     tasks: 5,
-    icon: '🏆',
     link: '/tournament',
   },
 ];
@@ -117,8 +108,8 @@ const levelColors: Record<string, { bg: string; text: string; border: string }> 
 };
 
 const levelLabels: Record<string, string> = {
-  NEWBIE: '🌱 Sơ Cấp',
-  BEGINNER: '📖 Cơ Bản',
+  NEWBIE: ' Sơ Cấp',
+  BEGINNER: ' Cơ Bản',
   INTERMEDIATE: '⚡ Trung Cấp',
   UPPER: '🔥 Nâng Cao',
   ADVANCED: '👑 Chuyên Sâu',
@@ -153,7 +144,7 @@ export default function LearningMapPage() {
   const handleLevelChange = async (newLevel: string) => {
     setSelectedNewLevel(newLevel);
     const confirmed = window.confirm(
-      `⚠️ Bạn có chắc muốn thay đổi mức độ từ ${levelLabels[currentLevel]} sang ${levelLabels[newLevel]}?\n\nLưu ý: Tiến độ hiện tại có thể bị ảnh hưởng.`
+      ` Bạn có chắc muốn thay đổi mức độ từ ${levelLabels[currentLevel]} sang ${levelLabels[newLevel]}?\n\nLưu ý: Tiến độ hiện tại có thể bị ảnh hưởng.`
     );
 
     if (!confirmed) {
@@ -179,7 +170,7 @@ export default function LearningMapPage() {
       }
 
       const data = await response.json();
-      console.log('✅ Cấp độ đã cập nhật:', data);
+      console.log(' Cấp độ đã cập nhật:', data);
 
       // Update local state
       setCurrentLevel(newLevel);
@@ -192,10 +183,10 @@ export default function LearningMapPage() {
         });
       }
 
-      alert(`✅ Mức độ đã được thay đổi thành ${levelLabels[newLevel]}`);
+      alert(` Mức độ đã được thay đổi thành ${levelLabels[newLevel]}`);
     } catch (error: any) {
       console.error('Lỗi cập nhật cấp độ:', error);
-      alert(`❌ Lỗi: ${error.message}`);
+      alert(` Lỗi: ${error.message}`);
     } finally {
       setChangingLevel(false);
       setSelectedNewLevel(null);
@@ -215,7 +206,7 @@ export default function LearningMapPage() {
             <span className="text-2xl">←</span>
             <span>Quay lại</span>
           </Link>
-          <h1 className="text-4xl font-bold mb-3">📚 Lộ Trình Học Tập</h1>
+          <h1 className="text-4xl font-bold mb-3"> Lộ Trình Học Tập</h1>
           <p className="text-purple-100 text-lg">Theo dõi hành trình học tiếng Hàn của bạn</p>
         </div>
       </div>
@@ -298,7 +289,7 @@ export default function LearningMapPage() {
                       <h3 className="text-xl font-bold text-gray-800">{node.title}</h3>
                       {node.completed && (
                         <span className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                          ✓ Hoàn Thành
+                           Hoàn Thành
                         </span>
                       )}
                     </div>
@@ -353,7 +344,7 @@ export default function LearningMapPage() {
             </div>
             {!isLastLevel && (
               <div className="text-sm text-gray-600">
-                📈 Tiến độ của bạn: <span className="font-bold">{stats.totalProgress}%</span> -
+                 Tiến độ của bạn: <span className="font-bold">{stats.totalProgress}%</span> -
                 {stats.totalProgress < 50 ? ' Hãy cố gắng thêm!' : ' Bạn đang tiến bộ tốt!'}
               </div>
             )}

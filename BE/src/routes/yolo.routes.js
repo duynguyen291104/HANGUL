@@ -34,7 +34,7 @@ router.post('/save', async (req, res) => {
 
     res.json({ success: true, id: detection.id });
   } catch (error) {
-    console.error('❌ Save detection error:', error);
+    console.error(' Save detection error:', error);
     res.status(500).json({ error: 'Failed to save detection' });
   }
 });
@@ -68,7 +68,7 @@ router.post('/batch-save', async (req, res) => {
 
     res.json({ success: true, count: created.count });
   } catch (error) {
-    console.error('❌ Batch save error:', error);
+    console.error(' Batch save error:', error);
     res.status(500).json({ error: 'Failed to batch save detections' });
   }
 });
@@ -105,7 +105,7 @@ router.post('/sync-backend', async (req, res) => {
 
     res.json({ success: true, count: created.count });
   } catch (error) {
-    console.error('❌ Sync backend error:', error);
+    console.error(' Sync backend error:', error);
     res.status(500).json({ error: 'Failed to sync detections' });
   }
 });
@@ -141,7 +141,7 @@ router.get('/user/:userId', async (req, res) => {
       })),
     });
   } catch (error) {
-    console.error('❌ Get detections error:', error);
+    console.error(' Get detections error:', error);
     res.status(500).json({ error: 'Failed to fetch detections' });
   }
 });
@@ -167,7 +167,7 @@ router.get('/stats/:userId', async (req, res) => {
 
     res.json(stats);
   } catch (error) {
-    console.error('❌ Get stats error:', error);
+    console.error(' Get stats error:', error);
     res.status(500).json({ error: 'Failed to fetch stats' });
   }
 });
@@ -193,7 +193,7 @@ router.get('/labels/:userId', async (req, res) => {
       })),
     });
   } catch (error) {
-    console.error('❌ Get labels error:', error);
+    console.error(' Get labels error:', error);
     res.status(500).json({ error: 'Failed to fetch labels' });
   }
 });
@@ -230,7 +230,7 @@ router.get('/daily/:userId', async (req, res) => {
       })),
     });
   } catch (error) {
-    console.error('❌ Get daily stats error:', error);
+    console.error(' Get daily stats error:', error);
     res.status(500).json({ error: 'Failed to fetch daily stats' });
   }
 });
@@ -258,7 +258,7 @@ router.post('/batch/create', async (req, res) => {
 
     res.json({ success: true, jobId: job.id });
   } catch (error) {
-    console.error('❌ Create batch job error:', error);
+    console.error(' Create batch job error:', error);
     res.status(500).json({ error: 'Failed to create batch job' });
   }
 });
@@ -276,7 +276,7 @@ router.get('/batch/jobs/:userId', async (req, res) => {
 
     res.json({ count: jobs.length, jobs });
   } catch (error) {
-    console.error('❌ Get batch jobs error:', error);
+    console.error(' Get batch jobs error:', error);
     res.status(500).json({ error: 'Failed to fetch batch jobs' });
   }
 });
@@ -300,7 +300,7 @@ router.patch('/batch/:jobId', async (req, res) => {
 
     res.json({ success: true, job });
   } catch (error) {
-    console.error('❌ Update batch job error:', error);
+    console.error(' Update batch job error:', error);
     res.status(500).json({ error: 'Failed to update batch job' });
   }
 });
@@ -363,7 +363,7 @@ async function updateDetectionStats(userId, newLabel) {
       });
     }
   } catch (error) {
-    console.error('⚠️  Error updating stats:', error);
+    console.error('  Error updating stats:', error);
   }
 }
 

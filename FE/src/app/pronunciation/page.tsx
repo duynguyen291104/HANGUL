@@ -411,7 +411,7 @@ export default function PronunciationPage() {
 
         {/* Debug Info */}
         <div className="mt-8 bg-gray-800 text-gray-100 rounded-lg p-4 font-mono text-xs">
-          <p className="text-gray-400 mb-2">💻 Thông tin debug (F12 để xem chi tiết):</p>
+          <p className="text-gray-400 mb-2"> Thông tin debug (F12 để xem chi tiết):</p>
           <ul className="space-y-1">
             <li>🌐 Frontend: http://localhost:3000/pronunciation</li>
             <li>🖥️ Backend TTS: http://localhost:5000/api/pronunciation/tts</li>

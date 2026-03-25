@@ -130,7 +130,7 @@ export default function ListeningPage() {
                   ? 'bg-green-50 text-green-700 border border-green-200'
                   : 'bg-red-50 text-red-700 border border-red-200'
               }`}>
-                {isCorrect ? '✅ Chính xác!' : `❌ Sai. Đáp án đúng là: ${question.correctAnswer}`}
+                {isCorrect ? ' Chính xác!' : ` Sai. Đáp án đúng là: ${question.correctAnswer}`}
               </div>
             )}
 

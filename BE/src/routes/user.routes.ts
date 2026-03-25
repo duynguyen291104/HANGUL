@@ -32,7 +32,7 @@ userRouter.get('/stats', async (req: any, res: any) => {
       lastCheckinDate: user.lastCheckinDate,
     });
   } catch (error) {
-    console.error('🔥 USER STATS ERROR:', error);
+    console.error(' USER STATS ERROR:', error);
     res.status(500).json({ error: 'Failed to load user stats' });
   }
 });
@@ -66,7 +66,7 @@ userRouter.get('/profile', async (req: any, res: any) => {
 
     res.json(user);
   } catch (error) {
-    console.error('🔥 USER PROFILE ERROR:', error);
+    console.error(' USER PROFILE ERROR:', error);
     res.status(500).json({ error: 'Failed to load user profile' });
   }
 });
@@ -101,10 +101,10 @@ userRouter.post('/set-level', async (req: any, res: any) => {
       },
     });
 
-    console.log(`✅ Level set for user ${userId}: ${level} (locked)`);
+    console.log(` Level set for user ${userId}: ${level} (locked)`);
     res.json({ message: 'Level set successfully', level: user.level, levelLocked: user.levelLocked });
   } catch (error) {
-    console.error('🔥 SET LEVEL ERROR:', error);
+    console.error(' SET LEVEL ERROR:', error);
     res.status(500).json({ error: 'Failed to set level' });
   }
 });
@@ -135,10 +135,10 @@ userRouter.put('/update-level', async (req: any, res: any) => {
       },
     });
 
-    console.log(`✅ Level updated for user ${userId}: ${level}`);
+    console.log(` Level updated for user ${userId}: ${level}`);
     res.json({ message: 'Level updated successfully', level: user.level });
   } catch (error) {
-    console.error('🔥 UPDATE LEVEL ERROR:', error);
+    console.error(' UPDATE LEVEL ERROR:', error);
     res.status(500).json({ error: 'Failed to update level' });
   }
 });

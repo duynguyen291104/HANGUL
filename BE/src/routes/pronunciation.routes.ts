@@ -32,7 +32,7 @@ router.post('/transcribe', async (req: Request, res: Response) => {
         }
       );
 
-      console.log(`✅ Transcription complete: ${aiResponse.data.transcribed_text}`);
+      console.log(` Transcription complete: ${aiResponse.data.transcribed_text}`);
       
       res.json({
         success: true,
@@ -42,7 +42,7 @@ router.post('/transcribe', async (req: Request, res: Response) => {
         timestamp: new Date().toISOString(),
       });
     } catch (aiError: any) {
-      console.error(`❌ AI Backend error: ${aiError.message}`);
+      console.error(` AI Backend error: ${aiError.message}`);
       
       res.status(502).json({
         success: false,
@@ -51,7 +51,7 @@ router.post('/transcribe', async (req: Request, res: Response) => {
       });
     }
   } catch (error: any) {
-    console.error(`❌ Transcription error: ${error.message}`);
+    console.error(` Transcription error: ${error.message}`);
     res.status(500).json({ 
       success: false,
       error: 'Transcription failed',
@@ -84,7 +84,7 @@ router.post('/tts', async (req: Request, res: Response) => {
         }
       );
 
-      console.log(`✅ TTS generated successfully`);
+      console.log(` TTS generated successfully`);
       
       res.json({
         success: true,
@@ -93,7 +93,7 @@ router.post('/tts', async (req: Request, res: Response) => {
         timestamp: new Date().toISOString(),
       });
     } catch (aiError: any) {
-      console.error(`❌ AI Backend error: ${aiError.message}`);
+      console.error(` AI Backend error: ${aiError.message}`);
       
       res.status(502).json({
         success: false,
@@ -102,7 +102,7 @@ router.post('/tts', async (req: Request, res: Response) => {
       });
     }
   } catch (error: any) {
-    console.error(`❌ TTS error: ${error.message}`);
+    console.error(` TTS error: ${error.message}`);
     res.status(500).json({ 
       success: false,
       error: 'TTS failed',
@@ -128,7 +128,7 @@ router.get('/vocabulary/:level', async (req: Request, res: Response) => {
       });
     }
 
-    console.log(`📚 Fetching vocabulary from database for level: ${levelUpper}`);
+    console.log(` Fetching vocabulary from database for level: ${levelUpper}`);
 
     // Query vocabulary from database
     const vocabulary = await prisma.vocabulary.findMany({
@@ -153,7 +153,7 @@ router.get('/vocabulary/:level', async (req: Request, res: Response) => {
     // Shuffle the results (simulating random selection)
     const shuffled = vocabulary.sort(() => Math.random() - 0.5);
 
-    console.log(`✅ Found ${shuffled.length} vocabulary words for ${levelUpper}`);
+    console.log(` Found ${shuffled.length} vocabulary words for ${levelUpper}`);
 
     res.json({
       success: true,
@@ -177,7 +177,7 @@ router.get('/vocabulary/:level', async (req: Request, res: Response) => {
       }))
     });
   } catch (error: any) {
-    console.error(`❌ Vocabulary error: ${error.message}`);
+    console.error(` Vocabulary error: ${error.message}`);
     res.status(500).json({ 
       error: 'Failed to fetch vocabulary from database',
       message: error.message 

@@ -204,7 +204,7 @@ function registerGameAPIs(app, prisma, authenticate) {
         xp: xpReward,
         feedback:
           accuracy >= 80
-            ? '🎯 Phát âm rất tốt!'
+            ? ' Phát âm rất tốt!'
             : accuracy >= 60
             ? '📢 Hãy cố gắng rõ hơn'
             : '🔊 Thử lại bạn nhé',

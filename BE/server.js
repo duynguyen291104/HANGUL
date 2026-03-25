@@ -793,7 +793,7 @@ app.use((req, res) => {
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`🚀 HANGUL Backend running on port ${PORT}`);
+  console.log(` HANGUL Backend running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV}`);
   console.log(`Ready to accept connections!`);
 });

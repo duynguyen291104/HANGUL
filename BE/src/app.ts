@@ -80,7 +80,7 @@ app.use(errorHandler);
 // START SERVER
 // ========================
 app.listen(PORT, () => {
-  console.log(`🚀 HANGUL Backend running on port ${PORT}`);
+  console.log(` HANGUL Backend running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV}`);
 });
 

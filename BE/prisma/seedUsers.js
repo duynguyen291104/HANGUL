@@ -68,15 +68,15 @@ async function seedUsers() {
           });
         }
 
-        console.log(`✓ Created user: ${user.name} (ID: ${user.id})`);
+        console.log(` Created user: ${user.name} (ID: ${user.id})`);
       } else {
-        console.log(`✓ User already exists: ${userData.email}`);
+        console.log(` User already exists: ${userData.email}`);
       }
     }
 
-    console.log('\n✅ User seeding completed!\n');
+    console.log('\n User seeding completed!\n');
   } catch (error) {
-    console.error('❌ Error seeding users:', error);
+    console.error(' Error seeding users:', error);
     throw error;
   } finally {
     await prisma.$disconnect();

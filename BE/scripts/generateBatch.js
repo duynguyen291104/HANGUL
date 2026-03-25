@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * 🚀 BATCH VOCABULARY GENERATOR (5000+ vocab)
+ *  BATCH VOCABULARY GENERATOR (5000+ vocab)
  * 
  * Generates ALL vocabulary for system:
  * - NEWBIE: 10 topics × 40 = 400 vocab
@@ -101,7 +101,7 @@ Must have ALL fields. No missing quotes. Valid JSON only.`;
     const jsonMatch = content.match(/\[[\s\S]*\]/);
     
     if (!jsonMatch) {
-      console.log(`    ❌ Invalid JSON`);
+      console.log(`     Invalid JSON`);
       return [];
     }
 
@@ -116,17 +116,17 @@ Must have ALL fields. No missing quotes. Valid JSON only.`;
       item.topic = topic;
     }
 
-    console.log(`    ✅ ${vocab.length} vocab`);
+    console.log(`     ${vocab.length} vocab`);
     return vocab;
 
   } catch (error) {
-    console.log(`    ❌ Error`);
+    console.log(`     Error`);
     return [];
   }
 }
 
 async function generateLevel(level) {
-  console.log(`\n📚 ${level} Level\n`);
+  console.log(`\n ${level} Level\n`);
 
   const plan = VOCAB_PLAN[level];
   let levelVocab = [];
@@ -156,18 +156,18 @@ async function generateLevel(level) {
     fs.writeFileSync(file, JSON.stringify(items, null, 2));
   }
 
-  console.log(`\n✅ ${level}: ${levelVocab.length} vocab (planned: ${totalCount})`);
+  console.log(`\n ${level}: ${levelVocab.length} vocab (planned: ${totalCount})`);
   return levelVocab.length;
 }
 
 async function main() {
   if (!process.env.OPENAI_API_KEY) {
-    console.error('❌ OPENAI_API_KEY not set');
+    console.error(' OPENAI_API_KEY not set');
     process.exit(1);
   }
 
-  console.log('\n🚀 BATCH VOCABULARY GENERATOR\n');
-  console.log('📊 Generation Plan:');
+  console.log('\n BATCH VOCABULARY GENERATOR\n');
+  console.log(' Generation Plan:');
   console.log(`   NEWBIE: ${VOCAB_PLAN.NEWBIE.length} topics`);
   console.log(`   BEGINNER: ${VOCAB_PLAN.BEGINNER.length} topics`);
   console.log(`   INTERMEDIATE: ${VOCAB_PLAN.INTERMEDIATE.length} topics`);
@@ -182,7 +182,7 @@ async function main() {
   }
 
   console.log(`\n🎉 Generation Complete!`);
-  console.log(`   📊 Total: ${total} vocab`);
+  console.log(`    Total: ${total} vocab`);
   console.log(`   ⏭️  Merge command:`);
   console.log(`       cd /home/ngocduy/HANGUL/BE && node scripts/mergeVocabulary.js\n`);
 }

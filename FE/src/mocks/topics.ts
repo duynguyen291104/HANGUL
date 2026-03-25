@@ -12,7 +12,6 @@ export interface Topic {
   order: number;
   name: string;
   description: string;
-  icon?: string;
   lessonsCount: number;
 }
 
@@ -24,7 +23,6 @@ export const topics: Topic[] = [
     order: 1,
     name: 'Chào hỏi cơ bản',
     description: 'Học cách chào hỏi và giới thiệu bản thân',
-    icon: '👋',
     lessonsCount: 5,
   },
   {
@@ -33,7 +31,6 @@ export const topics: Topic[] = [
     order: 2,
     name: 'Giới thiệu bản thân',
     description: 'Nói về tên, tuổi, quốc tịch',
-    icon: '🆔',
     lessonsCount: 5,
   },
   {
@@ -42,7 +39,6 @@ export const topics: Topic[] = [
     order: 3,
     name: 'Số đếm',
     description: 'Học các con số từ 0-100',
-    icon: '🔢',
     lessonsCount: 4,
   },
   {
@@ -51,7 +47,6 @@ export const topics: Topic[] = [
     order: 4,
     name: 'Bảng chữ cái',
     description: 'Học Hangul từ A-Z',
-    icon: '🔤',
     lessonsCount: 6,
   },
   {
@@ -60,7 +55,6 @@ export const topics: Topic[] = [
     order: 5,
     name: 'Màu sắc',
     description: 'Học tên các màu cơ bản',
-    icon: '🎨',
     lessonsCount: 4,
   },
   {
@@ -69,7 +63,6 @@ export const topics: Topic[] = [
     order: 6,
     name: 'Gia đình',
     description: 'Thành viên gia đình và mối quan hệ',
-    icon: '👨‍👩‍👧‍👦',
     lessonsCount: 5,
   },
   {
@@ -78,7 +71,6 @@ export const topics: Topic[] = [
     order: 7,
     name: 'Bạn bè',
     description: 'Giao tiếp với bạn bè',
-    icon: '👫',
     lessonsCount: 4,
   },
   {
@@ -87,7 +79,6 @@ export const topics: Topic[] = [
     order: 8,
     name: 'Đồ vật xung quanh',
     description: 'Tên các vật dụng hàng ngày',
-    icon: '📦',
     lessonsCount: 5,
   },
   {
@@ -96,7 +87,6 @@ export const topics: Topic[] = [
     order: 9,
     name: 'Trường học',
     description: 'Từ vựng về trường học',
-    icon: '🏫',
     lessonsCount: 4,
   },
   {
@@ -105,7 +95,6 @@ export const topics: Topic[] = [
     order: 10,
     name: 'Nghề nghiệp đơn giản',
     description: 'Các nghề nghiệp phổ biến',
-    icon: '💼',
     lessonsCount: 4,
   },
 
@@ -116,7 +105,6 @@ export const topics: Topic[] = [
     order: 1,
     name: 'Daily routine',
     description: 'Thói quen hằng ngày',
-    icon: '🌅',
     lessonsCount: 6,
   },
   {
@@ -125,7 +113,6 @@ export const topics: Topic[] = [
     order: 2,
     name: 'Sở thích',
     description: 'Nói về những hoạt động yêu thích',
-    icon: '❤️',
     lessonsCount: 5,
   },
   {
@@ -134,7 +121,6 @@ export const topics: Topic[] = [
     order: 3,
     name: 'Đi mua sắm',
     description: 'Giao tiếp khi mua sắm',
-    icon: '🛍️',
     lessonsCount: 5,
   },
   {
@@ -143,7 +129,6 @@ export const topics: Topic[] = [
     order: 4,
     name: 'Ăn uống ngoài',
     description: 'Đặt bàn, gọi đồ ăn',
-    icon: '🍽️',
     lessonsCount: 5,
   },
   {
@@ -152,7 +137,6 @@ export const topics: Topic[] = [
     order: 5,
     name: 'Du lịch cơ bản',
     description: 'Hỏi đường, tìm khách sạn',
-    icon: '✈️',
     lessonsCount: 6,
   },
   {
@@ -161,7 +145,6 @@ export const topics: Topic[] = [
     order: 6,
     name: 'Phương tiện di chuyển',
     description: 'Xe buýt, tàu, taxi',
-    icon: '🚌',
     lessonsCount: 4,
   },
   {
@@ -170,7 +153,6 @@ export const topics: Topic[] = [
     order: 7,
     name: 'Thời gian & lịch trình',
     description: 'Nói về giờ, ngày, tuần',
-    icon: '⏰',
     lessonsCount: 5,
   },
   {
@@ -179,7 +161,6 @@ export const topics: Topic[] = [
     order: 8,
     name: 'Viết tin nhắn',
     description: 'Giao tiếp qua tin nhắn',
-    icon: '💬',
     lessonsCount: 4,
   },
 
@@ -190,7 +171,6 @@ export const topics: Topic[] = [
     order: 1,
     name: 'Du lịch chi tiết',
     description: 'Mô tả các trải nghiệm du lịch',
-    icon: '🗺️',
     lessonsCount: 6,
   },
   {
@@ -199,7 +179,6 @@ export const topics: Topic[] = [
     order: 2,
     name: 'Văn hóa các nước',
     description: 'Tìm hiểu văn hóa khác nhau',
-    icon: '🌍',
     lessonsCount: 6,
   },
   {
@@ -208,7 +187,6 @@ export const topics: Topic[] = [
     order: 3,
     name: 'Công việc & sự nghiệp',
     description: 'Nói về công việc và kế hoạch',
-    icon: '💻',
     lessonsCount: 6,
   },
   {
@@ -217,7 +195,6 @@ export const topics: Topic[] = [
     order: 4,
     name: 'Sức khỏe & thể thao',
     description: 'Tập luyện và cuộc sống khỏe mạnh',
-    icon: '⚽',
     lessonsCount: 5,
   },
   {
@@ -226,7 +203,6 @@ export const topics: Topic[] = [
     order: 5,
     name: 'Thức ăn & ẩm thực',
     description: 'Nói về các loại đồ ăn',
-    icon: '🍜',
     lessonsCount: 6,
   },
   {
@@ -235,7 +211,6 @@ export const topics: Topic[] = [
     order: 6,
     name: 'Mô tả trải nghiệm',
     description: 'Kể chuyện chi tiết hơn',
-    icon: '📖',
     lessonsCount: 5,
   },
 
@@ -246,7 +221,6 @@ export const topics: Topic[] = [
     order: 1,
     name: 'Công nghệ & AI',
     description: 'Thảo luận về công nghệ',
-    icon: '🤖',
     lessonsCount: 7,
   },
   {
@@ -255,7 +229,6 @@ export const topics: Topic[] = [
     order: 2,
     name: 'Giáo dục hiện đại',
     description: 'Tranh luận về hệ thống giáo dục',
-    icon: '📚',
     lessonsCount: 6,
   },
   {
@@ -264,7 +237,6 @@ export const topics: Topic[] = [
     order: 3,
     name: 'Work-life balance',
     description: 'Cân bằng công việc và cuộc sống',
-    icon: '⚖️',
     lessonsCount: 6,
   },
   {
@@ -273,7 +245,6 @@ export const topics: Topic[] = [
     order: 4,
     name: 'Mạng xã hội & tác động',
     description: 'Ảnh hưởng của social media',
-    icon: '📱',
     lessonsCount: 6,
   },
   {
@@ -282,7 +253,6 @@ export const topics: Topic[] = [
     order: 5,
     name: 'Vấn đề môi trường',
     description: 'Thảo luận về biến đổi khí hậu',
-    icon: '🌱',
     lessonsCount: 6,
   },
 
@@ -293,7 +263,6 @@ export const topics: Topic[] = [
     order: 1,
     name: 'AI thay thế con người',
     description: 'Phân tích tương lai công nghệ',
-    icon: '🦾',
     lessonsCount: 8,
   },
   {
@@ -302,7 +271,6 @@ export const topics: Topic[] = [
     order: 2,
     name: 'Tương lai giáo dục',
     description: 'Giáo dục trong thế kỷ 21',
-    icon: '🔮',
     lessonsCount: 8,
   },
   {
@@ -311,7 +279,6 @@ export const topics: Topic[] = [
     order: 3,
     name: 'Biến đổi khí hậu',
     description: 'Phân tích vấn đề toàn cầu',
-    icon: '🌡️',
     lessonsCount: 8,
   },
   {
@@ -320,7 +287,6 @@ export const topics: Topic[] = [
     order: 4,
     name: 'Chính trị & xã hội',
     description: 'Phân tích các vấn đề chính trị',
-    icon: '🏛️',
     lessonsCount: 8,
   },
 ];

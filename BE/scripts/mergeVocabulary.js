@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * 📚 VOCABULARY MERGER & NORMALIZER
+ *  VOCABULARY MERGER & NORMALIZER
  * Merge all NEWBIE topics → merge & import to PostgreSQL
  * 
  * Usage: node scripts/mergeVocabulary.js
@@ -14,7 +14,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function mergeVocabularyFiles() {
-  console.log('🚀 Starting vocabulary merge...\n');
+  console.log(' Starting vocabulary merge...\n');
 
   const baseDir = path.join(__dirname, '../data');
   const levels = ['newbie', 'beginner', 'intermediate'];
@@ -36,20 +36,20 @@ async function mergeVocabularyFiles() {
     for (const file of files) {
       const filePath = path.join(levelDir, file);
       const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-      console.log(`      ✅ ${file}: ${data.length} vocab`);
+      console.log(`       ${file}: ${data.length} vocab`);
       allFiles.push(...data);
     }
   }
 
   // 2️⃣ Normalize & deduplicate
-  console.log('\n🔍 Normalizing data...');
+  console.log('\n Normalizing data...');
   const uniqueKorean = new Set();
   const normalized = [];
 
   for (const item of allFiles) {
     // Skip duplicates (by Korean text)
     if (uniqueKorean.has(item.korean)) {
-      console.log(`   ⚠️  Duplicate: ${item.korean}`);
+      console.log(`     Duplicate: ${item.korean}`);
       continue;
     }
     
@@ -69,7 +69,7 @@ async function mergeVocabularyFiles() {
     });
   }
 
-  console.log(`✅ Normalized: ${normalized.length} items (removed ${allFiles.length - normalized.length} duplicates)\n`);
+  console.log(` Normalized: ${normalized.length} items (removed ${allFiles.length - normalized.length} duplicates)\n`);
 
   // 3️⃣ Import to database
   console.log('💾 Importing to PostgreSQL...\n');
@@ -125,25 +125,25 @@ async function mergeVocabularyFiles() {
       imported++;
 
       if (imported % 20 === 0) {
-        console.log(`  ✅ ${imported} vocab imported...`);
+        console.log(`   ${imported} vocab imported...`);
       }
 
     } catch (error) {
-      console.error(`❌ Error importing "${vocab.korean}":`, error.message);
+      console.error(` Error importing "${vocab.korean}":`, error.message);
     }
   }
 
   console.log(`\n🎉 Import complete!`);
-  console.log(`   ✅ Imported: ${imported}`);
+  console.log(`    Imported: ${imported}`);
   console.log(`   ⏭️  Skipped (existing): ${skipped}`);
-  console.log(`   📊 Total: ${imported + skipped}\n`);
+  console.log(`    Total: ${imported + skipped}\n`);
 
   // 4️⃣ Verify
   const totalVocab = await prisma.vocabulary.count();
   const totalTopics = await prisma.topic.count();
 
-  console.log('📈 Database stats:');
-  console.log(`   📚 Total vocabulary: ${totalVocab}`);
+  console.log(' Database stats:');
+  console.log(`    Total vocabulary: ${totalVocab}`);
   console.log(`   🏷️  Total topics: ${totalTopics}`);
 
   const topicStats = await prisma.topic.findMany({
