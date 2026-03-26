@@ -25,7 +25,7 @@ interface UserProfile {
 }
 
 export default function ProfilePage() {
-  const { user, token } = useAuthStore();
+  const { user, token, logout } = useAuthStore();
   const router = useRouter();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [isEditing, setIsEditing] = useState(false);
@@ -248,8 +248,8 @@ export default function ProfilePage() {
                   <span className="font-semibold text-red-600">Đăng xuất</span>
                   <button
                     onClick={() => {
-                      useAuthStore.setState({ user: null, token: null });
-                      router.push('/login');
+                      logout();
+                      router.push('/');
                     }}
                     className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
                   >

@@ -1,235 +1,252 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import Link from 'next/link';
 
-interface GameStats {
-  trophy?: number;
-  xp?: number;
-  quizCount?: number;
-  writeCount?: number;
-  speakCount?: number;
-  rank?: string;
-  unlockTournament?: boolean;
-}
-
-interface UserData {
-  id: number;
-  email: string;
-  name: string;
-  level: string;
-  levelLocked?: boolean;
-}
-
-export default function Dashboard() {
+export default function LandingPage() {
   const router = useRouter();
-  const { user: authUser } = useAuthStore();
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<GameStats | null>(null);
-  const [user, setUser] = useState<UserData | null>(null);
-  const [error, setError] = useState('');
+  const { user } = useAuthStore();
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-
+  // Nếu đã login → redirect đến dashboard
   useEffect(() => {
-    if (!token) {
-      router.push('/login');
-      return;
+    if (user) {
+      router.push('/dashboard');
     }
-
-    // Kiểm tra xem người dùng đã chọn cấp độ chưa
-    // Nếu levelLocked = false tức là chưa chọn
-    if (authUser && !authUser.levelLocked) {
-      router.push('/level-selection');
-      return;
-    }
-
-    loadData();
-  }, [token, authUser, router]);
-
-  const loadData = async () => {
-    try {
-      setLoading(true);
-
-      const [userRes, statsRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/stats`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
-
-      if (!userRes.ok || !statsRes.ok) {
-        throw new Error('Failed to load data');
-      }
-
-      const userData = await userRes.json();
-      const statsData = await statsRes.json();
-
-      setUser(userData);
-      setStats(statsData);
-    } catch (err) {
-      console.error('Lỗi tải dữ liệu:', err);
-      setError('Không thể tải dữ liệu');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Đang tải dữ liệu...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
-  const menuItems = [
-    { label: '📸 Từ Vựng', href: '/camera', description: 'Nhận diện bằng camera' },
-    { label: '🎯 Quiz', href: '/quiz', description: 'Trả lời câu hỏi' },
-    { label: '✏️ Luyện Viết', href: '/writing', description: 'So sánh với đáp án' },
-    { label: '🎤 Phát Âm', href: '/pronunciation', description: 'Ghi âm và kiểm tra' },
-    { label: ' Giải Đấu', href: '/tournament', description: 'Cạnh tranh với người khác', locked: !stats?.unlockTournament },
-    { label: ' Học Tập', href: '/learning-map', description: 'Theo dõi tiến độ' },
-  ];
+  }, [user, router]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              <h1 className="text-4xl font-bold">Xin chào, {user.name}! </h1>
-              <p className="text-purple-100 mt-2">Cấp độ: <span className="font-semibold text-white">{user.level}</span></p>
-            </div>
-            <button
-              onClick={() => {
-                localStorage.removeItem('token');
-                router.push('/login');
-              }}
-              className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition"
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+      {/* Navigation */}
+      <nav className="bg-white shadow-md">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">🇰🇷</span>
+            <h1 className="text-2xl font-bold text-green-700">HANGUL</h1>
+          </div>
+          <div className="flex gap-4">
+            <Link
+              href="/login"
+              className="px-6 py-2 text-green-700 font-semibold hover:text-green-800 transition"
             >
-              Đăng Xuất
-            </button>
+              Đăng nhập
+            </Link>
+            <Link
+              href="/register"
+              className="px-6 py-2 bg-green-700 text-white rounded-lg font-semibold hover:bg-green-800 transition"
+            >
+              Đăng ký
+            </Link>
           </div>
         </div>
-      </div>
+      </nav>
 
-      {/* Main Content */}
-      <div className="max-w-6xl mx-auto p-6">
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
-            {error}
-          </div>
-        )}
-
-        {/* Game Economy Section */}
-        {stats && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">🎮 Thống Kê Của Bạn</h2>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              {/* Rank Card */}
-              <div className="bg-gradient-to-br from-orange-400 to-red-500 rounded-lg p-4 text-white shadow-lg">
-                <p className="text-sm opacity-90 mb-2">Xếp Hạng</p>
-                <p className="text-3xl font-bold">{stats.rank}</p>
-                <p className="text-xs mt-2">Dựa trên XP</p>
-              </div>
-
-              {/* Trophy Card */}
-              <div className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg p-4 text-white shadow-lg">
-                <p className="text-sm opacity-90 mb-2">Trophy</p>
-                <p className="text-3xl font-bold"> {stats?.trophy ?? 0}</p>
-                {!stats?.unlockTournament && (
-                  <p className="text-xs mt-2">{(1000 - (stats?.trophy ?? 0))} cần</p>
-                )}
-              </div>
-
-              {/* XP Card */}
-              <div className="bg-gradient-to-br from-purple-400 to-blue-500 rounded-lg p-4 text-white shadow-lg">
-                <p className="text-sm opacity-90 mb-2">XP</p>
-                <p className="text-3xl font-bold">⭐ {stats?.xp ?? 0}</p>
-                <p className="text-xs mt-2">Điểm kinh nghiệm</p>
-              </div>
-
-              {/* Quiz Card */}
-              <div className="bg-gradient-to-br from-blue-400 to-cyan-500 rounded-lg p-4 text-white shadow-lg">
-                <p className="text-sm opacity-90 mb-2">Quiz</p>
-                <p className="text-3xl font-bold"> {stats?.quizCount ?? 0}</p>
-                <p className="text-xs mt-2">Bài hoàn thành</p>
-              </div>
-
-              {/* Tournament Status */}
-              <div className={`rounded-lg p-4 shadow-lg text-white ${stats.unlockTournament ? 'bg-gradient-to-br from-green-400 to-emerald-500' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
-                <p className="text-sm opacity-90 mb-2">Giải Đấu</p>
-                <p className="text-2xl font-bold">{stats.unlockTournament ? '🔓' : '🔒'}</p>
-                <p className="text-xs mt-2">{stats.unlockTournament ? 'Sẵn sàng' : 'Khóa'}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Activity Stats */}
-        {stats && (
-          <div className="mb-8 bg-white rounded-lg shadow p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4"> Hoạt Động</h3>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center p-4 bg-purple-50 rounded-lg">
-                <p className="text-gray-600 text-sm">Quiz</p>
-                <p className="text-2xl font-bold text-purple-600">{stats?.quizCount ?? 0}</p>
-              </div>
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <p className="text-gray-600 text-sm">Luyện Viết</p>
-                <p className="text-2xl font-bold text-blue-600">{stats?.writeCount ?? 0}</p>
-              </div>
-              <div className="text-center p-4 bg-orange-50 rounded-lg">
-                <p className="text-gray-600 text-sm">Phát Âm</p>
-                <p className="text-2xl font-bold text-orange-600">{stats?.speakCount ?? 0}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Menu */}
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">🎓 Các Chức Năng Học Tập</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {menuItems.map((item, idx) => {
-            const isLocked = item.locked;
-            return (
+      {/* Hero Section */}
+      <section className="max-w-7xl mx-auto px-4 py-20">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          {/* Left Content */}
+          <div>
+            <h2 className="text-5xl font-bold text-gray-900 mb-6">
+              Học tiếng Hàn một cách vui vẻ
+            </h2>
+            <p className="text-xl text-gray-700 mb-8">
+              Khám phá cách học tiếng Hàn hiện đại với bài quiz, luyện viết, phát âm, và công nghệ nhận dạng hình ảnh. Bắt đầu hành trình học tập của bạn ngay hôm nay!
+            </p>
+            <div className="flex gap-4">
               <Link
-                key={idx}
-                href={isLocked ? '#' : item.href}
-                onClick={(e) => isLocked && e.preventDefault()}
-                className={`rounded-lg p-6 shadow-lg transition transform hover:scale-105 ${
-                  isLocked
-                    ? 'bg-gray-200 cursor-not-allowed opacity-50'
-                    : 'bg-white hover:shadow-xl'
-                }`}
+                href="/register"
+                className="px-8 py-4 bg-green-700 text-white rounded-lg font-semibold hover:bg-green-800 transition text-lg shadow-lg hover:shadow-xl"
               >
-                <div className="flex justify-between items-start mb-3">
-                  <span className="text-4xl">{item.label.split(' ')[0]}</span>
-                  {isLocked && <span className="text-2xl">🔒</span>}
-                </div>
-                <h3 className="font-bold text-lg text-gray-800 mb-2">{item.label.split(' ').slice(1).join(' ')}</h3>
-                <p className="text-gray-600 text-sm">{item.description}</p>
-                {isLocked && (
-                  <p className="text-red-600 text-xs font-semibold mt-3">Cần 1000+ Trophy</p>
-                )}
+                Bắt đầu học ngay
               </Link>
-            );
-          })}
+              <button
+                onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                className="px-8 py-4 border-2 border-green-700 text-green-700 rounded-lg font-semibold hover:bg-green-50 transition text-lg"
+              >
+                Tìm hiểu thêm
+              </button>
+            </div>
+          </div>
+
+          {/* Right Visual */}
+          <div className="flex justify-center">
+            <div className="text-center">
+              <div className="text-9xl mb-4">🇰🇷</div>
+              <p className="text-2xl font-bold text-gray-900">Ahn-nyeong-ha-se-yo!</p>
+              <p className="text-gray-600 mt-2">안녕하세요</p>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="bg-white py-20">
+        <div className="max-w-7xl mx-auto px-4">
+          <h3 className="text-4xl font-bold text-center text-gray-900 mb-16">
+            Tính năng học tập tuyệt vời
+          </h3>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Feature 1 */}
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-8 text-center hover:shadow-lg transition">
+              <div className="text-5xl mb-4">🎯</div>
+              <h4 className="text-xl font-bold text-gray-900 mb-3">Quiz thông minh</h4>
+              <p className="text-gray-700">
+                Trắc nghiệm từ vựng và ngữ pháp với hệ thống học tập thích nghi
+              </p>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-8 text-center hover:shadow-lg transition">
+              <div className="text-5xl mb-4">✍️</div>
+              <h4 className="text-xl font-bold text-gray-900 mb-3">Luyện viết</h4>
+              <p className="text-gray-700">
+                Thực hành viết tiếng Hàn từ cơ bản đến nâng cao
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-8 text-center hover:shadow-lg transition">
+              <div className="text-5xl mb-4">🎤</div>
+              <h4 className="text-xl font-bold text-gray-900 mb-3">Phát âm</h4>
+              <p className="text-gray-700">
+                Học phát âm chuẩn với đánh giá tức thời
+              </p>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-8 text-center hover:shadow-lg transition">
+              <div className="text-5xl mb-4">📸</div>
+              <h4 className="text-xl font-bold text-gray-900 mb-3">Nhận dạng hình</h4>
+              <p className="text-gray-700">
+                Sử dụng camera để nhận dạng chữ Hàn
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Choose Us */}
+      <section className="bg-gradient-to-br from-green-700 to-green-800 text-white py-20">
+        <div className="max-w-7xl mx-auto px-4">
+          <h3 className="text-4xl font-bold text-center mb-16">Tại sao chọn HANGUL?</h3>
+
+          <div className="grid md:grid-cols-3 gap-12">
+            <div className="text-center">
+              <div className="text-5xl mb-4">⚡</div>
+              <h4 className="text-2xl font-bold mb-3">Nhanh chóng</h4>
+              <p>
+                Bắt đầu học trong vòng 30 giây. Không cần cài đặt phức tạp.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="text-5xl mb-4">🎯</div>
+              <h4 className="text-2xl font-bold mb-3">Hiệu quả</h4>
+              <p>
+                Hệ thống học tập được thiết kế bởi giáo viên tiếng Hàn chuyên nghiệp
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="text-5xl mb-4">🏆</div>
+              <h4 className="text-2xl font-bold mb-3">Thú vị</h4>
+              <p>
+                Gamification với điểm, huy hiệu, và bảng xếp hạng
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="bg-white py-20">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-8 text-center">
+            <div>
+              <div className="text-4xl font-bold text-green-700 mb-2">5000+</div>
+              <p className="text-gray-700">Từ vựng</p>
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-green-700 mb-2">100+</div>
+              <p className="text-gray-700">Bài học</p>
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-green-700 mb-2">10k+</div>
+              <p className="text-gray-700">Người học</p>
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-green-700 mb-2">4.8</div>
+              <p className="text-gray-700">Đánh giá</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="bg-gradient-to-r from-green-600 to-green-700 text-white py-16">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h3 className="text-3xl font-bold mb-6">
+            Sẵn sàng học tiếng Hàn chưa?
+          </h3>
+          <p className="text-xl mb-8">
+            Tham gia hàng nghìn học viên đang học cùng HANGUL
+          </p>
+          <div className="flex gap-4 justify-center flex-wrap">
+            <Link
+              href="/register"
+              className="px-8 py-4 bg-white text-green-700 rounded-lg font-semibold hover:bg-gray-100 transition text-lg shadow-lg"
+            >
+              Đăng ký miễn phí
+            </Link>
+            <Link
+              href="/login"
+              className="px-8 py-4 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-green-700 transition text-lg"
+            >
+              Đã có tài khoản? Đăng nhập
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-gray-300 py-12">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <h4 className="text-white font-bold mb-4">HANGUL</h4>
+              <p>Học tiếng Hàn một cách hiện đại và vui vẻ</p>
+            </div>
+            <div>
+              <h4 className="text-white font-bold mb-4">Tính năng</h4>
+              <ul className="space-y-2">
+                <li><a href="#" className="hover:text-white transition">Quiz</a></li>
+                <li><a href="#" className="hover:text-white transition">Luyện viết</a></li>
+                <li><a href="#" className="hover:text-white transition">Phát âm</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-white font-bold mb-4">Công ty</h4>
+              <ul className="space-y-2">
+                <li><a href="#" className="hover:text-white transition">Về chúng tôi</a></li>
+                <li><a href="#" className="hover:text-white transition">Blog</a></li>
+                <li><a href="#" className="hover:text-white transition">Liên hệ</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-white font-bold mb-4">Pháp lý</h4>
+              <ul className="space-y-2">
+                <li><a href="#" className="hover:text-white transition">Điều khoản</a></li>
+                <li><a href="#" className="hover:text-white transition">Quyền riêng tư</a></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-700 pt-8 text-center">
+            <p>&copy; 2026 HANGUL. Tất cả quyền được bảo lưu.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

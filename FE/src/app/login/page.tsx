@@ -12,7 +12,14 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useAuthStore();
+  const { login, user } = useAuthStore();
+
+  // 🔥 Auth Guard: Nếu đã login → redirect đến dashboard
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
 
   // Check if user just registered
   useEffect(() => {
