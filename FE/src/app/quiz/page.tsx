@@ -39,13 +39,32 @@ export default function QuizPage() {
   const loadQuiz = async () => {
     try {
       setLoading(true);
+      
+      // First, get user's level
+      const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const userData = await userRes.json();
+      const userLevel = userData.level || 'NEWBIE';
+      
+      console.log('📚 User level:', userLevel);
+
+      // Then fetch quiz questions from database based on user level
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/quiz/generate?level=NEWBIE&limit=10`,
+        `${process.env.NEXT_PUBLIC_API_URL}/quiz/generate?level=${userLevel}&limit=10`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
       const data = await res.json();
+      
+      if (!Array.isArray(data)) {
+        console.error('Invalid quiz data:', data);
+        alert('Lỗi: Không thể tải câu hỏi. ' + (data.error || ''));
+        return;
+      }
+      
+      console.log(`✅ Loaded ${data.length} questions from database`);
       setQuestions(data);
       setCurrentIndex(0);
       setScore(0);
@@ -54,6 +73,7 @@ export default function QuizPage() {
       setSelectedAnswer(null);
     } catch (error) {
       console.error('Lỗi tải quiz:', error);
+      alert('Lỗi khi tải quiz. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }

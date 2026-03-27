@@ -8,6 +8,7 @@ interface User {
   level: string;
   levelLocked?: boolean;
   totalXP: number;
+  trophy?: number;  // For tournament feature
   avatar?: string;
 }
 
@@ -66,7 +67,7 @@ export const useAuthStore = create<AuthStore>((set) => {
       
       localStorage.setItem('token', data.token);
       
-      // Backend returns userId, email, name, role, level, levelLocked, xp, token
+      // Backend returns userId, email, name, role, level, levelLocked, xp, trophy, token
       const user: User = {
         id: data.userId,
         email: data.email,
@@ -75,6 +76,7 @@ export const useAuthStore = create<AuthStore>((set) => {
         level: data.level || 'NEWBIE',
         levelLocked: data.levelLocked || false,
         totalXP: data.xp || 0,
+        trophy: data.trophy || 0,  // Add trophy
       };
       
       // 🔥 LƯU USER VÀO LOCALSTORAGE

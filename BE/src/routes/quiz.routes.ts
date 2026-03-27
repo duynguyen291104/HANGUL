@@ -185,7 +185,52 @@ router.get('/history', async (req: AuthRequest, res: Response) => {
 });
 
 // ========================
-// GENERATE QUIZ QUESTIONS (Simple version)
+// SUBMIT QUIZ RESULTS & UPDATE TROPHY
+// ========================
+router.post('/submit', async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { score, totalQuestions } = req.body;
+
+    // Validate input
+    if (score === undefined || totalQuestions === undefined) {
+      return res.status(400).json({ error: 'Missing score or totalQuestions' });
+    }
+
+    // Calculate trophy: +10 per correct answer
+    const trophyGained = score * 10;
+
+    // Update user's trophy in database
+    const updatedUser = await prisma.user.update({
+      where: { id: req.user.id },
+      data: {
+        trophy: {
+          increment: trophyGained,
+        },
+      },
+    });
+
+    console.log(`✅ Quiz completed: ${score}/${totalQuestions} correct | +${trophyGained} trophy | Total trophy: ${updatedUser.trophy}`);
+
+    res.json({
+      message: 'Quiz completed successfully',
+      score,
+      totalQuestions,
+      trophy: trophyGained,
+      xp: 0,
+      totalTrophy: updatedUser.trophy,
+    });
+  } catch (error) {
+    console.error('❌ QUIZ SUBMIT ERROR:', error);
+    res.status(500).json({ error: 'Failed to submit quiz results' });
+  }
+});
+
+// ========================
+// GENERATE QUIZ QUESTIONS FROM DATABASE
 // ========================
 router.get('/generate', async (req: AuthRequest, res: Response) => {
   try {
@@ -196,22 +241,55 @@ router.get('/generate', async (req: AuthRequest, res: Response) => {
     const { level = 'NEWBIE', limit = 10 } = req.query;
     const numLimit = Math.min(parseInt(limit as string) || 10, 50);
 
-    // Generate mock questions for now (since we don't have a Question table yet)
-    const questions = Array.from({ length: numLimit }, (_, i) => ({
-      id: i + 1,
-      type: 'multiple-choice',
-      question: `동물 ${i + 1}은(는) 무엇인가요? (What animal is this?)`,
-      romanization: `dongmul ${i + 1}`,
-      correctAnswer: '강아지',
-      options: ['강아지', '고양이', '새', '물고기'],
-      difficulty: level === 'BEGINNER' ? 'medium' : level === 'INTERMEDIATE' ? 'hard' : 'easy',
-      level: level || 'NEWBIE',
-    }));
+    // Fetch vocabulary from database by level
+    const vocabularies = await prisma.vocabulary.findMany({
+      where: {
+        level: (level as string).toUpperCase(),
+        isActive: true,
+      },
+      take: numLimit * 2, // Get more to ensure variety
+    });
 
-    console.log(` Generated ${questions.length} quiz questions for level: ${level}`);
+    if (vocabularies.length === 0) {
+      return res.status(404).json({ error: `No vocabulary found for level: ${level}` });
+    }
+
+    // Shuffle and select unique questions
+    const shuffled = vocabularies.sort(() => Math.random() - 0.5);
+    const selected = shuffled.slice(0, Math.min(numLimit, vocabularies.length));
+
+    // Create quiz questions from vocabulary
+    const questions = selected.map((vocab, idx) => {
+      // Get wrong answers from other vocabularies
+      const wrongAnswers = shuffled
+        .filter((v) => v.id !== vocab.id && v.id !== selected[idx]?.id)
+        .slice(0, 3)
+        .map((v) => v.vietnamese);
+
+      // Mix correct answer with wrong answers
+      const options = [vocab.vietnamese, ...wrongAnswers]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 4);
+
+      return {
+        id: vocab.id,
+        type: 'multiple-choice',
+        question: `${vocab.korean} (${vocab.english}) - Tiếng Việt là gì?`,
+        korean: vocab.korean,
+        english: vocab.english,
+        vietnamese: vocab.vietnamese,
+        romanization: vocab.romanization || '',
+        correctAnswer: vocab.vietnamese,
+        options,
+        difficulty: level === 'BEGINNER' ? 'medium' : 'easy',
+        level: level || 'NEWBIE',
+      };
+    });
+
+    console.log(`✅ Generated ${questions.length} quiz questions for level: ${level} (from database)`);
     res.json(questions);
   } catch (error) {
-    console.error(' GENERATE QUIZ ERROR:', error);
+    console.error('❌ GENERATE QUIZ ERROR:', error);
     res.status(500).json({ error: 'Failed to generate quiz questions' });
   }
 });

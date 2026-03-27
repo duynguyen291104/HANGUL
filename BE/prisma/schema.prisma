@@ -25,11 +25,13 @@ model User {
   level     String  @default("NEWBIE")
   levelLocked Boolean @default(false)
   totalXP   Int     @default(0)
+  trophy    Int     @default(0)        // For tournament feature (>= 1000 to join)
   currentStreak Int @default(0)
   lastCheckinDate DateTime?
   
   // Relations
   vocabularyLearned Vocabulary[]
+  userSavedVocabulary UserSavedVocabulary[]
   quizSessions QuizSession[]
   quizAnswers QuizAnswer[]
   writingPractices WritingPractice[]
@@ -114,9 +116,40 @@ model Vocabulary {
   examples    VocabExample[]
   usersLearned User[]
   pronunciationWords PronunciationWord[]
+  savedByUsers UserSavedVocabulary[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ========================
+// USER SAVED VOCABULARY (từ vựng user thu thập từ camera/quiz/writing/pronunciation)
+// ========================
+model UserSavedVocabulary {
+  id          Int        @id @default(autoincrement())
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int
+  vocabulary  Vocabulary @relation(fields: [vocabId], references: [id], onDelete: Cascade)
+  vocabId     Int
+  
+  // Source tracking
+  source      String     // "camera", "quiz", "writing", "pronunciation", "listening"
+  sourceId    String?    // ID of quiz session, camera detection, etc.
+  
+  // Learning status
+  isLearned   Boolean    @default(false)
+  attempts    Int        @default(0)
+  score       Float      @default(0.0)  // 0-100
+  
+  // For Prisma Studio CRUD
+  notes       String?    // User notes/comments
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, vocabId])
+  @@index([userId])
+  @@index([source])
 }
 
 // ========================

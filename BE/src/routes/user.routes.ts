@@ -14,7 +14,11 @@ userRouter.get('/stats', async (req: any, res: any) => {
     const user = await userPrisma.user.findUnique({
       where: { id: userId },
       select: {
+        id: true,
+        name: true,
+        email: true,
         totalXP: true,
+        trophy: true,
         currentStreak: true,
         level: true,
         lastCheckinDate: true,
@@ -25,14 +29,25 @@ userRouter.get('/stats', async (req: any, res: any) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    const trophyValue = user.trophy || 0;
+    const isEligible = trophyValue >= 1000;
+
+    console.log(`✅ User ${user.email}: Trophy=${trophyValue}, Eligible=${isEligible}`);
+
     res.json({
+      userId: user.id,
+      name: user.name,
+      email: user.email,
+      trophy: trophyValue,
+      eligible: isEligible,
+      // Other fields (informational only)
       xp: user.totalXP,
       streak: user.currentStreak,
       level: user.level,
       lastCheckinDate: user.lastCheckinDate,
     });
   } catch (error) {
-    console.error(' USER STATS ERROR:', error);
+    console.error('❌ USER STATS ERROR:', error);
     res.status(500).json({ error: 'Failed to load user stats' });
   }
 });
@@ -55,6 +70,7 @@ userRouter.get('/profile', async (req: any, res: any) => {
         level: true,
         levelLocked: true,
         totalXP: true,
+        trophy: true,
         currentStreak: true,
         lastCheckinDate: true,
       },

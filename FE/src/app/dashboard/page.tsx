@@ -12,7 +12,7 @@ interface GameStats {
   writeCount?: number;
   speakCount?: number;
   rank?: string;
-  unlockTournament?: boolean;
+  eligible?: boolean;  // Trophy >= 1000
 }
 
 interface UserData {
@@ -99,7 +99,7 @@ export default function Dashboard() {
     { label: '🎯 Quiz', href: '/quiz', description: 'Trả lời câu hỏi' },
     { label: '✏️ Luyện Viết', href: '/writing', description: 'So sánh với đáp án' },
     { label: '🎤 Phát Âm', href: '/pronunciation', description: 'Ghi âm và kiểm tra' },
-    { label: ' Giải Đấu', href: '/tournament', description: 'Cạnh tranh với người khác', locked: !stats?.unlockTournament },
+    { label: ' Giải Đấu', href: '/tournament', description: 'Cạnh tranh với người khác', locked: !stats?.eligible },
     { label: ' Học Tập', href: '/learning-map', description: 'Theo dõi tiến độ' },
   ];
 
@@ -150,8 +150,8 @@ export default function Dashboard() {
               <div className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg p-4 text-white shadow-lg">
                 <p className="text-sm opacity-90 mb-2">Trophy</p>
                 <p className="text-3xl font-bold"> {stats?.trophy ?? 0}</p>
-                {!stats?.unlockTournament && (
-                  <p className="text-xs mt-2">{(1000 - (stats?.trophy ?? 0))} cần</p>
+                {!stats?.eligible && (
+                  <p className="text-xs mt-2">{Math.max(0, (1000 - (stats?.trophy ?? 0)))} cần</p>
                 )}
               </div>
 
@@ -170,10 +170,10 @@ export default function Dashboard() {
               </div>
 
               {/* Tournament Status */}
-              <div className={`rounded-lg p-4 shadow-lg text-white ${stats.unlockTournament ? 'bg-gradient-to-br from-green-400 to-emerald-500' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
+              <div className={`rounded-lg p-4 shadow-lg text-white ${stats.eligible ? 'bg-gradient-to-br from-green-400 to-emerald-500' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
                 <p className="text-sm opacity-90 mb-2">Giải Đấu</p>
-                <p className="text-2xl font-bold">{stats.unlockTournament ? '🔓' : '🔒'}</p>
-                <p className="text-xs mt-2">{stats.unlockTournament ? 'Sẵn sàng' : 'Khóa'}</p>
+                <p className="text-2xl font-bold">{stats.eligible ? '🔓' : '🔒'}</p>
+                <p className="text-xs mt-2">{stats.eligible ? 'Sẵn sàng' : 'Khóa'}</p>
               </div>
             </div>
           </div>

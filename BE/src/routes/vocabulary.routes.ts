@@ -13,6 +13,50 @@ interface AuthRequest extends Request {
 }
 
 // ========================
+// GET VOCABULARY BY USER LEVEL (for tournaments/games)
+// ========================
+router.get('/by-level/tournament', async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Get user's level
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const { limit = 10 } = req.query;
+
+    // Get vocabulary for user's level
+    const vocabulary = await prisma.vocabulary.findMany({
+      where: {
+        level: user.level,
+        isActive: true,
+      },
+      take: parseInt(limit as string),
+      orderBy: { id: 'desc' },
+      include: {
+        topic: true,
+      },
+    });
+
+    res.json({
+      userLevel: user.level,
+      count: vocabulary.length,
+      data: vocabulary,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch vocabulary by level' });
+  }
+});
+
+// ========================
 // GET ALL VOCABULARY
 // ========================
 router.get('/', async (req: AuthRequest, res: Response) => {

@@ -62,6 +62,7 @@ router.post('/register', async (req, res) => {
         name: user.name,
         role: user.role,
         level: user.level,
+        trophy: user.trophy || 0,  // Add trophy
         totalXP: user.totalXP || 0,
       },
       token,
@@ -118,6 +119,7 @@ router.post('/login', async (req, res) => {
       level: user.level,
       levelLocked: user.levelLocked || false,
       xp: user.totalXP,
+      trophy: user.trophy || 0,  // Add trophy
       token,
     });
   } catch (error) {
@@ -151,6 +153,7 @@ router.get('/me', async (req, res) => {
         role: true,
         level: true,
         totalXP: true,
+        trophy: true,  // Add trophy
         currentStreak: true,
         lastCheckinDate: true,
         avatar: true,
