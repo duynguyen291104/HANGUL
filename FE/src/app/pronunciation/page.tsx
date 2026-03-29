@@ -1,9 +1,28 @@
-'use client';
+﻿'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useAuthStore } from '@/store/authStore';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  BarChart3,
+  BookMarked,
+  BookOpen,
+  Languages,
+  Map,
+  Mic2,
+  Sparkles,
+  Trophy,
+  Volume2,
+} from 'lucide-react';
+import {
+  HangulCard,
+  HangulPageFrame,
+  HangulSidebar,
+  MascotPortrait,
+  Pill,
+  StatusChip,
+} from '@/components/hangul/ui';
+import { useAuthStore } from '@/store/authStore';
 
 interface VocabularyWord {
   id: string;
@@ -12,58 +31,327 @@ interface VocabularyWord {
   romanization: string;
 }
 
+interface PronunciationIssue {
+  unit: string;
+  error_type: string;
+  score: number;
+  advice_vi: string;
+}
+
+interface PronunciationAnalysis {
+  overall: number;
+  accuracy: number;
+  fluency: number;
+  prosody: number;
+  transcript: string;
+  source: 'backend' | 'browser';
+  note: string;
+  details: string[];
+}
+
+interface PronunciationBackendResponse {
+  success: boolean;
+  transcribed_text?: string;
+  target_text?: string;
+  score?: number;
+  metrics?: {
+    overall: number;
+    accuracy: number;
+    fluency: number;
+    prosody: number;
+  };
+  issues?: PronunciationIssue[];
+  feedback_vi?: string;
+  assessment_mode?: string;
+}
+
+interface BrowserSpeechRecognition extends EventTarget {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  maxAlternatives: number;
+  onresult: ((event: any) => void) | null;
+  onerror: ((event: any) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition?: new () => BrowserSpeechRecognition;
+    webkitSpeechRecognition?: new () => BrowserSpeechRecognition;
+  }
+}
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const RECOGNITION_WAIT_MS = 1400;
+
+const practiceSidebar = [
+  { key: 'course' as const, label: 'Current Course', href: '/dashboard', icon: BookOpen },
+  { key: 'path' as const, label: 'Speaking Practice', href: '/pronunciation', icon: Mic2, active: true },
+  { key: 'vocabulary' as const, label: 'Learning Path', href: '/learning-map', icon: Map },
+  { key: 'achievements' as const, label: 'Vocabulary', href: '/camera', icon: BookMarked },
+  { key: 'friends' as const, label: 'Achievements', href: '/profile', icon: Trophy },
+];
+
+const clampScore = (value: number) => Math.max(0, Math.min(100, Math.round(value)));
+
+const normalizeText = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize('NFKC')
+    .replace(/[^\p{Letter}\p{Number}\s]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const splitSyllables = (value: string) =>
+  normalizeText(value)
+    .replace(/\s+/g, '')
+    .split('')
+    .filter(Boolean);
+
+const levenshtein = (left: string, right: string) => {
+  if (left === right) return 0;
+  if (!left.length) return right.length;
+  if (!right.length) return left.length;
+
+  const rows = Array.from({ length: left.length + 1 }, (_, index) => [index]);
+  rows[0] = Array.from({ length: right.length + 1 }, (_, index) => index);
+
+  for (let row = 1; row <= left.length; row += 1) {
+    for (let column = 1; column <= right.length; column += 1) {
+      const cost = left[row - 1] === right[column - 1] ? 0 : 1;
+      rows[row][column] = Math.min(
+        rows[row - 1][column] + 1,
+        rows[row][column - 1] + 1,
+        rows[row - 1][column - 1] + cost
+      );
+    }
+  }
+
+  return rows[left.length][right.length];
+};
+
+const similarityPercent = (recognized: string, target: string) => {
+  const cleanRecognized = normalizeText(recognized);
+  const cleanTarget = normalizeText(target);
+
+  if (!cleanRecognized || !cleanTarget) return 0;
+
+  const distance = levenshtein(cleanRecognized, cleanTarget);
+  const maxLength = Math.max(cleanRecognized.length, cleanTarget.length);
+
+  return clampScore(((maxLength - distance) / maxLength) * 100);
+};
+
+const detectPronunciationIssues = (recognized: string, target: string) => {
+  const recognizedSyllables = splitSyllables(recognized);
+  const targetSyllables = splitSyllables(target);
+  const details: string[] = [];
+
+  if (!recognizedSyllables.length) {
+    return ['Hệ thống chưa nghe rõ phần bạn đọc. Hãy nói chậm hơn và đứng gần micro hơn.'];
+  }
+
+  if (recognizedSyllables.length < targetSyllables.length) {
+    details.push(`Bạn đang đọc thiếu phần "${targetSyllables.slice(recognizedSyllables.length).join('')}".`);
+  }
+
+  if (recognizedSyllables.length > targetSyllables.length) {
+    details.push(`Bạn đang đọc dư phần "${recognizedSyllables.slice(targetSyllables.length).join('')}".`);
+  }
+
+  const mismatchIndex = targetSyllables.findIndex(
+    (syllable, index) => recognizedSyllables[index] !== syllable
+  );
+
+  if (mismatchIndex >= 0 && mismatchIndex < recognizedSyllables.length) {
+    details.push(
+      `Âm tiết ${mismatchIndex + 1} nên là "${targetSyllables[mismatchIndex]}", nhưng hệ thống nghe gần giống "${recognizedSyllables[mismatchIndex]}".`
+    );
+  }
+
+  const lastTarget = targetSyllables[targetSyllables.length - 1];
+  const lastRecognized = recognizedSyllables[targetSyllables.length - 1];
+  if (lastTarget && lastRecognized && lastTarget !== lastRecognized) {
+    details.push(`Âm cuối "${lastTarget}" chưa rõ. Hãy nhấn rõ phần kết thúc hơn.`);
+  }
+
+  return details.slice(0, 4);
+};
+
+const createBrowserFallbackAnalysis = (transcript: string, target: VocabularyWord): PronunciationAnalysis => {
+  const accuracy = similarityPercent(transcript, target.korean);
+  const fluency = clampScore(accuracy - 6);
+  const prosody = clampScore(accuracy - 12);
+  const overall = clampScore((accuracy * 0.55) + (fluency * 0.25) + (prosody * 0.2));
+  const details = detectPronunciationIssues(transcript, target.korean);
+
+  return {
+    overall,
+    accuracy,
+    fluency,
+    prosody,
+    transcript,
+    source: 'browser',
+    note: details[0] || 'Đây là chấm điểm dự phòng từ trình duyệt, độ chính xác chỉ ở mức tương đối.',
+    details,
+  };
+};
+
+const blobToDataUrl = (blob: Blob) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error('Could not read the recorded audio.'));
+    reader.readAsDataURL(blob);
+  });
+
+const scoreVoice = (voice: SpeechSynthesisVoice) => {
+  let total = 0;
+  if (voice.lang.toLowerCase().startsWith('ko')) total += 40;
+  if (/google/i.test(voice.name)) total += 20;
+  if (/neural|premium/i.test(voice.name)) total += 10;
+  if (voice.default) total += 4;
+  return total;
+};
+
+const pickKoreanVoice = () => {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
+  const voices = window.speechSynthesis.getVoices();
+  const koreanVoices = voices.filter((voice) => voice.lang.toLowerCase().startsWith('ko'));
+  if (koreanVoices.length === 0) return null;
+  return koreanVoices.sort((left, right) => scoreVoice(right) - scoreVoice(left))[0];
+};
+
+async function waitForVoices() {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+  if (window.speechSynthesis.getVoices().length > 0) return;
+
+  await new Promise<void>((resolve) => {
+    const handleVoicesChanged = () => {
+      window.clearTimeout(timeoutId);
+      window.speechSynthesis.removeEventListener('voiceschanged', handleVoicesChanged);
+      resolve();
+    };
+
+    const timeoutId = window.setTimeout(() => {
+      window.speechSynthesis.removeEventListener('voiceschanged', handleVoicesChanged);
+      resolve();
+    }, 800);
+
+    window.speechSynthesis.addEventListener('voiceschanged', handleVoicesChanged);
+  });
+}
+
 export default function PronunciationPage() {
   const { token, user } = useAuthStore();
   const router = useRouter();
-  
+
   const [isRecording, setIsRecording] = useState(false);
   const [loading, setLoading] = useState(false);
   const [score, setScore] = useState<number | null>(null);
-  const [transcribed, setTranscribed] = useState<string>('');
-  const [message, setMessage] = useState<string>('');
+  const [transcribed, setTranscribed] = useState('');
+  const [message, setMessage] = useState('');
   const [currentWord, setCurrentWord] = useState<VocabularyWord | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [vocabulary, setVocabulary] = useState<VocabularyWord[]>([]);
+  const [analysis, setAnalysis] = useState<PronunciationAnalysis | null>(null);
+  const [supportsBrowserScoring, setSupportsBrowserScoring] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const speechRecognitionRef = useRef<BrowserSpeechRecognition | null>(null);
+  const recognitionWaitResolverRef = useRef<(() => void) | null>(null);
+  const browserTranscriptRef = useRef('');
 
-  // Fetch vocabulary by level
+  const resolveRecognitionWait = () => {
+    if (recognitionWaitResolverRef.current) {
+      recognitionWaitResolverRef.current();
+      recognitionWaitResolverRef.current = null;
+    }
+  };
+
+  const waitForSpeechRecognitionResult = async () => {
+    if (!supportsBrowserScoring || !speechRecognitionRef.current) return;
+
+    await new Promise<void>((resolve) => {
+      const finish = () => {
+        if (recognitionWaitResolverRef.current === finish) {
+          recognitionWaitResolverRef.current = null;
+        }
+        resolve();
+      };
+
+      recognitionWaitResolverRef.current = finish;
+      window.setTimeout(finish, RECOGNITION_WAIT_MS);
+    });
+  };
+
+  const createSpeechRecognition = () => {
+    if (typeof window === 'undefined') return null;
+
+    const RecognitionConstructor = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!RecognitionConstructor) return null;
+
+    const recognition = new RecognitionConstructor();
+    recognition.lang = 'ko-KR';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 3;
+
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results || [])
+        .map((result: any) => result?.[0]?.transcript || '')
+        .filter(Boolean)
+        .join(' ')
+        .trim();
+
+      if (transcript) {
+        browserTranscriptRef.current = transcript;
+        setTranscribed(transcript);
+      }
+
+      resolveRecognitionWait();
+    };
+
+    recognition.onerror = () => {
+      resolveRecognitionWait();
+    };
+
+    recognition.onend = () => {
+      resolveRecognitionWait();
+    };
+
+    return recognition;
+  };
+
   const fetchVocabulary = async (level: string) => {
     try {
-      setMessage('⏳ Đang tải từ vựng...');
-      const response = await fetch(`http://localhost:5000/api/pronunciation/vocabulary/${level}?limit=20`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch vocabulary');
-      }
-      
+      setMessage('Đang tải danh sách từ...');
+      const response = await fetch(`${API_BASE_URL}/pronunciation/vocabulary/${level}?limit=20`);
+      if (!response.ok) throw new Error('Failed to fetch vocabulary');
+
       const data = await response.json();
-      if (data.success && data.vocabulary) {
-        setVocabulary(data.vocabulary);
-        setMessage('');
-        
-        // Select random word
-        const randomWord = data.vocabulary[Math.floor(Math.random() * data.vocabulary.length)];
-        setCurrentWord(randomWord);
-      } else {
-        throw new Error('Invalid vocabulary data');
+      if (!data.success || !Array.isArray(data.vocabulary)) {
+        throw new Error('Invalid vocabulary payload');
       }
-    } catch (error) {
-      console.error('Error fetching vocabulary:', error);
-      setMessage('❌ Không thể tải từ vựng');
-      // Fallback to sample vocabulary
-      const sampleVocabulary: VocabularyWord[] = [
-        { id: '1', korean: '안녕하세요', english: 'Hello (formal)', romanization: 'annyeonghaseyo' },
-        { id: '2', korean: '감사합니다', english: 'Thank you', romanization: 'gamsahamnida' },
-        { id: '3', korean: '미안합니다', english: 'I am sorry', romanization: 'mianhamnida' },
-        { id: '4', korean: '물', english: 'Water', romanization: 'mul' },
-        { id: '5', korean: '밥', english: 'Rice/Food', romanization: 'bap' },
+
+      setVocabulary(data.vocabulary);
+      setCurrentWord(data.vocabulary[Math.floor(Math.random() * data.vocabulary.length)]);
+      setMessage('');
+    } catch {
+      const fallbackWords: VocabularyWord[] = [
+        { id: '1', korean: '안녕하세요', english: 'Hello / Good day', romanization: 'an-nyeong-ha-se-yo' },
+        { id: '2', korean: '감사합니다', english: 'Thank you', romanization: 'gam-sa-ham-ni-da' },
+        { id: '3', korean: '죄송합니다', english: 'Sorry', romanization: 'joe-song-ham-ni-da' },
       ];
-      setVocabulary(sampleVocabulary);
-      const randomWord = sampleVocabulary[Math.floor(Math.random() * sampleVocabulary.length)];
-      setCurrentWord(randomWord);
+      setVocabulary(fallbackWords);
+      setCurrentWord(fallbackWords[0]);
+      setMessage('Đang dùng bộ từ mẫu offline.');
     }
   };
 
@@ -72,355 +360,469 @@ export default function PronunciationPage() {
       router.push('/login');
       return;
     }
-    
-    // Fetch vocabulary for user's level
-    const userLevel = user?.level || 'NEWBIE';
-    fetchVocabulary(userLevel);
-  }, [token, router, user?.level]);
+
+    fetchVocabulary(user?.level || 'NEWBIE');
+  }, [router, token, user?.level]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    setSupportsBrowserScoring(Boolean(window.SpeechRecognition || window.webkitSpeechRecognition));
+
+    return () => {
+      try {
+        speechRecognitionRef.current?.abort();
+      } catch {}
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    };
+  }, []);
+
+  const applyBackendAnalysis = (payload: PronunciationBackendResponse) => {
+    const metrics = payload.metrics;
+    if (!metrics) return;
+
+    const details = Array.isArray(payload.issues) ? payload.issues.map((item) => item.advice_vi) : [];
+
+    const result: PronunciationAnalysis = {
+      overall: metrics.overall,
+      accuracy: metrics.accuracy,
+      fluency: metrics.fluency,
+      prosody: metrics.prosody,
+      transcript: payload.transcribed_text || '',
+      source: 'backend',
+      note: payload.feedback_vi || 'Đã chấm điểm bằng Whisper + Gemini.',
+      details,
+    };
+
+    setAnalysis(result);
+    setTranscribed(result.transcript);
+    setScore(result.overall);
+    setMessage(result.note);
+  };
 
   const startRecording = async () => {
     try {
+      if (loading || isRecording) return;
+
+      setAnalysis(null);
+      setScore(null);
+      setTranscribed('');
+      setMessage('Đang nghe phần phát âm của bạn...');
+      browserTranscriptRef.current = '';
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
-      
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
-      
+
       mediaRecorder.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
       };
-      
+
       mediaRecorder.onstart = () => {
         setIsRecording(true);
-        setMessage('🎤 Đang ghi âm... Nói đi!');
       };
-      
-      mediaRecorder.onstop = () => {
-        setIsRecording(false);
-      };
-      
+
+      if (supportsBrowserScoring) {
+        try {
+          speechRecognitionRef.current?.abort();
+        } catch {}
+
+        speechRecognitionRef.current = createSpeechRecognition();
+
+        try {
+          speechRecognitionRef.current?.start();
+        } catch {}
+      }
+
       mediaRecorder.start();
-    } catch (error) {
-      console.error('Error accessing microphone:', error);
-      setMessage('❌ Không thể truy cập microphone');
+    } catch {
+      setIsRecording(false);
+      setLoading(false);
+      setMessage('Không thể truy cập microphone. Hãy cấp quyền micro rồi thử lại.');
     }
   };
 
   const stopRecording = async () => {
-    if (!mediaRecorderRef.current) return;
-    
-    setLoading(true);
-    setMessage('⏳ Đang phân tích...');
-    
-    // Capture currentWord here to avoid closure issues
+    if (!mediaRecorderRef.current || !currentWord || loading) return;
+
+    const recorder = mediaRecorderRef.current;
+    if (recorder.state === 'inactive') return;
+
     const targetWord = currentWord;
-    
-    mediaRecorderRef.current.onstop = async () => {
+
+    setIsRecording(false);
+    setLoading(true);
+
+    recorder.onstop = async () => {
       try {
-        // Create blob and convert to base64
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-        const reader = new FileReader();
-        
-        reader.onload = async () => {
-          const base64Audio = reader.result as string;
-          
-          if (!targetWord) {
-            setMessage('❌ Không có từ vựng nào được chọn');
-            setLoading(false);
-            return;
+        await waitForSpeechRecognitionResult();
+        const audioBlob = new Blob(audioChunksRef.current, { type: recorder.mimeType || 'audio/webm' });
+
+        try {
+          const base64Audio = await blobToDataUrl(audioBlob);
+          const response = await fetch(`${API_BASE_URL}/pronunciation/transcribe`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              audio: base64Audio,
+              target: targetWord.korean,
+            }),
+          });
+
+          const payload: PronunciationBackendResponse = await response.json();
+
+          if (!response.ok || !payload.success) {
+            throw new Error(payload?.feedback_vi || payload?.target_text || 'Pronunciation API failed');
           }
-          
-          try {
-            // Send to backend for transcription
-            console.log('📤 Gửi âm thanh tới transcribe API...');
-            const response = await fetch('http://localhost:5000/api/pronunciation/transcribe', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                audio: base64Audio,
-                target: targetWord.korean,
-              }),
-            });
-            
-            if (!response.ok) {
-              throw new Error(`API error: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            console.log('✅ Kết quả:', data);
-            
-            setTranscribed(data.transcribed_text);
-            
-            if (data.score !== null) {
-              setScore(data.score);
-              
-              if (data.score >= 80) {
-                setMessage(`✅ Tuyệt vời! Bạn phát âm chính xác (${data.score}%)`);
-              } else if (data.score >= 50) {
-                setMessage(`👍 Khá tốt (${data.score}%). Hãy thử lại để cải thiện.`);
-              } else {
-                setMessage(`😅 Cần luyện tập thêm (${data.score}%). Hãy thử lại.`);
-              }
-            }
-          } catch (error) {
-            console.error('Error:', error);
-            setMessage('❌ Lỗi phân tích âm thanh: ' + (error as Error).message);
-          } finally {
-            setLoading(false);
+
+          if (payload.metrics && payload.feedback_vi) {
+            applyBackendAnalysis(payload);
+          } else if (browserTranscriptRef.current) {
+            const browserAnalysis = createBrowserFallbackAnalysis(browserTranscriptRef.current, targetWord);
+            setAnalysis(browserAnalysis);
+            setTranscribed(browserAnalysis.transcript);
+            setScore(browserAnalysis.overall);
+            setMessage(browserAnalysis.note);
+          } else {
+            setMessage('Không nhận được dữ liệu chấm điểm từ backend.');
           }
-        };
-        
-        reader.readAsDataURL(audioBlob);
-      } catch (error) {
-        console.error('Error processing audio:', error);
-        setMessage('❌ Lỗi xử lý âm thanh');
+        } catch {
+          if (browserTranscriptRef.current) {
+            const browserAnalysis = createBrowserFallbackAnalysis(browserTranscriptRef.current, targetWord);
+            setAnalysis(browserAnalysis);
+            setTranscribed(browserAnalysis.transcript);
+            setScore(browserAnalysis.overall);
+            setMessage('Đang dùng chế độ chấm dự phòng của trình duyệt.');
+          } else {
+            setMessage('Không phân tích được giọng nói. Nên dùng Chrome hoặc Edge để có speech recognition.');
+          }
+        }
+      } catch {
+        setMessage('Xử lý audio thất bại.');
+      } finally {
         setLoading(false);
+        mediaRecorderRef.current = null;
+        audioChunksRef.current = [];
+
+        try {
+          speechRecognitionRef.current?.abort();
+        } catch {}
+
+        speechRecognitionRef.current = null;
       }
     };
-    
-    mediaRecorderRef.current.stop();
-    
-    // Stop all tracks
-    mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+
+    try {
+      speechRecognitionRef.current?.stop();
+    } catch {}
+
+    recorder.stop();
+    recorder.stream.getTracks().forEach((track) => track.stop());
   };
 
   const playPronunciation = async () => {
     if (!currentWord) return;
-    
-    setIsPlaying(true);
-    setMessage('🔊 Đang tải âm thanh...');
-    
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+
     try {
-      console.log('📤 Yêu cầu TTS cho:', currentWord.korean);
-      const response = await fetch('http://localhost:5000/api/pronunciation/tts', {
+      setIsPlaying(true);
+
+      const response = await fetch(`${API_BASE_URL}/pronunciation/tts`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: currentWord.korean,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: currentWord.korean }),
       });
-      
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+
+      if (!response.ok) throw new Error(`API error ${response.status}`);
+      const payload = await response.json();
+
+      if (!audioRef.current) throw new Error('Audio element is not available.');
+
+      audioRef.current.src = payload.audio;
+      audioRef.current.onended = () => setIsPlaying(false);
+      setMessage('Đang phát audio mẫu...');
+      await audioRef.current.play();
+    } catch {
+      try {
+        await waitForVoices();
+        const browserVoice = pickKoreanVoice();
+
+        if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+          throw new Error('Speech synthesis is not supported.');
+        }
+
+        setMessage(
+          browserVoice
+            ? `Đang phát audio mẫu bằng ${browserVoice.name}.`
+            : 'Đang phát audio mẫu bằng giọng ko-KR của trình duyệt.'
+        );
+
+        await new Promise<void>((resolve, reject) => {
+          const utterance = new SpeechSynthesisUtterance(currentWord.korean);
+          utterance.lang = 'ko-KR';
+          utterance.rate = 0.92;
+          utterance.pitch = 1.02;
+          utterance.volume = 1;
+
+          if (browserVoice) {
+            utterance.voice = browserVoice;
+          }
+
+          utterance.onend = () => resolve();
+          utterance.onerror = () => reject(new Error('Speech synthesis failed.'));
+          window.speechSynthesis.speak(utterance);
+        });
+      } catch {
+        setMessage('Native audio hiện chưa khả dụng.');
+      } finally {
+        setIsPlaying(false);
       }
-      
-      const data = await response.json();
-      console.log('✅ TTS generated');
-      
-      // Play audio
-      if (audioRef.current) {
-        audioRef.current.src = data.audio;
-        audioRef.current.onplay = () => {
-          setMessage('🔊 Đang phát âm thanh...');
-        };
-        audioRef.current.onended = () => {
-          setMessage('');
-          setIsPlaying(false);
-        };
-        audioRef.current.play();
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setMessage('❌ Không thể tải âm thanh: ' + (error as Error).message);
-      setIsPlaying(false);
     }
   };
 
   const nextWord = () => {
-    // Clean up current recording if still active
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-    }
-    
-    // Reset refs
-    mediaRecorderRef.current = null;
-    audioChunksRef.current = [];
-    
-    // Reset states
-    if (vocabulary.length > 0) {
-      const randomWord = vocabulary[Math.floor(Math.random() * vocabulary.length)];
-      setCurrentWord(randomWord);
-    }
+    if (vocabulary.length === 0) return;
+
+    const next = vocabulary[Math.floor(Math.random() * vocabulary.length)];
+    setCurrentWord(next);
     setScore(null);
     setTranscribed('');
     setMessage('');
-    setIsRecording(false);
-    setLoading(false);
+    setAnalysis(null);
+    browserTranscriptRef.current = '';
   };
 
-  if (!currentWord) {
-    return (
-      <main className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-8">
-        <div className="max-w-2xl mx-auto text-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Đang tải...</p>
-        </div>
-      </main>
-    );
-  }
+  if (!currentWord) return null;
+
+  const waveform = [32, 58, 76, 40, 22, 68, 84, 54];
+
+  const scoreLabel =
+    score === null
+      ? 'Chờ bạn luyện nói'
+      : score >= 80
+        ? 'Phát âm khá tốt'
+        : score >= 50
+          ? 'Khá ổn, cần luyện thêm'
+          : 'Cần luyện thêm';
+
+  const scoringSourceLabel =
+    analysis?.source === 'backend'
+      ? 'Whisper + Gemini'
+      : analysis?.source === 'browser'
+        ? 'Trình duyệt dự phòng'
+        : supportsBrowserScoring
+          ? 'Sẵn sàng chấm'
+          : 'Chờ backend';
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-8">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-green-900 mb-2">🎤 Luyện phát âm</h1>
-          <p className="text-gray-600 mb-4">Nghe phát âm chuẩn và ghi lại tiếng của bạn</p>
-          <Link href="/" className="text-green-600 hover:text-green-800 underline">← Quay lại trang chính</Link>
-        </div>
-
-        {/* Message */}
-        {message && (
-          <div className={`mb-6 p-4 rounded-lg ${
-            message.includes('❌') ? 'bg-red-100 text-red-700' :
-            message.includes('✅') ? 'bg-green-100 text-green-700' :
-            message.includes('⏳') ? 'bg-blue-100 text-blue-700' :
-            'bg-gray-100 text-gray-700'
-          }`}>
-            {message}
+    <HangulPageFrame
+      activeNav="Practice"
+      sidebar={
+        <HangulSidebar
+          items={practiceSidebar}
+          profile={{
+            title: 'Level 2: Explorer',
+            subtitle: 'Next: Advanced Hangul',
+            emoji: '🦦',
+            tone: 'peach',
+          }}
+        />
+      }
+    >
+      <div className="space-y-6">
+        <HangulCard className="p-7 sm:p-10">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <Link className="text-2xl font-semibold text-[var(--hangul-soft-ink)]" href="/dashboard">
+              ← Exit Practice
+            </Link>
+            <Pill className="bg-[#f5eee5] text-[var(--hangul-soft-ink)]">Speaking Practice</Pill>
           </div>
-        )}
 
-        {/* Main Container */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="p-8 space-y-8">
-            {/* Vocabulary Word */}
-            <div className="text-center">
-              <div className="mb-4">
-                <h2 className="text-5xl font-bold text-green-700 mb-2">{currentWord.korean}</h2>
-                <p className="text-xl text-gray-600 italic">{currentWord.romanization}</p>
-                <p className="text-lg text-gray-500 mt-2">{currentWord.english}</p>
+          <div className="mt-10 text-center">
+            <p className="text-[clamp(4rem,9vw,6.6rem)] font-black tracking-[-0.06em] text-[var(--hangul-accent)]">
+              {currentWord.korean}
+            </p>
+            <p className="mt-4 text-[2.1rem] uppercase tracking-[0.28em] text-[var(--hangul-soft-ink)]">
+              {currentWord.romanization}
+            </p>
+            <div className="mt-8 flex justify-center">
+              <Pill className="bg-white px-6 py-3 text-xl text-[var(--hangul-ink)]">
+                <Languages className="h-5 w-5" />
+                “{currentWord.english}”
+              </Pill>
+            </div>
+          </div>
+        </HangulCard>
+
+        <div className="grid gap-6 xl:grid-cols-[1.08fr_0.46fr]">
+          <HangulCard className="p-7 sm:p-8">
+            <div className="flex items-start justify-between gap-4">
+              <SectionTitle title="Điểm phát âm" subtitle={scoreLabel} />
+              <div className="space-y-3 text-right">
+                <Pill className="bg-white text-[var(--hangul-soft-ink)]">
+                  {score === null ? 'Ready' : `${score}% tổng`}
+                </Pill>
+                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--hangul-soft-ink)]">
+                  {scoringSourceLabel}
+                </p>
               </div>
-              
-              {/* Play Pronunciation Button */}
-              <button
-                onClick={playPronunciation}
-                disabled={isPlaying}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-3 px-8 rounded-lg transition text-lg"
-              >
-                {isPlaying ? '🔊 Đang phát...' : '🔊 Nghe phát âm'}
-              </button>
-              
-              <audio ref={audioRef} hidden />
             </div>
 
-            {/* Recording Section */}
-            <div className="border-t border-b py-8">
-              <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">Ghi âm tiếng của bạn</h3>
-              
-              <div className="flex gap-4 justify-center mb-4">
-                {!isRecording ? (
-                  <button
-                    onClick={startRecording}
-                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition text-lg"
-                  >
-                    🎤 Bắt đầu ghi âm
-                  </button>
-                ) : (
-                  <button
-                    onClick={stopRecording}
-                    disabled={loading}
-                    className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-bold py-3 px-8 rounded-lg transition text-lg"
-                  >
-                    {loading ? '⏳ Đang phân tích...' : '⏹️ Dừng ghi âm'}
-                  </button>
-                )}
+            <div className="mt-10 flex flex-col items-center gap-8">
+              <MascotPortrait emoji="🎧" tone="sky" className="h-80 w-[320px]" />
+
+              <div className="flex items-end gap-3">
+                {waveform.map((height, index) => (
+                  <span
+                    key={`${height}-${index}`}
+                    className="w-3 rounded-full bg-[linear-gradient(180deg,#2d6764,#a57b6e)]"
+                    style={{ height }}
+                  />
+                ))}
               </div>
 
-              {/* Recording Status Indicator */}
-              {isRecording && (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse"></div>
-                  <p className="text-gray-600">Đang ghi âm...</p>
+              <p className="text-center text-xl italic text-[var(--hangul-soft-ink)]">
+                {message || 'Bấm micro, đọc từ phía trên, rồi bấm lại để chấm điểm.'}
+              </p>
+
+              {transcribed ? (
+                <p className="text-lg font-semibold text-[var(--hangul-ink)]">Nhận diện: {transcribed}</p>
+              ) : null}
+
+              {analysis?.details?.length ? (
+                <div className="w-full rounded-[28px] bg-[#fbf8f2] p-5 text-left shadow-[inset_0_0_0_1px_rgba(121,95,78,0.05)]">
+                  <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[var(--hangul-soft-ink)]">
+                    Nhận xét chi tiết
+                  </p>
+                  <div className="mt-3 space-y-2">
+                    {analysis.details.map((item, index) => (
+                      <p key={`${item}-${index}`} className="text-base leading-7 text-[var(--hangul-ink)]">
+                        • {item}
+                      </p>
+                    ))}
+                  </div>
                 </div>
-              )}
-            </div>
+              ) : null}
 
-            {/* Results Section */}
-            {(transcribed || score !== null) && (
-              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
-                <h3 className="font-bold text-gray-800">📊 Kết quả</h3>
-                
-                {transcribed && (
-                  <div>
-                    <p className="text-sm text-gray-600">Hệ thống nhận được:</p>
-                    <p className="text-lg font-semibold text-gray-800">{transcribed}</p>
-                  </div>
-                )}
-                
-                {score !== null && (
-                  <div>
-                    <p className="text-sm text-gray-600">Độ chính xác:</p>
-                    <div className="flex items-center gap-4">
-                      <div className="flex-1">
-                        <div className="w-full bg-gray-200 rounded-full h-4">
-                          <div
-                            className={`h-4 rounded-full transition-all ${
-                              score >= 80 ? 'bg-green-600' :
-                              score >= 50 ? 'bg-yellow-600' :
-                              'bg-red-600'
-                            }`}
-                            style={{ width: `${score}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                      <p className="text-2xl font-bold text-gray-800">{score}%</p>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Next Word Button */}
-                <button
-                  onClick={nextWord}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition mt-4"
-                >
-                  ➡️ Từ tiếp theo
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* System Status */}
-          <div className="bg-gray-100 px-8 py-4 border-t">
-            <h3 className="text-sm font-semibold text-gray-700 mb-2">Trạng thái hệ thống:</h3>
-            <div className="grid grid-cols-3 gap-4 text-sm">
-              <div>
-                <span className="text-gray-600">Mic:</span>
-                <span className={`ml-2 font-bold ${isRecording ? 'text-red-600' : 'text-green-600'}`}>
-                  {isRecording ? '🔴 Ghi âm' : '✅ Sẵn sàng'}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-600">TTS:</span>
-                <span className={`ml-2 font-bold ${isPlaying ? 'text-blue-600' : 'text-green-600'}`}>
-                  {isPlaying ? '🔊 Phát' : '✅ Sẵn sàng'}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-600">Kết quả:</span>
-                <span className="ml-2 font-bold text-gray-700">{score !== null ? '✅ Có' : '⭕ Chưa'}</span>
+              <div className="grid w-full gap-4 md:grid-cols-4">
+                <ScoreCard icon={BarChart3} label="Độ chính xác" value={analysis ? `${analysis.accuracy}%` : '--'} />
+                <ScoreCard icon={Sparkles} label="Độ trôi chảy" value={analysis ? `${analysis.fluency}%` : '--'} />
+                <ScoreCard icon={Sparkles} label="Ngữ điệu" value={analysis ? `${analysis.prosody}%` : '--'} />
+                <ScoreCard label="Nguồn" value={analysis ? (analysis.source === 'backend' ? 'AI' : 'Browser') : 'Chờ'} />
               </div>
             </div>
+          </HangulCard>
+
+          <div className="space-y-6">
+            <HangulCard className="flex min-h-[400px] flex-col items-center justify-center p-8 text-center" tone="cocoa">
+              <button
+                className="grid h-36 w-36 place-items-center rounded-full bg-white text-[var(--hangul-accent)] shadow-[0_24px_48px_rgba(53,30,24,0.18)] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={loading}
+                onClick={isRecording ? stopRecording : startRecording}
+                type="button"
+              >
+                <Mic2 className="h-16 w-16" />
+              </button>
+
+              <p className="mt-10 text-4xl font-black tracking-[-0.04em] text-white">
+                {loading ? 'Đang chấm...' : isRecording ? 'Dừng ghi âm' : 'Nhấn để nói'}
+              </p>
+
+              <p className="mt-4 text-xl leading-9 text-white/76">
+                {supportsBrowserScoring
+                  ? 'Whisper + Gemini là luồng chính. Trình duyệt sẽ hỗ trợ dự phòng nếu backend lỗi.'
+                  : 'Whisper + Gemini là luồng chính cho phần chấm điểm.'}
+              </p>
+            </HangulCard>
+
+            <HangulCard className="flex items-center justify-between gap-4 p-6">
+              <div className="flex items-center gap-4">
+                <div className="grid h-14 w-14 place-items-center rounded-full bg-[#ffdccc] text-[var(--hangul-accent)]">
+                  <Volume2 className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--hangul-soft-ink)]">Listen</p>
+                  <p className="text-2xl font-black tracking-[-0.03em] text-[var(--hangul-ink)]">Native Audio</p>
+                </div>
+              </div>
+
+              <button
+                className="grid h-16 w-16 place-items-center rounded-full bg-white shadow-[0_16px_32px_rgba(121,95,78,0.12)] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isPlaying}
+                onClick={playPronunciation}
+                type="button"
+              >
+                <Volume2 className="h-6 w-6 text-[var(--hangul-accent)]" />
+              </button>
+            </HangulCard>
           </div>
         </div>
 
-        {/* Debug Info */}
-        <div className="mt-8 bg-gray-800 text-gray-100 rounded-lg p-4 font-mono text-xs">
-          <p className="text-gray-400 mb-2"> Thông tin debug (F12 để xem chi tiết):</p>
-          <ul className="space-y-1">
-            <li>🌐 Frontend: http://localhost:3000/pronunciation</li>
-            <li>🖥️ Backend TTS: http://localhost:5000/api/pronunciation/tts</li>
-            <li>🖥️ Backend Transcribe: http://localhost:5000/api/pronunciation/transcribe</li>
-            <li>🧠 Flask: http://localhost:5001</li>
-            <li>📸 Nhấn F12 → Console để xem logs</li>
-          </ul>
-        </div>
+        <HangulCard className="flex flex-wrap items-center justify-between gap-6 px-7 py-6">
+          <div className="flex flex-wrap gap-3">
+            <StatusChip label="12:45 tổng luyện tập" tone="mint" />
+            <StatusChip label="4 ngày streak" tone="gold" />
+          </div>
+
+          <div className="flex flex-wrap gap-4">
+            <button className="hangul-button-secondary" onClick={playPronunciation} type="button">
+              Nghe lại
+            </button>
+            <button className="hangul-button-primary" onClick={nextWord} type="button">
+              Từ tiếp theo
+            </button>
+          </div>
+        </HangulCard>
+
+        <audio ref={audioRef} hidden />
       </div>
-    </main>
+    </HangulPageFrame>
+  );
+}
+
+function SectionTitle({ title, subtitle }: { title: string; subtitle: string }) {
+  return (
+    <div>
+      <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--hangul-soft-ink)]">{title}</p>
+      <p className="mt-3 text-3xl font-black tracking-[-0.04em] text-[var(--hangul-ink)]">{subtitle}</p>
+    </div>
+  );
+}
+
+function ScoreCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon?: typeof BarChart3;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-[28px] bg-[#fbf8f2] p-5 shadow-[inset_0_0_0_1px_rgba(121,95,78,0.05)]">
+      <div className="flex items-center gap-3 text-[var(--hangul-soft-ink)]">
+        {Icon ? <Icon className="h-5 w-5" /> : null}
+        <p className="text-sm font-semibold uppercase tracking-[0.14em]">{label}</p>
+      </div>
+      <p className="mt-4 text-3xl font-black tracking-[-0.04em] text-[var(--hangul-ink)]">{value}</p>
+    </div>
   );
 }

@@ -1,252 +1,193 @@
-'use client';
+﻿'use client';
 
+import Link from 'next/link';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { BookOpen, Camera, Mic2, PencilLine, Swords } from 'lucide-react';
+import { FooterBrand, HangulCard, HangulPageFrame, MascotPortrait, Pill, SectionLabel } from '@/components/hangul/ui';
 import { useAuthStore } from '@/store/authStore';
-import Link from 'next/link';
+
+const toolkit = [
+  {
+    title: 'Smart Quiz',
+    description: 'Dynamic testing that adapts to your weak spots and keeps every round fresh.',
+    icon: BookOpen,
+    tone: 'bg-[#ffe3d8] text-[#8b6052]',
+  },
+  {
+    title: 'Writing Pad',
+    description: 'Stroke-order guidance built for tactile repetition and confident handwriting.',
+    icon: PencilLine,
+    tone: 'bg-[#d9f7f4] text-[#2d6764]',
+  },
+  {
+    title: 'Voice Lab',
+    description: 'Native cadence, waveform feedback, and score-based pronunciation coaching.',
+    icon: Mic2,
+    tone: 'bg-[#ffefc7] text-[#926602]',
+  },
+  {
+    title: 'Lens Scan',
+    description: 'Scan real objects, spot Korean labels, and translate the world around you.',
+    icon: Camera,
+    tone: 'bg-[#ffd9d3] text-[#b1473e]',
+  },
+  {
+    title: 'The Arena',
+    description: 'Live battle modes that turn vocabulary and listening drills into competition.',
+    icon: Swords,
+    tone: 'bg-[#f0e7db] text-[#7e6457]',
+  },
+] as const;
 
 export default function LandingPage() {
   const router = useRouter();
   const { user } = useAuthStore();
 
-  // Nếu đã login → redirect đến dashboard
   useEffect(() => {
     if (user) {
       router.push('/dashboard');
     }
-  }, [user, router]);
+  }, [router, user]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
-      {/* Navigation */}
-      <nav className="bg-white shadow-md">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🇰🇷</span>
-            <h1 className="text-2xl font-bold text-green-700">HANGUL</h1>
-          </div>
-          <div className="flex gap-4">
-            <Link
-              href="/login"
-              className="px-6 py-2 text-green-700 font-semibold hover:text-green-800 transition"
-            >
-              Đăng nhập
-            </Link>
-            <Link
-              href="/register"
-              className="px-6 py-2 bg-green-700 text-white rounded-lg font-semibold hover:bg-green-800 transition"
-            >
-              Đăng ký
-            </Link>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen">
+      <HangulPageFrame activeNav="Lessons">
+        <div className="space-y-16">
+          <section className="grid gap-10 xl:grid-cols-[1.15fr_0.85fr] xl:items-center">
+            <div className="space-y-7 px-2 pt-8 sm:pt-14">
+              <SectionLabel>Premium Korean Journey</SectionLabel>
+              <div className="max-w-4xl">
+                <h1 className="hangul-title text-[clamp(3.8rem,9vw,7.2rem)] font-black text-[var(--hangul-ink)]">
+                  Korean Learning
+                  <span className="block text-[#3f7472]">Made Tactile.</span>
+                </h1>
+                <p className="mt-6 max-w-3xl text-xl leading-9 text-[var(--hangul-soft-ink)] sm:text-2xl">
+                  Join Hana, Ji-woo, and our otter squad on a premium path to mastering Hangul. Less sterile grid, more warm rhythm, soft surfaces, and playful repetition.
+                </p>
+              </div>
 
-      {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 py-20">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          {/* Left Content */}
-          <div>
-            <h2 className="text-5xl font-bold text-gray-900 mb-6">
-              Học tiếng Hàn một cách vui vẻ
-            </h2>
-            <p className="text-xl text-gray-700 mb-8">
-              Khám phá cách học tiếng Hàn hiện đại với bài quiz, luyện viết, phát âm, và công nghệ nhận dạng hình ảnh. Bắt đầu hành trình học tập của bạn ngay hôm nay!
-            </p>
-            <div className="flex gap-4">
-              <Link
-                href="/register"
-                className="px-8 py-4 bg-green-700 text-white rounded-lg font-semibold hover:bg-green-800 transition text-lg shadow-lg hover:shadow-xl"
-              >
-                Bắt đầu học ngay
-              </Link>
-              <button
-                onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                className="px-8 py-4 border-2 border-green-700 text-green-700 rounded-lg font-semibold hover:bg-green-50 transition text-lg"
-              >
-                Tìm hiểu thêm
-              </button>
+              <div className="flex flex-wrap gap-4 pt-2">
+                <Link href="/register" className="hangul-button-primary">
+                  Start Learning for Free
+                </Link>
+                <Link href="/tournament" className="hangul-button-secondary">
+                  See the Arena
+                </Link>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-3">
+                <MascotPortrait emoji="🦦" tone="paper" className="h-52" />
+                <MascotPortrait emoji="🧥" label="Hana" tone="cocoa" className="h-64 sm:-mt-6" />
+                <MascotPortrait emoji="🦦" tone="sky" className="h-52" />
+              </div>
             </div>
-          </div>
 
-          {/* Right Visual */}
-          <div className="flex justify-center">
+            <div className="space-y-5">
+              <HangulCard className="grid gap-4 p-7 lg:grid-cols-[1.2fr_0.8fr]" tone="paper">
+                <div>
+                  <SectionLabel>Our Philosophy</SectionLabel>
+                  <h2 className="mt-4 text-4xl font-black tracking-[-0.05em] text-[var(--hangul-ink)]">
+                    The Tactile Approach
+                  </h2>
+                  <p className="mt-4 text-lg leading-8 text-[var(--hangul-soft-ink)]">
+                    We design each lesson like a desk made of paper, wood, and warm light. Progress feels physical: softer cards, calmer spacing, and feedback that guides instead of shouts.
+                  </p>
+                </div>
+                <div className="grid gap-4">
+                  <div className="rounded-[32px] bg-[linear-gradient(135deg,#f4f0e7,#ffffff)] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+                    <div className="text-right text-6xl font-black text-[rgba(122,96,79,0.12)]">02</div>
+                    <p className="-mt-4 text-2xl font-bold tracking-[-0.03em] text-[var(--hangul-ink)]">Mascot-Led Support</p>
+                    <p className="mt-3 text-base leading-7 text-[var(--hangul-soft-ink)]">
+                      Hana and the team celebrate your wins, keep the energy gentle, and step in with tiny nudges when you get stuck.
+                    </p>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                    <HangulCard className="p-6" tone="mint">
+                      <p className="text-2xl font-bold tracking-[-0.04em]">Smart Progress</p>
+                      <p className="mt-3 text-sm leading-6 text-[var(--hangul-soft-ink)]">
+                        Lessons flex to your pace and keep revisiting weak points without feeling repetitive.
+                      </p>
+                    </HangulCard>
+                    <HangulCard className="p-6" tone="soft">
+                      <p className="text-2xl font-bold tracking-[-0.04em]">Master The Script</p>
+                      <p className="mt-3 text-sm leading-6 text-[var(--hangul-soft-ink)]">
+                        Build from vowels to sentence patterns through clean visual rhythm and guided calligraphy.
+                      </p>
+                    </HangulCard>
+                  </div>
+                </div>
+              </HangulCard>
+            </div>
+          </section>
+
+          <section className="space-y-8 py-4">
             <div className="text-center">
-              <div className="text-9xl mb-4">🇰🇷</div>
-              <p className="text-2xl font-bold text-gray-900">Ahn-nyeong-ha-se-yo!</p>
-              <p className="text-gray-600 mt-2">안녕하세요</p>
+              <SectionLabel>Your Learning Toolkit</SectionLabel>
+              <h2 className="mt-4 text-5xl font-black tracking-[-0.05em] text-[var(--hangul-ink)]">
+                Everything you need, in one soft interface.
+              </h2>
+              <p className="mx-auto mt-4 max-w-3xl text-lg leading-8 text-[var(--hangul-soft-ink)]">
+                Move from beginner to fluent with a unified dashboard, practice lab, AI vision, arena ranking, and a mascot team that makes every screen feel alive.
+              </p>
             </div>
-          </div>
+
+            <div className="grid gap-5 xl:grid-cols-5">
+              {toolkit.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <HangulCard key={item.title} className="p-6">
+                    <div className={`grid h-12 w-12 place-items-center rounded-2xl ${item.tone}`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <p className="mt-10 text-2xl font-bold tracking-[-0.03em] text-[var(--hangul-ink)]">{item.title}</p>
+                    <p className="mt-4 text-sm leading-7 text-[var(--hangul-soft-ink)]">{item.description}</p>
+                  </HangulCard>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+            <HangulCard className="relative overflow-hidden px-8 py-10 sm:px-12 sm:py-12" tone="cocoa">
+              <div className="absolute bottom-0 right-0 h-48 w-48 rounded-tl-[90px] bg-[linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))]" />
+              <Pill className="bg-white/15 text-white">Ready to Master Hangul?</Pill>
+              <h2 className="mt-6 max-w-xl text-5xl font-black tracking-[-0.06em] text-white">
+                Build a premium study ritual that actually feels inviting.
+              </h2>
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-white/80">
+                Join over 100,000 learners using HANGUL to move from first strokes to arena-ready fluency with one consistent, tactile UI.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-4">
+                <Link href="/register" className="hangul-button-secondary bg-white text-[var(--hangul-ink)]">
+                  Start Learning for Free
+                </Link>
+                <Link href="/profile" className="border-b border-white/40 pb-1 text-lg font-semibold text-white">
+                  Compare Plans
+                </Link>
+              </div>
+            </HangulCard>
+
+            <div className="grid gap-6 sm:grid-cols-2">
+              <HangulCard className="p-7" tone="mint">
+                <SectionLabel>Soft Feedback</SectionLabel>
+                <p className="mt-4 text-3xl font-black tracking-[-0.04em]">Practice that never feels punishing.</p>
+                <p className="mt-4 text-base leading-7 text-[var(--hangul-soft-ink)]">
+                  Visual cues, rounded forms, and warm tones make extended study sessions calmer and easier to sustain.
+                </p>
+              </HangulCard>
+              <HangulCard className="p-7" tone="peach">
+                <SectionLabel>Warm Competition</SectionLabel>
+                <p className="mt-4 text-3xl font-black tracking-[-0.04em]">Climb the arena without losing the charm.</p>
+                <p className="mt-4 text-base leading-7 text-[var(--hangul-soft-ink)]">
+                  Battle in the Otter Arena, but keep the interface polished, soft, and friendly from screen to screen.
+                </p>
+              </HangulCard>
+            </div>
+          </section>
         </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="bg-white py-20">
-        <div className="max-w-7xl mx-auto px-4">
-          <h3 className="text-4xl font-bold text-center text-gray-900 mb-16">
-            Tính năng học tập tuyệt vời
-          </h3>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Feature 1 */}
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-8 text-center hover:shadow-lg transition">
-              <div className="text-5xl mb-4">🎯</div>
-              <h4 className="text-xl font-bold text-gray-900 mb-3">Quiz thông minh</h4>
-              <p className="text-gray-700">
-                Trắc nghiệm từ vựng và ngữ pháp với hệ thống học tập thích nghi
-              </p>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-8 text-center hover:shadow-lg transition">
-              <div className="text-5xl mb-4">✍️</div>
-              <h4 className="text-xl font-bold text-gray-900 mb-3">Luyện viết</h4>
-              <p className="text-gray-700">
-                Thực hành viết tiếng Hàn từ cơ bản đến nâng cao
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-8 text-center hover:shadow-lg transition">
-              <div className="text-5xl mb-4">🎤</div>
-              <h4 className="text-xl font-bold text-gray-900 mb-3">Phát âm</h4>
-              <p className="text-gray-700">
-                Học phát âm chuẩn với đánh giá tức thời
-              </p>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-8 text-center hover:shadow-lg transition">
-              <div className="text-5xl mb-4">📸</div>
-              <h4 className="text-xl font-bold text-gray-900 mb-3">Nhận dạng hình</h4>
-              <p className="text-gray-700">
-                Sử dụng camera để nhận dạng chữ Hàn
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Why Choose Us */}
-      <section className="bg-gradient-to-br from-green-700 to-green-800 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4">
-          <h3 className="text-4xl font-bold text-center mb-16">Tại sao chọn HANGUL?</h3>
-
-          <div className="grid md:grid-cols-3 gap-12">
-            <div className="text-center">
-              <div className="text-5xl mb-4">⚡</div>
-              <h4 className="text-2xl font-bold mb-3">Nhanh chóng</h4>
-              <p>
-                Bắt đầu học trong vòng 30 giây. Không cần cài đặt phức tạp.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="text-5xl mb-4">🎯</div>
-              <h4 className="text-2xl font-bold mb-3">Hiệu quả</h4>
-              <p>
-                Hệ thống học tập được thiết kế bởi giáo viên tiếng Hàn chuyên nghiệp
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="text-5xl mb-4">🏆</div>
-              <h4 className="text-2xl font-bold mb-3">Thú vị</h4>
-              <p>
-                Gamification với điểm, huy hiệu, và bảng xếp hạng
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="bg-white py-20">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-4xl font-bold text-green-700 mb-2">5000+</div>
-              <p className="text-gray-700">Từ vựng</p>
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-green-700 mb-2">100+</div>
-              <p className="text-gray-700">Bài học</p>
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-green-700 mb-2">10k+</div>
-              <p className="text-gray-700">Người học</p>
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-green-700 mb-2">4.8</div>
-              <p className="text-gray-700">Đánh giá</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="bg-gradient-to-r from-green-600 to-green-700 text-white py-16">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h3 className="text-3xl font-bold mb-6">
-            Sẵn sàng học tiếng Hàn chưa?
-          </h3>
-          <p className="text-xl mb-8">
-            Tham gia hàng nghìn học viên đang học cùng HANGUL
-          </p>
-          <div className="flex gap-4 justify-center flex-wrap">
-            <Link
-              href="/register"
-              className="px-8 py-4 bg-white text-green-700 rounded-lg font-semibold hover:bg-gray-100 transition text-lg shadow-lg"
-            >
-              Đăng ký miễn phí
-            </Link>
-            <Link
-              href="/login"
-              className="px-8 py-4 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-green-700 transition text-lg"
-            >
-              Đã có tài khoản? Đăng nhập
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-gray-300 py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <h4 className="text-white font-bold mb-4">HANGUL</h4>
-              <p>Học tiếng Hàn một cách hiện đại và vui vẻ</p>
-            </div>
-            <div>
-              <h4 className="text-white font-bold mb-4">Tính năng</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="hover:text-white transition">Quiz</a></li>
-                <li><a href="#" className="hover:text-white transition">Luyện viết</a></li>
-                <li><a href="#" className="hover:text-white transition">Phát âm</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-bold mb-4">Công ty</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="hover:text-white transition">Về chúng tôi</a></li>
-                <li><a href="#" className="hover:text-white transition">Blog</a></li>
-                <li><a href="#" className="hover:text-white transition">Liên hệ</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-bold mb-4">Pháp lý</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="hover:text-white transition">Điều khoản</a></li>
-                <li><a href="#" className="hover:text-white transition">Quyền riêng tư</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-700 pt-8 text-center">
-            <p>&copy; 2026 HANGUL. Tất cả quyền được bảo lưu.</p>
-          </div>
-        </div>
-      </footer>
+      </HangulPageFrame>
+      <FooterBrand />
     </div>
   );
 }

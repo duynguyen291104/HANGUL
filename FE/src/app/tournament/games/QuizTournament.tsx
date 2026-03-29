@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 
@@ -36,7 +36,7 @@ export default function QuizTournament({ onComplete, onExit }: QuizTournamentPro
       });
       const data = await res.json();
 
-      const quizQuestions = data.data.slice(0, 10).map((vocab: any, idx: number) => {
+      const quizQuestions = data.data.slice(0, 10).map((vocab: any) => {
         const wrongAnswers = data.data
           .slice(0, 10)
           .filter((v: any) => v.id !== vocab.id)
@@ -90,7 +90,7 @@ export default function QuizTournament({ onComplete, onExit }: QuizTournamentPro
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="text-white text-xl">Đang tải câu hỏi...</div>
+        <div className="text-white text-xl">Äang táº£i cÃ¢u há»i...</div>
       </div>
     );
   }
@@ -99,7 +99,7 @@ export default function QuizTournament({ onComplete, onExit }: QuizTournamentPro
   if (questions.length === 0) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="text-white text-xl">Không có câu hỏi nào</div>
+        <div className="text-white text-xl">KhÃ´ng cÃ³ cÃ¢u há»i nÃ o</div>
       </div>
     );
   }
@@ -113,20 +113,20 @@ export default function QuizTournament({ onComplete, onExit }: QuizTournamentPro
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-white">📖 Trắc Nghiệm</h1>
+          <h1 className="text-3xl font-bold text-white">ðŸ“– Tráº¯c Nghiá»‡m</h1>
           <button
             onClick={onExit}
             className="text-white hover:text-gray-300 text-2xl"
           >
-            ✕
+            âœ•
           </button>
         </div>
 
         {/* Progress */}
         <div className="bg-white/20 rounded-lg p-4 mb-6 backdrop-blur">
           <div className="flex justify-between text-white mb-2">
-            <span>Câu {currentQuestion + 1}/{questions.length}</span>
-            <span>Điểm: {totalScore}</span>
+            <span>CÃ¢u {currentQuestion + 1}/{questions.length}</span>
+            <span>Äiá»ƒm: {totalScore}</span>
           </div>
           <div className="w-full bg-white/30 rounded-full h-2">
             <div
@@ -141,12 +141,12 @@ export default function QuizTournament({ onComplete, onExit }: QuizTournamentPro
         {/* Question Card */}
         <div className="bg-white rounded-xl shadow-xl p-8 mb-6">
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            {question?.korean || 'Câu hỏi'}
+            {question?.korean || 'CÃ¢u há»i'}
           </h2>
           <p className="text-gray-600 mb-8">{question?.english || ''}</p>
 
           <p className="text-lg text-gray-700 font-semibold mb-6">
-            Đây là từ tiếng gì?
+            ÄÃ¢y lÃ  tá»« tiáº¿ng gÃ¬?
           </p>
 
           {/* Options */}
@@ -178,15 +178,15 @@ export default function QuizTournament({ onComplete, onExit }: QuizTournamentPro
         <div className="bg-white/20 backdrop-blur rounded-xl p-6 text-white mb-6">
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
-              <p className="text-sm opacity-80">Trả lời đúng</p>
+              <p className="text-sm opacity-80">Tráº£ lá»i Ä‘Ãºng</p>
               <p className="text-3xl font-bold">{totalCorrect}</p>
             </div>
             <div className="text-center">
-              <p className="text-sm opacity-80">Tổng điểm</p>
+              <p className="text-sm opacity-80">Tá»•ng Ä‘iá»ƒm</p>
               <p className="text-3xl font-bold">{totalScore}</p>
             </div>
             <div className="text-center">
-              <p className="text-sm opacity-80">Tiến độ</p>
+              <p className="text-sm opacity-80">Tiáº¿n Ä‘á»™</p>
               <p className="text-3xl font-bold">
                 {Math.round(((currentQuestion + 1) / questions.length) * 100)}%
               </p>
@@ -200,10 +200,11 @@ export default function QuizTournament({ onComplete, onExit }: QuizTournamentPro
             onClick={handleNext}
             className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-4 rounded-lg transition-all"
           >
-            {currentQuestion < questions.length - 1 ? 'Câu tiếp theo →' : 'Kết thúc 🎉'}
+            {currentQuestion < questions.length - 1 ? 'CÃ¢u tiáº¿p theo â†’' : 'Káº¿t thÃºc ðŸŽ‰'}
           </button>
         )}
       </div>
     </div>
   );
 }
+

@@ -1,14 +1,15 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { io, Socket } from 'socket.io-client';
-import TournamentQuiz from './games/TournamentQuiz';
+import { BookOpenText, Mic2, PenTool, Puzzle, Swords, Zap } from 'lucide-react';
 import TournamentListening from './games/TournamentListening';
-import TournamentWriting from './games/TournamentWriting';
 import TournamentMatching from './games/TournamentMatching';
+import TournamentQuiz from './games/TournamentQuiz';
 import TournamentSpeed from './games/TournamentSpeed';
-import TournamentLeaderboard from './TournamentLeaderboard';
+import TournamentWriting from './games/TournamentWriting';
+import { HangulCard, HangulPageFrame, MascotPortrait, MiniRail, Pill, ProgressBar } from '@/components/hangul/ui';
 
 interface Leaderboard {
   rank: number;
@@ -23,8 +24,8 @@ interface Leaderboard {
 interface UserStats {
   userId: number;
   name?: string;
-  trophy: number;  // ONLY trophy matters: >= 1000 to join tournament
-  eligible: boolean;  // true if trophy >= 1000
+  trophy: number;
+  eligible: boolean;
   level?: string;
   xp?: number;
   streak?: number;
@@ -33,17 +34,52 @@ interface UserStats {
 type GameType = 'quiz' | 'listening' | 'writing' | 'matching' | 'speed' | null;
 
 const GAME_CONFIG = {
-  quiz: { name: '📖 Trắc Nghiệm (Reading)', description: 'Chọn đáp án đúng' },
-  listening: { name: '🎧 Nghe (Listening)', description: 'Nghe và chọn đáp án' },
-  writing: { name: '✍️ Viết (Writing)', description: 'Nhập tiếng Việt' },
-  matching: { name: '🔗 Ghép Cặp', description: 'Ghép từ tiếng Việt với tiếng Hàn' },
-  speed: { name: '⚡ Tốc Độ', description: 'Trắc nghiệm trong 60 giây' },
+  quiz: {
+    name: 'Speed Quiz',
+    description: 'Match Korean vowels and consonants against the clock.',
+    tier: 'Race now',
+    icon: Zap,
+    tone: 'paper' as const,
+    mascot: '🦦',
+  },
+  writing: {
+    name: 'Flash Writing',
+    description: 'Precision stroke-order training with immediate feedback.',
+    tier: 'Expert tier',
+    icon: PenTool,
+    tone: 'soft' as const,
+    mascot: '🦦',
+  },
+  matching: {
+    name: 'Word Match',
+    description: 'Connect definitions to complex Hangul structures fast.',
+    tier: 'New records',
+    icon: Puzzle,
+    tone: 'soft' as const,
+    mascot: '🦦',
+  },
+  listening: {
+    name: 'Perfect Speaking',
+    description: 'AI-powered pronunciation battle for top fluency scores.',
+    tier: 'Intense',
+    icon: Mic2,
+    tone: 'paper' as const,
+    mascot: '🦦',
+  },
+  speed: {
+    name: 'Arena Drill',
+    description: 'Rapid-fire challenges blending voice, quiz, and writing.',
+    tier: 'Pro rush',
+    icon: BookOpenText,
+    tone: 'mint' as const,
+    mascot: '⚔️',
+  },
 };
 
 export default function TournamentHub() {
   const router = useRouter();
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
+  const userId = typeof window !== 'undefined' ? Number(localStorage.getItem('userId')) : 0;
 
   const [currentGame, setCurrentGame] = useState<GameType>(null);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
@@ -58,77 +94,53 @@ export default function TournamentHub() {
       return;
     }
 
-    // Load user stats
+    const loadUserStats = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/stats`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) {
+          throw new Error('Failed to load stats');
+        }
+        const payload = await response.json();
+        setUserStats({
+          userId: payload.userId,
+          name: payload.name || payload.email,
+          trophy: Number(payload.trophy) || 0,
+          eligible: Number(payload.trophy) >= 1000,
+          level: payload.level,
+          xp: payload.xp,
+          streak: payload.streak,
+        });
+      } catch (requestError) {
+        console.error(requestError);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadUserStats();
 
-    // Initialize Socket.IO
-    const newSocket = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000', {
+    const connection = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000', {
       auth: { token },
       reconnection: true,
     });
-
-    newSocket.on('connect', () => {
-      console.log('🎮 Connected to tournament server');
-      newSocket.emit('tournament:join', { userId, name: 'Player' });
+    connection.on('connect', () => {
+      connection.emit('tournament:join', { userId, name: userStats?.name || 'Player' });
     });
-
-    newSocket.on('tournament:leaderboard-updated', (data: Leaderboard[]) => {
-      setLeaderboard(data);
+    connection.on('tournament:leaderboard-updated', (payload: Leaderboard[]) => {
+      setLeaderboard(payload);
     });
-
-    newSocket.on('disconnect', () => {
-      console.log('❌ Disconnected from tournament server');
-    });
-
-    setSocket(newSocket);
+    setSocket(connection);
 
     return () => {
-      newSocket.disconnect();
+      connection.disconnect();
     };
-  }, [token, userId]);
-
-  const loadUserStats = async () => {
-    try {
-      console.log('🔄 Loading user stats...');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/stats`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      if (!res.ok) {
-        console.error(`❌ API Error: ${res.status} ${res.statusText}`);
-        setLoading(false);
-        return;
-      }
-
-      const data = await res.json();
-      console.log('📊 Raw API response:', data);
-      console.log('🎖️ Trophy value:', data.trophy, 'Type:', typeof data.trophy);
-      console.log('✅ Eligible:', data.eligible);
-      console.log('🏷️ User:', data.name || data.email);
-
-      // Ensure trophy is a number
-      const stats: UserStats = {
-        userId: data.userId,
-        name: data.name || data.email,
-        trophy: Number(data.trophy) || 0,
-        eligible: Number(data.trophy) >= 1000,
-        level: data.level,
-        xp: data.xp,
-        streak: data.streak,
-      };
-
-      console.log('✨ Final stats object:', stats);
-      setUserStats(stats);
-      setLoading(false);
-    } catch (error) {
-      console.error('❌ Error loading stats:', error);
-      setLoading(false);
-    }
-  };
+  }, [router, token, userId]);
 
   const handleGameComplete = async (gameType: GameType, score: number, correctAnswers: number) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tournament/save-score`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tournament/save-score`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -141,150 +153,35 @@ export default function TournamentHub() {
           score,
         }),
       });
-
-      const data = await res.json();
-      if (data.success) {
-        setTotalScore((prev) => prev + score);
-        setUserStats(data.user);
-        
-        // Emit update to all players
+      const payload = await response.json();
+      if (payload.success) {
+        setTotalScore((current) => current + score);
+        setUserStats(payload.user);
         socket?.emit('tournament:score-update', { userId });
-        
-        // Thoát khỏi game và quay lại hub
-        setTimeout(() => {
-          setCurrentGame(null);
-        }, 500);
       }
-    } catch (error) {
-      console.error('Error saving score:', error);
-      // Vẫn thoát dù có lỗi
-      setTimeout(() => {
-        setCurrentGame(null);
-      }, 500);
+    } catch (requestError) {
+      console.error(requestError);
+    } finally {
+      setCurrentGame(null);
     }
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">Đang tải...</div>;
-  }
-
-  // Check eligibility: trophy >= 1000
-  // IMPORTANT: Double check on frontend (don't trust backend alone)
-  const currentTrophy = Number(userStats?.trophy) || 0;
-  const maxTrophy = 1000;
-  const isEligible = currentTrophy >= maxTrophy;
-  const progressPercent = Math.min((currentTrophy / maxTrophy) * 100, 100);
-  const needed = Math.max(0, maxTrophy - currentTrophy);
-
-  console.log(`🔍 Final eligibility check: Trophy=${currentTrophy} >= ${maxTrophy} = ${isEligible}`);
-  
-  if (!isEligible) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 p-6">
-        <div className="max-w-2xl mx-auto">
-          {/* Header */}
-          <div className="text-center text-white mb-12 mt-12">
-            <h1 className="text-5xl font-bold mb-4">🏆 GIẢI ĐẤU HANGUL</h1>
-            <p className="text-xl opacity-90">Mở khóa chức năng cạnh tranh toàn cầu</p>
+      <HangulPageFrame activeNav="Arena">
+        <HangulCard className="grid min-h-[72vh] place-items-center p-10">
+          <div className="text-center">
+            <div className="mx-auto h-14 w-14 animate-spin rounded-full border-4 border-[rgba(140,103,88,0.12)] border-t-[var(--hangul-accent)]" />
+            <p className="mt-5 text-lg text-[var(--hangul-soft-ink)]">Loading the Otter Arena...</p>
           </div>
-
-          {/* Locked State */}
-          <div className="bg-white rounded-2xl shadow-2xl p-12 text-center">
-            {/* Trophy Icon */}
-            <div className="mb-8">
-              <div className="text-6xl mb-4 inline-block opacity-50">🔒</div>
-            </div>
-
-            {/* Title */}
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">
-              Cấp độ chưa được mở khóa
-            </h2>
-
-            {/* Current Trophy */}
-            <div className="mb-8">
-              <p className="text-gray-600 mb-2">Điểm hiện tại của bạn</p>
-              <p className="text-5xl font-bold text-purple-600">{currentTrophy}</p>
-              <p className="text-gray-500 mt-2">/ {maxTrophy} điểm yêu cầu</p>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="mb-8">
-              <div className="bg-gray-200 rounded-full h-6 overflow-hidden shadow-md">
-                <div
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 h-full transition-all duration-500 flex items-center justify-end pr-3"
-                  style={{ width: `${progressPercent}%` }}
-                >
-                  {progressPercent > 10 && (
-                    <span className="text-white text-sm font-bold">
-                      {Math.round(progressPercent)}%
-                    </span>
-                  )}
-                </div>
-              </div>
-              <p className="text-gray-600 mt-3 font-semibold">
-                {needed > 0 ? (
-                  <>
-                    Cần thêm <span className="text-purple-600 text-lg">{needed}</span> điểm để mở khóa
-                  </>
-                ) : (
-                  <span className="text-green-600">✅ Bạn đã sẵn sàng!</span>
-                )}
-              </p>
-            </div>
-
-            {/* Motivation */}
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 mb-8">
-              <p className="text-gray-700 mb-4">
-                📖 <strong>Mẹo:</strong> Chơi các trò chơi học tập (Quiz, Nghe, Viết...) để kiếm điểm!
-              </p>
-              <ul className="text-left text-gray-600 space-y-2">
-                <li>✓ Mỗi câu trắc nghiệm đúng: +10 điểm</li>
-                <li>✓ Chạy chuỗi học tập: Bonus điểm</li>
-                <li>✓ Hoàn thành bài tập: +5-20 điểm</li>
-              </ul>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => router.push('/quiz')}
-                className="bg-purple-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-purple-700 transition-all transform hover:scale-105"
-              >
-                📖 Bắt đầu Quiz
-              </button>
-              <button
-                onClick={() => router.push('/tasks')}
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition-all transform hover:scale-105"
-              >
-                📚 Xem nhiệm vụ
-              </button>
-            </div>
-
-            {/* Stats */}
-            <div className="mt-8 pt-8 border-t border-gray-200">
-              <p className="text-gray-500 text-sm">
-                Sau khi có {maxTrophy} điểm, bạn sẽ có thể:
-              </p>
-              <div className="grid grid-cols-3 gap-4 mt-4">
-                <div className="text-center">
-                  <p className="text-2xl mb-2">⚔️</p>
-                  <p className="text-gray-700 font-semibold">Thi đấu trực tiếp</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl mb-2">🏅</p>
-                  <p className="text-gray-700 font-semibold">Xếp hạng global</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl mb-2">🎁</p>
-                  <p className="text-gray-700 font-semibold">Nhận phần thưởng</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+        </HangulCard>
+      </HangulPageFrame>
     );
   }
+
+  const currentTrophy = userStats?.trophy ?? 0;
+  const isEligible = currentTrophy >= 1000;
+  const progressPercent = Math.min((currentTrophy / 1000) * 100, 100);
 
   if (currentGame) {
     const GameComponent = {
@@ -296,11 +193,9 @@ export default function TournamentHub() {
     }[currentGame];
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700">
+      <div className="min-h-screen bg-[linear-gradient(135deg,#f9f5ee,#f3ecdf)]">
         <GameComponent
-          onComplete={(score, correct) =>
-            handleGameComplete(currentGame, score, correct)
-          }
+          onComplete={(score, correctAnswers) => handleGameComplete(currentGame, score, correctAnswers)}
           onExit={() => setCurrentGame(null)}
           userLevel={userStats?.level || 'BEGINNER'}
         />
@@ -308,75 +203,133 @@ export default function TournamentHub() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center text-white mb-12">
-          <h1 className="text-5xl font-bold mb-2">🏆 GIẢI ĐẤU HANGUL</h1>
-          <p className="text-xl opacity-90">
-            Thi đấu với những người chơi khác và chiếm ngôi vương
+  if (!isEligible) {
+    return (
+      <HangulPageFrame activeNav="Arena">
+        <HangulCard className="mx-auto max-w-[980px] p-10 text-center">
+          <Pill className="bg-[#ffe8c8] text-[#9c6700]">Weekly Tournament</Pill>
+          <h1 className="mt-6 text-6xl font-black tracking-[-0.06em] text-[var(--hangul-ink)]">The Otter Arena</h1>
+          <p className="mx-auto mt-5 max-w-3xl text-xl leading-9 text-[var(--hangul-soft-ink)]">
+            Choose your battleground, sharpen your skills, and unlock seasonal competition once you reach the trophy gate.
           </p>
-          <div className="mt-4 inline-block bg-white/20 backdrop-blur px-6 py-2 rounded-full">
-            <p className="text-lg font-semibold">
-              🎖️ Điểm của bạn: <span className="text-yellow-300 text-xl">{userStats?.trophy || 0}</span> / 1000+
-            </p>
+          <div className="mx-auto mt-10 max-w-xl rounded-[34px] bg-white/80 p-8 shadow-[0_24px_50px_rgba(121,95,78,0.12)]">
+            <p className="text-6xl font-black tracking-[-0.06em] text-[var(--hangul-ink)]">{currentTrophy}</p>
+            <p className="mt-2 text-xl text-[var(--hangul-soft-ink)]">of 1000 trophies required</p>
+            <ProgressBar className="mt-8 h-5" value={progressPercent} />
+            <p className="mt-4 text-lg text-[var(--hangul-soft-ink)]">Earn {Math.max(0, 1000 - currentTrophy)} more trophies through quiz, pronunciation, and writing practice.</p>
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
+              <button className="hangul-button-primary" onClick={() => router.push('/quiz')} type="button">Start Quiz</button>
+              <button className="hangul-button-secondary" onClick={() => router.push('/pronunciation')} type="button">Open Practice Lab</button>
+            </div>
           </div>
+        </HangulCard>
+      </HangulPageFrame>
+    );
+  }
+
+  const ranking = leaderboard.find((player) => player.userId === userId)?.rank ?? 42;
+  const prizeTimer = '2d 14h 22m';
+  const displayedBoard = leaderboard.length > 0
+    ? leaderboard.slice(0, 3)
+    : [
+        { rank: 1, userId: 11, name: 'KimChiWarrior', trophy: 24850, level: 'MASTER', xp: 0 },
+        { rank: 2, userId: 12, name: 'SeoulRunner', trophy: 22100, level: 'UPPER', xp: 0 },
+        { rank: 3, userId: 13, name: 'PaliPali_99', trophy: 21450, level: 'BEGINNER', xp: 0 },
+      ];
+
+  return (
+    <HangulPageFrame activeNav="Arena">
+      <div className="grid gap-6 xl:grid-cols-[104px_minmax(0,1fr)_420px]">
+        <div className="hidden xl:block">
+          <MiniRail />
         </div>
 
-        <div className="grid grid-cols-3 gap-8 mb-12">
-          {/* User Stats */}
-          <div className="col-span-1">
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-2xl font-bold mb-4 text-gray-800">📊 Thống Kê</h2>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Tên:</span>
-                  <span className="font-bold">{userStats?.name}</span>
+        <div className="space-y-6">
+          <div className="px-2 pt-8">
+            <Pill className="bg-[#ffe8c8] text-[#9c6700]">Weekly Tournament</Pill>
+            <h1 className="mt-6 text-[clamp(3.8rem,6vw,6rem)] font-black tracking-[-0.06em] text-[var(--hangul-ink)]">The Otter Arena</h1>
+            <p className="mt-4 max-w-4xl text-[1.55rem] leading-[1.55] text-[var(--hangul-soft-ink)]">
+              Choose your battleground. Sharpen your skills against players worldwide and climb the seasonal rankings for exclusive rewards.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            {Object.entries(GAME_CONFIG).slice(0, 4).map(([key, item]) => {
+              const Icon = item.icon;
+              return (
+                <button key={key} className="text-left" onClick={() => setCurrentGame(key as GameType)} type="button">
+                  <HangulCard className="h-full p-7" tone={item.tone}>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="grid h-16 w-16 place-items-center rounded-2xl bg-white/72 text-[var(--hangul-soft-ink)]">
+                        <Icon className="h-7 w-7" />
+                      </div>
+                      <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--hangul-soft-ink)]">{item.tier}</p>
+                    </div>
+                    <p className="mt-14 text-5xl font-black tracking-[-0.05em] text-[var(--hangul-ink)]">{item.name}</p>
+                    <p className="mt-5 text-xl leading-9 text-[var(--hangul-soft-ink)]">{item.description}</p>
+                    <div className="mt-10 flex justify-end">
+                      <MascotPortrait emoji={item.mascot} tone={key === 'quiz' ? 'paper' : key === 'writing' ? 'paper' : key === 'matching' ? 'sky' : 'peach'} className="h-32 w-32" />
+                    </div>
+                  </HangulCard>
+                </button>
+              );
+            })}
+          </div>
+
+          <HangulCard className="p-4">
+            <button className="hangul-button-primary w-full justify-center text-2xl" onClick={() => setCurrentGame('speed')} type="button">
+              <Swords className="mr-3 h-6 w-6" />
+              Enter Arena
+            </button>
+          </HangulCard>
+        </div>
+
+        <div className="space-y-6">
+          <HangulCard className="p-8">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-5xl font-black tracking-[-0.05em] text-[var(--hangul-ink)]">Leaderboard</h2>
+              <Pill className="bg-[#ffe8dd] text-[var(--hangul-accent)]">Global</Pill>
+            </div>
+            <div className="mt-8 space-y-4">
+              {displayedBoard.map((player) => (
+                <div key={player.userId} className="flex items-center gap-4 rounded-[30px] bg-white/72 px-5 py-5 shadow-[0_16px_34px_rgba(121,95,78,0.08)]">
+                  <div className="w-8 text-xl font-bold text-[var(--hangul-gold)]">{player.rank}</div>
+                  <div className="grid h-16 w-16 place-items-center rounded-full bg-[linear-gradient(145deg,#101318,#27323d)] text-3xl text-white">{player.rank}</div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-2xl font-black tracking-[-0.03em] text-[var(--hangul-ink)]">{player.name}</p>
+                    <p className="text-lg text-[var(--hangul-soft-ink)]">{player.trophy.toLocaleString()} pts</p>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Điểm:</span>
-                  <span className="font-bold text-purple-600">{userStats?.trophy || 0}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Cấp độ:</span>
-                  <span className="font-bold">{userStats?.level}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Ôn tập ngày này:</span>
-                  <span className="font-bold text-blue-600">+{totalScore}</span>
+              ))}
+              <div className="mt-5 flex items-center gap-4 rounded-[30px] bg-[linear-gradient(135deg,#8d695c,#6d5047)] px-5 py-5 text-white shadow-[0_18px_42px_rgba(123,90,78,0.2)]">
+                <div className="w-10 text-2xl font-black">{ranking}</div>
+                <div className="grid h-16 w-16 place-items-center rounded-full border-4 border-white bg-[linear-gradient(145deg,#101318,#27323d)] text-2xl">🧑</div>
+                <div className="flex-1">
+                  <p className="text-2xl font-black tracking-[-0.03em]">You ({userStats?.name || 'OtterLearner'})</p>
+                  <p className="text-lg text-white/72">{(userStats?.trophy || 0).toLocaleString()} pts</p>
                 </div>
               </div>
             </div>
-          </div>
+            <button className="mt-8 w-full text-center text-xl font-semibold text-[var(--hangul-soft-ink)]" type="button">
+              View Full Standings →
+            </button>
+          </HangulCard>
 
-          {/* Game Selection */}
-          <div className="col-span-2">
-            <div className="grid grid-cols-2 gap-4">
-              {(Object.entries(GAME_CONFIG) as Array<[GameType, typeof GAME_CONFIG.quiz]>).map(
-                ([gameKey, gameInfo]) => (
-                  <button
-                    key={gameKey}
-                    onClick={() => setCurrentGame(gameKey)}
-                    className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl hover:scale-105 transition-all"
-                  >
-                    <h3 className="text-xl font-bold mb-2 text-gray-800">
-                      {gameInfo.name}
-                    </h3>
-                    <p className="text-gray-600">{gameInfo.description}</p>
-                    <p className="text-sm text-purple-600 mt-3 font-semibold">
-                      +10 điểm / câu đúng →
-                    </p>
-                  </button>
-                )
-              )}
+          <HangulCard className="p-8" tone="gold">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-white/72">Weekly Prize</p>
+            <p className="mt-4 text-4xl font-black tracking-[-0.05em] text-white">Master Calligrapher Otter Skin</p>
+            <p className="mt-5 text-xl text-white/82">Ends in: {prizeTimer}</p>
+            <div className="mt-8 flex items-end justify-between gap-4">
+              <MascotPortrait emoji="🏆" tone="gold" className="h-40 w-40" />
+              <div className="text-right text-lg text-white/75">
+                <p>Daily score bonus: {totalScore}</p>
+                <p>Streak multiplier active</p>
+              </div>
             </div>
-          </div>
+          </HangulCard>
         </div>
-
-        {/* Leaderboard */}
-        <TournamentLeaderboard leaderboard={leaderboard} currentUserId={Number(userId)} />
       </div>
-    </div>
+    </HangulPageFrame>
   );
 }
+

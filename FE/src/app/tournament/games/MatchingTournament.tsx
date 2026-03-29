@@ -1,12 +1,6 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
-
-interface Vocabulary {
-  id: number;
-  korean: string;
-  vietnamese: string;
-}
 
 interface MatchingTournamentProps {
   onComplete: (score: number, correctAnswers: number) => void;
@@ -80,7 +74,7 @@ export default function MatchingTournament({ onComplete, onExit }: MatchingTourn
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center min-h-screen text-white text-xl">Đang tải...</div>;
+    return <div className="flex justify-center items-center min-h-screen text-white text-xl">Äang táº£i...</div>;
   }
 
   const vietnameseList = pairs.slice(0, 4);
@@ -90,19 +84,19 @@ export default function MatchingTournament({ onComplete, onExit }: MatchingTourn
     <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-white">🔗 Ghép Cặp</h1>
+          <h1 className="text-3xl font-bold text-white">ðŸ”— GhÃ©p Cáº·p</h1>
           <button onClick={onExit} className="text-white hover:text-gray-300 text-2xl">
-            ✕
+            âœ•
           </button>
         </div>
 
         <div className="bg-white rounded-xl shadow-xl p-8 mb-6">
-          <p className="text-gray-600 mb-6">Ghép từ tiếng Việt với từ tiếng Hàn tương ứng</p>
+          <p className="text-gray-600 mb-6">GhÃ©p tá»« tiáº¿ng Viá»‡t vá»›i tá»« tiáº¿ng HÃ n tÆ°Æ¡ng á»©ng</p>
 
           <div className="grid grid-cols-2 gap-8">
             {/* Vietnamese Words */}
             <div>
-              <h3 className="font-bold text-lg mb-4 text-gray-800">🇻🇳 Tiếng Việt</h3>
+              <h3 className="font-bold text-lg mb-4 text-gray-800">ðŸ‡»ðŸ‡³ Tiáº¿ng Viá»‡t</h3>
               <div className="space-y-2">
                 {vietnameseList.map((pair) => (
                   <button
@@ -116,7 +110,7 @@ export default function MatchingTournament({ onComplete, onExit }: MatchingTourn
                         : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
                     }`}
                   >
-                    {matches[pair.id] ? '✅' : ''} {pair.vietnamese}
+                    {matches[pair.id] ? 'âœ…' : ''} {pair.vietnamese}
                   </button>
                 ))}
               </div>
@@ -124,7 +118,7 @@ export default function MatchingTournament({ onComplete, onExit }: MatchingTourn
 
             {/* Korean Words */}
             <div>
-              <h3 className="font-bold text-lg mb-4 text-gray-800">🇰🇷 Tiếng Hàn</h3>
+              <h3 className="font-bold text-lg mb-4 text-gray-800">ðŸ‡°ðŸ‡· Tiáº¿ng HÃ n</h3>
               <div className="space-y-2">
                 {koreanList.map((pair) => (
                   <button
@@ -151,7 +145,7 @@ export default function MatchingTournament({ onComplete, onExit }: MatchingTourn
         </div>
 
         <div className="bg-white/20 backdrop-blur rounded-xl p-4 text-white mb-6 text-center">
-          <p className="text-lg">Đã ghép đúng: <span className="font-bold text-2xl">{correctCount}/4</span></p>
+          <p className="text-lg">ÄÃ£ ghÃ©p Ä‘Ãºng: <span className="font-bold text-2xl">{correctCount}/4</span></p>
         </div>
 
         <button
@@ -159,9 +153,10 @@ export default function MatchingTournament({ onComplete, onExit }: MatchingTourn
           disabled={correctCount < 4}
           className="w-full bg-yellow-400 hover:bg-yellow-500 disabled:bg-gray-400 text-gray-900 font-bold py-4 rounded-lg transition-all"
         >
-          {correctCount === 4 ? '🎉 Hoàn thành!' : `Hoàn thành (${correctCount}/4)`}
+          {correctCount === 4 ? 'ðŸŽ‰ HoÃ n thÃ nh!' : `HoÃ n thÃ nh (${correctCount}/4)`}
         </button>
       </div>
     </div>
   );
 }
+

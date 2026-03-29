@@ -1,9 +1,11 @@
-'use client';
+﻿'use client';
 
-import { useState, useEffect } from 'react';
-import { useAuthStore } from '@/store/authStore';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { LockKeyhole, Mail } from 'lucide-react';
+import { HangulCard, MascotPortrait } from '@/components/hangul/ui';
+import { useAuthStore } from '@/store/authStore';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -14,155 +16,126 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const { login, user } = useAuthStore();
 
-  // 🔥 Auth Guard: Nếu đã login → redirect đến dashboard
   useEffect(() => {
     if (user) {
       router.push('/dashboard');
     }
-  }, [user, router]);
+  }, [router, user]);
 
-  // Check if user just registered
   useEffect(() => {
     if (searchParams.get('registered') === 'true') {
-      setSuccess(' Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.');
+      setSuccess('Account created successfully. Sign in to continue your journey.');
     }
   }, [searchParams]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((current) => ({ ...current, [event.target.name]: event.target.value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setLoading(true);
+    setError('');
 
     if (!formData.email || !formData.password) {
-      setError('Vui lòng điền email và mật khẩu');
+      setError('Please enter both email and password.');
       setLoading(false);
       return;
     }
 
     try {
       await login(formData.email, formData.password);
-      // Sau khi đăng nhập thành công, kiểm tra xem người dùng đã chọn cấp độ chưa
-      // Nếu chưa, chuyển hướng đến trang chọn cấp độ
-      setTimeout(() => {
-        router.push('/level-selection');
-      }, 500);
-    } catch (err) {
-      const error = err as Error;
-      setError(error?.message || 'Đăng nhập thất bại');
+      router.push('/level-selection');
+    } catch (requestError) {
+      const safeError = requestError as Error;
+      setError(safeError.message || 'Unable to sign in.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{ background: 'linear-gradient(135deg, #2d5d4d 0%, #1f4439 100%)' }}
-    >
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-10">
-          <h1 className="text-5xl mb-2"></h1>
-          <h2 className="text-4xl font-bold text-white mb-2">HANGUL</h2>
-          <p className="text-[#a8d5ba]">Your Korean Herbarium</p>
-        </div>
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12 sm:px-6">
+      <div className="pointer-events-none absolute left-[12%] top-[16%] hidden rotate-[-8deg] xl:block">
+        <MascotPortrait emoji="🦦" tone="paper" className="h-64 w-56" />
+      </div>
+      <div className="pointer-events-none absolute right-[10%] top-[18%] hidden rotate-[8deg] xl:block">
+        <MascotPortrait emoji="🧥" tone="cocoa" className="h-60 w-52" />
+      </div>
+      <div className="pointer-events-none absolute bottom-[10%] right-[18%] hidden rotate-[-10deg] xl:block">
+        <MascotPortrait emoji="💪" tone="sky" className="h-60 w-52" />
+      </div>
 
-        {/* Form Card */}
-        <div style={{ background: 'white', borderRadius: '20px' }} className="shadow-xl p-10 mb-6">
-          <h3 style={{ color: '#2d5d4d' }} className="text-2xl font-bold mb-8 text-center">
-            Đăng nhập
-          </h3>
+      <HangulCard className="relative z-10 w-full max-w-[620px] p-7 sm:p-10">
+        <div className="rounded-[40px] bg-[linear-gradient(135deg,rgba(255,255,255,0.86),rgba(250,244,235,0.96))] p-6 shadow-[0_32px_70px_rgba(126,99,79,0.12)] sm:p-10">
+          <div className="text-center">
+            <h1 className="text-[3.6rem] font-black tracking-[-0.06em] text-[var(--hangul-ink)]">HANGUL</h1>
+            <p className="mt-3 text-xl text-[var(--hangul-soft-ink)]">Your journey to fluency starts here.</p>
+          </div>
 
-          {success && (
-            <div style={{ background: '#e6ffe6', borderRadius: '12px' }} className="p-4 mb-6 border border-green-300">
-              <p className="text-green-600 text-sm">{success}</p>
-            </div>
-          )}
+          <form className="mt-10 space-y-6" onSubmit={handleSubmit}>
+            <label className="block">
+              <span className="mb-3 block text-lg font-semibold text-[var(--hangul-ink)]">Email</span>
+              <div className="relative">
+                <Mail className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--hangul-soft-ink)]" />
+                <input
+                  className="hangul-input pl-14"
+                  name="email"
+                  onChange={handleChange}
+                  placeholder="hello@otter.edu"
+                  type="email"
+                  value={formData.email}
+                />
+              </div>
+            </label>
 
-          {error && (
-            <div style={{ background: '#ffe6e6', borderRadius: '12px' }} className="p-4 mb-6 border border-red-300">
-              <p className="text-red-600 text-sm">{error}</p>
-            </div>
-          )}
+            <label className="block">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-lg font-semibold text-[var(--hangul-ink)]">Password</span>
+                <button type="button" className="text-base font-semibold text-[var(--hangul-gold)]">
+                  Forgot?
+                </button>
+              </div>
+              <div className="relative">
+                <LockKeyhole className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--hangul-soft-ink)]" />
+                <input
+                  className="hangul-input pl-14"
+                  name="password"
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  type="password"
+                  value={formData.password}
+                />
+              </div>
+            </label>
 
-          <form onSubmit={handleSubmit}>
-            {/* Email Field */}
-            <div className="mb-6">
-              <label className="block text-sm font-semibold text-[#2d3436] mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="your@email.com"
-                className="w-full px-4 py-3 rounded-lg border-2 border-[#a8d5ba] focus:border-[#2d5d4d] focus:outline-none transition"
-              />
-            </div>
+            {success ? <p className="rounded-3xl bg-[#e3f8ef] px-5 py-4 text-base text-[#366b58]">{success}</p> : null}
+            {error ? <p className="rounded-3xl bg-[#ffe8e1] px-5 py-4 text-base text-[#944f42]">{error}</p> : null}
 
-            {/* Password Field */}
-            <div className="mb-8">
-              <label className="block text-sm font-semibold text-[#2d3436] mb-2">
-                Mật khẩu
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="••••••••"
-                className="w-full px-4 py-3 rounded-lg border-2 border-[#a8d5ba] focus:border-[#2d5d4d] focus:outline-none transition"
-              />
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 rounded-lg font-bold text-white transition disabled:opacity-50"
-              style={{ background: '#2d5d4d' }}
-            >
-              {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+            <button className="hangul-button-primary w-full" disabled={loading} type="submit">
+              {loading ? 'Signing In...' : 'Sign In'}
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="flex items-center my-8">
-            <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }}></div>
-            <p className="px-4 text-sm text-[#636e72]">hoặc</p>
-            <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }}></div>
+          <div className="my-8 flex items-center gap-4 text-[var(--hangul-muted)]">
+            <div className="h-px flex-1 bg-[rgba(129,100,85,0.12)]" />
+            <span className="text-base">Or continue with</span>
+            <div className="h-px flex-1 bg-[rgba(129,100,85,0.12)]" />
           </div>
 
-          {/* Demo Login */}
-          <button
-            type="button"
-            onClick={() => {
-              setFormData({ email: 'demo@example.com', password: 'password123' });
-            }}
-            className="w-full py-3 rounded-lg font-semibold transition"
-            style={{ background: '#f5f1e8', color: '#2d5d4d', border: '2px solid #a8d5ba' }}
-          >
-            Demo đăng nhập
-          </button>
-        </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <button className="hangul-button-secondary w-full text-base font-bold">Google</button>
+            <button className="hangul-button-secondary w-full text-base font-bold">Apple</button>
+          </div>
 
-        {/* Register Link */}
-        <div style={{ background: 'rgba(255, 255, 255, 0.1)', borderRadius: '20px' }} className="p-6 text-center">
-          <p className="text-white mb-3">Chưa có tài khoản?</p>
-          <Link
-            href="/register"
-            className="inline-block px-8 py-2 rounded-lg font-semibold transition"
-            style={{ background: '#a8d5ba', color: '#2d3436' }}
-          >
-            Tạo tài khoản ngay
-          </Link>
+          <p className="mt-10 text-center text-lg text-[var(--hangul-soft-ink)]">
+            New to the river?{' '}
+            <Link className="font-bold text-[var(--hangul-ink)]" href="/register">
+              Create an account
+            </Link>
+          </p>
         </div>
-      </div>
-    </div>
+      </HangulCard>
+    </main>
   );
 }

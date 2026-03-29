@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 
@@ -8,6 +8,8 @@ interface Question {
   english: string;
   vietnamese: string;
   level: string;
+  options: string[];
+  correctAnswer: string;
 }
 
 interface TournamentListeningProps {
@@ -19,7 +21,7 @@ interface TournamentListeningProps {
 export default function TournamentListening({
   onComplete,
   onExit,
-  userLevel,
+  userLevel: _userLevel,
 }: TournamentListeningProps) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -82,7 +84,7 @@ export default function TournamentListening({
     setSelectedAnswer(answer);
     setAnswered(true);
 
-    const question = questions[currentQuestion] as any;
+    const question = questions[currentQuestion]!;
     if (answer === question.correctAnswer) {
       setScore((prev) => prev + 10);
       setCorrectAnswers((prev) => prev + 1);
@@ -95,7 +97,7 @@ export default function TournamentListening({
       setAnswered(false);
       setSelectedAnswer(null);
     } else {
-      const question = questions[currentQuestion] as any;
+      const question = questions[currentQuestion]!;
       const finalScore =
         score +
         (answered && selectedAnswer === question.correctAnswer ? 10 : 0);
@@ -112,7 +114,7 @@ export default function TournamentListening({
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="text-white text-xl">Đang tải câu hỏi...</div>
+        <div className="text-white text-xl">Äang táº£i cÃ¢u há»i...</div>
       </div>
     );
   }
@@ -121,7 +123,7 @@ export default function TournamentListening({
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="text-white text-xl">
-          Không có câu hỏi cho cấp độ của bạn
+          KhÃ´ng cÃ³ cÃ¢u há»i cho cáº¥p Ä‘á»™ cá»§a báº¡n
         </div>
       </div>
     );
@@ -132,25 +134,25 @@ export default function TournamentListening({
       <div className="min-h-screen p-6 flex items-center justify-center">
         <div className="max-w-2xl mx-auto w-full">
           <div className="bg-white rounded-xl shadow-2xl p-12 text-center">
-            <div className="text-6xl mb-6 animate-bounce">🎉</div>
-            <h2 className="text-4xl font-bold text-gray-800 mb-4">Hoàn Thành!</h2>
+            <div className="text-6xl mb-6 animate-bounce">ðŸŽ‰</div>
+            <h2 className="text-4xl font-bold text-gray-800 mb-4">HoÃ n ThÃ nh!</h2>
             <p className="text-xl text-gray-600 mb-8">
-              Bạn đã hoàn thành bài luyện nghe
+              Báº¡n Ä‘Ã£ hoÃ n thÃ nh bÃ i luyá»‡n nghe
             </p>
 
             <div className="grid grid-cols-3 gap-4 mb-8">
               <div className="bg-green-100 rounded-lg p-6">
-                <p className="text-gray-600 text-sm">✅ Trả lời đúng</p>
+                <p className="text-gray-600 text-sm">âœ… Tráº£ lá»i Ä‘Ãºng</p>
                 <p className="text-4xl font-bold text-green-600">{correctAnswers}</p>
               </div>
               <div className="bg-yellow-100 rounded-lg p-6">
-                <p className="text-gray-600 text-sm">⭐ Tổng điểm</p>
+                <p className="text-gray-600 text-sm">â­ Tá»•ng Ä‘iá»ƒm</p>
                 <p className="text-4xl font-bold text-yellow-600">
                   {score + (answered && selectedAnswer === questions[currentQuestion]?.correctAnswer ? 10 : 0)}
                 </p>
               </div>
               <div className="bg-blue-100 rounded-lg p-6">
-                <p className="text-gray-600 text-sm">📊 Tỷ lệ</p>
+                <p className="text-gray-600 text-sm">ðŸ“Š Tá»· lá»‡</p>
                 <p className="text-4xl font-bold text-blue-600">
                   {Math.round(((correctAnswers / questions.length) * 100))}%
                 </p>
@@ -158,10 +160,10 @@ export default function TournamentListening({
             </div>
 
             <button
-              onClick={() => setCurrentGame(null)}
+              onClick={() => onExit()}
               className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold py-4 rounded-lg hover:shadow-lg transition-all"
             >
-              ← Quay Lại Tournament Hub
+              â† Quay Láº¡i Tournament Hub
             </button>
           </div>
         </div>
@@ -169,7 +171,7 @@ export default function TournamentListening({
     );
   }
 
-  const question = questions[currentQuestion] as any;
+  const question = questions[currentQuestion]!;
   const totalScore =
     score +
     (answered && selectedAnswer === question.correctAnswer ? 10 : 0);
@@ -182,20 +184,20 @@ export default function TournamentListening({
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-white">🎧 Luyện Nghe Giải Đấu</h1>
+          <h1 className="text-3xl font-bold text-white">ðŸŽ§ Luyá»‡n Nghe Giáº£i Äáº¥u</h1>
           <button
             onClick={onExit}
             className="text-white hover:text-gray-300 text-2xl"
           >
-            ✕
+            âœ•
           </button>
         </div>
 
         {/* Progress */}
         <div className="bg-white/20 rounded-lg p-4 mb-6 backdrop-blur">
           <div className="flex justify-between text-white mb-2">
-            <span>Câu {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-300 font-bold">Điểm: {totalScore}</span>
+            <span>CÃ¢u {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-yellow-300 font-bold">Äiá»ƒm: {totalScore}</span>
           </div>
           <div className="w-full bg-white/30 rounded-full h-2">
             <div
@@ -211,23 +213,23 @@ export default function TournamentListening({
         <div className="bg-white rounded-xl shadow-xl p-8 mb-6">
           <div className="mb-6">
             <span className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
-              Cấp độ: {question.level}
+              Cáº¥p Ä‘á»™: {question.level}
             </span>
           </div>
 
           {/* Audio/Visual */}
           <div className="text-center mb-8">
             <div className="inline-block bg-gradient-to-br from-blue-400 to-cyan-500 rounded-full p-8 mb-6">
-              <span className="text-6xl">🎧</span>
+              <span className="text-6xl">ðŸŽ§</span>
             </div>
             <p className="text-lg font-semibold text-gray-700">
-              Nghe và chọn tiếng Anh đúng
+              Nghe vÃ  chá»n tiáº¿ng Anh Ä‘Ãºng
             </p>
           </div>
 
           {/* Korean Text */}
           <h2 className="text-3xl font-bold text-gray-800 mb-2 text-center">
-            {question?.korean || 'Câu hỏi'}
+            {question?.korean || 'CÃ¢u há»i'}
           </h2>
           <p className="text-gray-600 mb-8 text-center">{question?.vietnamese || ''}</p>
 
@@ -239,7 +241,7 @@ export default function TournamentListening({
             }}
             className="w-full bg-gradient-to-r from-blue-400 to-cyan-500 text-white font-bold py-3 rounded-lg mb-8 hover:shadow-lg transition-all"
           >
-            ▶️ Bấm để nghe
+            â–¶ï¸ Báº¥m Ä‘á»ƒ nghe
           </button>
 
           {/* Options */}
@@ -271,15 +273,15 @@ export default function TournamentListening({
         <div className="bg-white/20 backdrop-blur rounded-xl p-6 text-white mb-6">
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
-              <p className="text-sm opacity-80">✅ Trả lời đúng</p>
+              <p className="text-sm opacity-80">âœ… Tráº£ lá»i Ä‘Ãºng</p>
               <p className="text-3xl font-bold text-green-300">{totalCorrect}</p>
             </div>
             <div className="text-center">
-              <p className="text-sm opacity-80">⭐ Tổng điểm</p>
+              <p className="text-sm opacity-80">â­ Tá»•ng Ä‘iá»ƒm</p>
               <p className="text-3xl font-bold text-yellow-300">{totalScore}</p>
             </div>
             <div className="text-center">
-              <p className="text-sm opacity-80">📊 Tiến độ</p>
+              <p className="text-sm opacity-80">ðŸ“Š Tiáº¿n Ä‘á»™</p>
               <p className="text-3xl font-bold text-blue-300">
                 {Math.round(((currentQuestion + 1) / questions.length) * 100)}%
               </p>
@@ -294,11 +296,12 @@ export default function TournamentListening({
             className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white font-bold py-4 rounded-lg transition-all transform hover:scale-105"
           >
             {currentQuestion < questions.length - 1
-              ? '➜ Câu tiếp theo'
-              : '🎉 Hoàn thành'}
+              ? 'âžœ CÃ¢u tiáº¿p theo'
+              : 'ðŸŽ‰ HoÃ n thÃ nh'}
           </button>
         )}
       </div>
     </div>
   );
 }
+

@@ -1,9 +1,11 @@
-'use client';
+﻿'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useAuthStore } from '@/store/authStore';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { BookMarked, BookOpen, Eraser, Gamepad2, Map, Mic2, ShieldCheck, Trophy } from 'lucide-react';
+import { HangulCard, HangulPageFrame, HangulSidebar, MascotPortrait, StatusChip } from '@/components/hangul/ui';
+import { useAuthStore } from '@/store/authStore';
 
 interface ExercisePoint {
   x: number;
@@ -11,193 +13,242 @@ interface ExercisePoint {
   time: number;
 }
 
+const palette = ['#846458', '#a28277', '#6c4f42', '#918280', '#5e4d4b', '#ffd5c8'] as const;
+const brushSizes = [4, 10, 18] as const;
+const characters = ['한', '가', '나', '다', '라', '마', '바', '사'];
+const practiceSidebar = [
+  { key: 'course' as const, label: 'Current Session', href: '/dashboard', icon: BookOpen },
+  { key: 'path' as const, label: 'Learning Path', href: '/learning-map', icon: Map },
+  { key: 'vocabulary' as const, label: 'Vocabulary', href: '/camera', icon: BookMarked },
+  { key: 'achievements' as const, label: 'Voice Lab', href: '/pronunciation', icon: Mic2 },
+  { key: 'friends' as const, label: 'Achievements', href: '/profile', icon: Trophy },
+];
+
 export default function WritingPage() {
   const { token } = useAuthStore();
   const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [strokes, setStrokes] = useState<ExercisePoint[]>([]);
-  const [currentChar, setCurrentChar] = useState('가');
+  const [currentChar, setCurrentChar] = useState('한');
   const [feedback, setFeedback] = useState('');
   const [score, setScore] = useState<number | null>(null);
-
-  const characters = ['가', '나', '다', '라', '마', '바', '사', '아'];
+  const [brushSize, setBrushSize] = useState<(typeof brushSizes)[number]>(10);
+  const [brushColor, setBrushColor] = useState<(typeof palette)[number]>('#846458');
+  const [startedAt, setStartedAt] = useState<number | null>(Date.now());
+  const [elapsed, setElapsed] = useState(14);
 
   useEffect(() => {
     if (!token) {
       router.push('/login');
     }
-  }, [token, router]);
+  }, [router, token]);
 
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    setIsDrawing(true);
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (rect) {
-      setStrokes([{ x: e.clientX - rect.left, y: e.clientY - rect.top, time: Date.now() }]);
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (startedAt) {
+        setElapsed(Math.floor((Date.now() - startedAt) / 1000));
+      }
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [startedAt]);
+
+  const beginStroke = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      return;
     }
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.strokeStyle = brushColor;
+    ctx.lineWidth = brushSize;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    setIsDrawing(true);
+    setStrokes((current) => [...current, { x, y, time: Date.now() }]);
   };
 
-  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return;
-    const rect = canvasRef.current?.getBoundingClientRect();
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-
-    if (rect && ctx && canvas) {
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      ctx.strokeStyle = '#2d5d4d';
-      ctx.lineWidth = 3;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-
-      if (strokes.length === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        const lastPoint = strokes[strokes.length - 1];
-        ctx.moveTo(lastPoint.x, lastPoint.y);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-      }
-
-      setStrokes(prev => [...prev, { x, y, time: Date.now() }]);
+  const drawStroke = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) {
+      return;
     }
+
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      return;
+    }
+    const rect = canvas.getBoundingClientRect();
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    setStrokes((current) => [...current, { x, y, time: Date.now() }]);
   };
 
   const stopDrawing = () => {
     setIsDrawing(false);
-    // Mock score
-    setFeedback('Tốt lắm! Nét vẽ rất giống với mẫu.');
-    setScore(Math.floor(Math.random() * 30 + 70));
   };
 
   const clearCanvas = () => {
     const canvas = canvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      ctx?.clearRect(0, 0, canvas.width, canvas.height);
-      setStrokes([]);
-      setFeedback('');
-      setScore(null);
+    if (!canvas) {
+      return;
     }
+    const ctx = canvas.getContext('2d');
+    ctx?.clearRect(0, 0, canvas.width, canvas.height);
+    setStrokes([]);
+    setFeedback('');
+    setScore(null);
+    setStartedAt(Date.now());
+    setElapsed(0);
   };
 
-  const nextChar = () => {
+  const checkWriting = () => {
+    const effortScore = Math.min(99, 48 + Math.round(strokes.length / 5));
+    const polishBoost = brushSize === 10 ? 8 : 0;
+    const finalScore = Math.min(99, effortScore + polishBoost);
+    setScore(finalScore);
+    setFeedback(
+      finalScore > 84
+        ? 'Great start! Follow the flow of the strokes and keep the pressure consistent.'
+        : 'The structure is there. Slow down slightly and let the vertical line land with more control.'
+    );
+  };
+
+  const nextCharacter = () => {
     const currentIndex = characters.indexOf(currentChar);
     setCurrentChar(characters[(currentIndex + 1) % characters.length]);
     clearCanvas();
   };
 
+  const strokeCount = useMemo(() => Math.max(0, Math.round(strokes.length / 14)), [strokes.length]);
+
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #f5f1e8 0%, #ede4d3 100%)' }}>
-      <div className="flex">
-        {/* Sidebar */}
-        <aside style={{ background: '#2d5d4d', width: '280px', minHeight: '100vh' }} className="sticky top-0 p-6 text-white">
-          <Link href="/" className="flex items-center gap-2 mb-8">
-            <span className="text-2xl">←</span>
-            <span className="font-semibold">Quay lại</span>
-          </Link>
-          <h2 className="text-xl font-bold mb-4">✏️ Luyện viết</h2>
-          <p className="text-sm opacity-75">Luyện viết chữ Hangul theo hướng dẫn.</p>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 p-8">
-          <div className="max-w-4xl mx-auto">
-            {/* Header */}
-            <div className="mb-8">
-              <h1 className="text-4xl font-bold text-[#2d3436] mb-2">✏️ Luyện viết chữ Hangul</h1>
-              <p className="text-[#636e72]">Hãy viết theo mẫu để cải thiện kỹ năng viết.</p>
-            </div>
-
-            {/* Character Card */}
-            <div style={{ background: 'white', borderRadius: '20px' }} className="shadow-sm p-8 mb-8">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Canvas */}
-                <div className="lg:col-span-2">
-                  <p className="text-sm text-[#636e72] mb-3 font-semibold">VẼ CÓP THEO MẫU</p>
-                  <canvas
-                    ref={canvasRef}
-                    width={400}
-                    height={300}
-                    onMouseDown={startDrawing}
-                    onMouseMove={draw}
-                    onMouseUp={stopDrawing}
-                    onMouseLeave={stopDrawing}
-                    style={{
-                      background: '#f9f9f9',
-                      border: '2px solid #a8d5ba',
-                      borderRadius: '12px',
-                      cursor: 'crosshair',
-                      width: '100%',
-                      height: 'auto',
-                      touchAction: 'none',
-                    }}
-                  />
-                  <div className="flex gap-4 mt-6">
-                    <button
-                      onClick={clearCanvas}
-                      className="flex-1 py-3 px-4 rounded-lg font-semibold transition"
-                      style={{ background: '#e74c3c', color: 'white' }}
-                    >
-                      🗑️ Xóa
-                    </button>
-                    <button
-                      onClick={nextChar}
-                      className="flex-1 py-3 px-4 rounded-lg font-semibold transition"
-                      style={{ background: '#2d5d4d', color: 'white' }}
-                    >
-                      ➜ Chữ tiếp theo
-                    </button>
-                  </div>
-                </div>
-
-                {/* Sample & Feedback */}
-                <div>
-                  <div style={{ background: '#f5f1e8', borderRadius: '16px' }} className="p-8 text-center mb-6">
-                    <p className="text-sm text-[#636e72] mb-4">MẫU CHỮ</p>
-                    <p style={{ color: '#2d5d4d' }} className="text-6xl font-bold mb-4">{currentChar}</p>
-                    <p className="text-sm text-[#636e72]">Gamsang chữ này</p>
-                  </div>
-
-                  {score !== null && (
-                    <div style={{ background: '#a8d5ba', borderRadius: '16px' }} className="p-6 text-center">
-                      <p className="text-5xl font-bold text-[#2d3436] mb-3">{score}</p>
-                      <p className="text-sm font-semibold text-[#2d5d4d] mb-3">Điểm</p>
-                      <p className="text-xs text-[#2d5d4d] leading-relaxed">{feedback}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Character Grid */}
-            <div>
-              <p className="text-sm text-[#636e72] mb-4 font-semibold">CHỌN CHỮ</p>
-              <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
-                {characters.map(char => (
+    <HangulPageFrame
+      activeNav="Practice"
+      sidebar={
+        <HangulSidebar
+          items={practiceSidebar}
+          profile={{ title: 'Current Session', subtitle: 'Han [한] Mastery', emoji: '🦦', tone: 'paper' }}
+          ctaLabel="Go to Arena"
+          ctaHref="/tournament"
+        />
+      }
+    >
+      <div className="space-y-6">
+        <div className="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
+          <div className="space-y-6">
+            <HangulCard className="p-6">
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--hangul-soft-ink)]">Brush Size</p>
+              <div className="mt-6 flex items-center justify-between gap-3">
+                {brushSizes.map((size) => (
                   <button
-                    key={char}
-                    onClick={() => {
-                      setCurrentChar(char);
-                      clearCanvas();
-                    }}
-                    className="aspect-square rounded-lg font-bold text-2xl transition"
-                    style={{
-                      background: char === currentChar ? '#2d5d4d' : 'white',
-                      color: char === currentChar ? 'white' : '#2d5d4d',
-                      border: `2px solid ${char === currentChar ? '#2d5d4d' : '#a8d5ba'}`,
-                    }}
+                    key={size}
+                    className={`grid h-20 w-20 place-items-center rounded-full border ${brushSize === size ? 'border-[var(--hangul-accent)] bg-white shadow-[0_18px_36px_rgba(121,95,78,0.12)]' : 'border-[rgba(121,95,78,0.1)] bg-white/64'}`}
+                    onClick={() => setBrushSize(size)}
+                    type="button"
                   >
-                    {char}
+                    <span className="rounded-full bg-[var(--hangul-accent)]" style={{ width: size, height: size }} />
                   </button>
                 ))}
               </div>
-            </div>
+            </HangulCard>
+
+            <HangulCard className="p-6">
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--hangul-soft-ink)]">Otter Tones</p>
+              <div className="mt-6 grid grid-cols-3 gap-4">
+                {palette.map((color) => (
+                  <button
+                    key={color}
+                    className={`h-20 w-20 rounded-full border-4 ${brushColor === color ? 'border-white shadow-[0_18px_34px_rgba(121,95,78,0.14)]' : 'border-transparent'}`}
+                    onClick={() => setBrushColor(color)}
+                    style={{ backgroundColor: color }}
+                    type="button"
+                  />
+                ))}
+              </div>
+            </HangulCard>
           </div>
-        </main>
+
+          <div className="space-y-6">
+            <div className="flex items-start justify-end gap-4">
+              <div className="max-w-sm rounded-[30px] bg-white px-6 py-5 text-xl leading-8 text-[var(--hangul-ink)] shadow-[0_18px_42px_rgba(121,95,78,0.12)]">
+                “Great start! Follow the flow of the strokes.”
+              </div>
+              <MascotPortrait emoji="🦦" tone="peach" className="h-48 w-40" />
+            </div>
+
+            <HangulCard className="overflow-hidden p-5 sm:p-7">
+              <div className="rounded-[34px] bg-[rgba(255,255,255,0.76)] p-3 shadow-[inset_0_0_0_1px_rgba(121,95,78,0.06)]">
+                <div className="relative rounded-[30px] bg-white p-4">
+                  <div className="pointer-events-none absolute inset-0 grid place-items-center text-[18rem] font-black tracking-[-0.08em] text-[rgba(121,95,78,0.07)]">
+                    {currentChar}
+                  </div>
+                  <canvas
+                    ref={canvasRef}
+                    className="relative z-10 h-[620px] w-full rounded-[28px]"
+                    height={620}
+                    onMouseDown={beginStroke}
+                    onMouseLeave={stopDrawing}
+                    onMouseMove={drawStroke}
+                    onMouseUp={stopDrawing}
+                    width={980}
+                  />
+                </div>
+              </div>
+            </HangulCard>
+          </div>
+        </div>
+
+        <HangulCard className="flex flex-wrap items-center justify-between gap-4 px-7 py-6">
+          <button className="hangul-button-secondary min-w-[260px] justify-center" onClick={clearCanvas} type="button">
+            <Eraser className="mr-2 h-5 w-5" />
+            Clear Canvas
+          </button>
+          <button className="hangul-button-primary min-w-[360px] justify-center" onClick={checkWriting} type="button">
+            <ShieldCheck className="mr-2 h-5 w-5" />
+            Check My Writing
+          </button>
+        </HangulCard>
+
+        <div className="flex flex-wrap items-center justify-between gap-4 px-2">
+          <div className="flex flex-wrap gap-3">
+            <StatusChip label={`Strokes: ${strokeCount} / 9`} tone="paper" />
+            <StatusChip label={`Time: 0:${String(elapsed).padStart(2, '0')}`} tone="paper" />
+            {score !== null ? <StatusChip label={`Score: ${score}`} tone="mint" /> : null}
+          </div>
+          <div className="flex flex-wrap gap-4">
+            <button className="hangul-button-secondary" onClick={nextCharacter} type="button">
+              <Gamepad2 className="mr-2 h-5 w-5" />
+              Next Character
+            </button>
+            <Link className="hangul-button-primary" href="/tournament">
+              Go to Arena
+            </Link>
+          </div>
+        </div>
+
+        {feedback ? (
+          <HangulCard className="p-6">
+            <p className="text-lg leading-8 text-[var(--hangul-ink)]">{feedback}</p>
+          </HangulCard>
+        ) : null}
       </div>
-    </div>
+    </HangulPageFrame>
   );
 }
+

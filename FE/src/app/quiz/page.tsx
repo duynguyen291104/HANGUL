@@ -1,8 +1,10 @@
-'use client';
+﻿'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ArrowRight, SkipForward } from 'lucide-react';
+import { HangulCard, HangulPageFrame, MascotPortrait, Pill, ProgressBar } from '@/components/hangul/ui';
 
 interface QuizQuestion {
   id: number;
@@ -33,80 +35,68 @@ export default function QuizPage() {
       router.push('/login');
       return;
     }
-    loadQuiz();
-  }, [token]);
 
-  const loadQuiz = async () => {
-    try {
-      setLoading(true);
-      
-      // First, get user's level
-      const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/profile`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const userData = await userRes.json();
-      const userLevel = userData.level || 'NEWBIE';
-      
-      console.log('📚 User level:', userLevel);
-
-      // Then fetch quiz questions from database based on user level
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/quiz/generate?level=${userLevel}&limit=10`,
-        {
+    const loadQuiz = async () => {
+      try {
+        setLoading(true);
+        const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/profile`, {
           headers: { Authorization: `Bearer ${token}` },
+        });
+        const userData = await userResponse.json();
+        const userLevel = userData.level || 'NEWBIE';
+
+        const questionResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/quiz/generate?level=${userLevel}&limit=10`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const payload = await questionResponse.json();
+        if (!Array.isArray(payload)) {
+          throw new Error('No quiz questions returned.');
         }
-      );
-      const data = await res.json();
-      
-      if (!Array.isArray(data)) {
-        console.error('Invalid quiz data:', data);
-        alert('Lỗi: Không thể tải câu hỏi. ' + (data.error || ''));
-        return;
+
+        setQuestions(payload);
+        setCurrentIndex(0);
+        setScore(0);
+        setSelectedAnswer(null);
+        setShowResult(false);
+        setQuizComplete(false);
+      } catch (requestError) {
+        console.error(requestError);
+      } finally {
+        setLoading(false);
       }
-      
-      console.log(`✅ Loaded ${data.length} questions from database`);
-      setQuestions(data);
-      setCurrentIndex(0);
-      setScore(0);
-      setShowResult(false);
-      setQuizComplete(false);
-      setSelectedAnswer(null);
-    } catch (error) {
-      console.error('Lỗi tải quiz:', error);
-      alert('Lỗi khi tải quiz. Vui lòng thử lại.');
-    } finally {
-      setLoading(false);
+    };
+
+    loadQuiz();
+  }, [router, token]);
+
+  const currentQuestion = questions[currentIndex];
+  const progress = useMemo(() => ((currentIndex + 1) / Math.max(questions.length, 1)) * 100, [currentIndex, questions.length]);
+
+  const submitAnswer = () => {
+    if (!selectedAnswer || !currentQuestion) {
+      return;
     }
-  };
 
-  const handleSelectAnswer = (answer: string) => {
-    if (showResult) return;
-    setSelectedAnswer(answer);
-  };
-
-  const handleSubmitAnswer = () => {
-    if (!selectedAnswer) return;
-    const currentQuestion = questions[currentIndex];
     const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
     if (isCorrect) {
-      setScore(score + 1);
+      setScore((current) => current + 1);
     }
     setShowResult(true);
   };
 
-  const handleNextQuestion = () => {
+  const goNext = async () => {
     if (currentIndex < questions.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+      setCurrentIndex((current) => current + 1);
       setSelectedAnswer(null);
       setShowResult(false);
-    } else {
-      completeQuiz();
+      return;
     }
-  };
 
-  const completeQuiz = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/submit`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -117,179 +107,158 @@ export default function QuizPage() {
           totalQuestions: questions.length,
         }),
       });
+      const payload = await response.json();
+      setTrophy(payload.trophy ?? 0);
+      setXp(payload.xp ?? 0);
+    } catch (requestError) {
+      console.error(requestError);
+    }
 
-      const data = await res.json();
-      setTrophy(data.trophy);
-      setXp(data.xp);
+    setQuizComplete(true);
+  };
+
+  const skipQuestion = () => {
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex((current) => current + 1);
+      setSelectedAnswer(null);
+      setShowResult(false);
+    } else {
       setQuizComplete(true);
-    } catch (error) {
-      console.error('Lỗi gửi quiz:', error);
     }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Đang tải bài quiz...</p>
-        </div>
-      </div>
+      <HangulPageFrame activeNav="Lessons">
+        <HangulCard className="grid min-h-[72vh] place-items-center p-10">
+          <div className="text-center">
+            <div className="mx-auto h-14 w-14 animate-spin rounded-full border-4 border-[rgba(140,103,88,0.12)] border-t-[var(--hangul-accent)]" />
+            <p className="mt-5 text-lg text-[var(--hangul-soft-ink)]">Preparing your quiz sequence...</p>
+          </div>
+        </HangulCard>
+      </HangulPageFrame>
     );
   }
 
   if (quizComplete) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center py-16">
-            <div className="text-6xl mb-6">🎉</div>
-            <h1 className="text-4xl font-bold text-gray-800 mb-4">Hoàn Thành!</h1>
-
-            <div className="grid grid-cols-3 gap-4 mb-8 mt-8">
-              <div className="bg-white rounded-lg p-6 shadow">
-                <div className="text-3xl font-bold text-purple-600">{score}/{questions.length}</div>
-                <p className="text-gray-600 mt-2">Câu Trả Lời Đúng</p>
-              </div>
-
-              <div className="bg-white rounded-lg p-6 shadow">
-                <div className="text-3xl font-bold text-yellow-500"> +{trophy}</div>
-                <p className="text-gray-600 mt-2">Trophy</p>
-              </div>
-
-              <div className="bg-white rounded-lg p-6 shadow">
-                <div className="text-3xl font-bold text-blue-600">⭐ +{xp}</div>
-                <p className="text-gray-600 mt-2">XP</p>
-              </div>
-            </div>
-
-            <div className="flex gap-4 justify-center">
-              <button
-                onClick={() => loadQuiz()}
-                className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold"
-              >
-                Làm Lại
-              </button>
-              <Link
-                href="/"
-                className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold"
-              >
-                Về Trang Chủ
-              </Link>
-            </div>
+      <HangulPageFrame activeNav="Lessons">
+        <HangulCard className="mx-auto max-w-[980px] p-10 text-center">
+          <Pill className="bg-[#ffe7c9] text-[#9c6700]">Lesson complete</Pill>
+          <h1 className="mt-6 text-6xl font-black tracking-[-0.06em] text-[var(--hangul-ink)]">Great work, Explorer.</h1>
+          <p className="mx-auto mt-5 max-w-2xl text-xl leading-9 text-[var(--hangul-soft-ink)]">
+            You kept the streak alive and finished the greetings checkpoint with a calmer, cleaner flow.
+          </p>
+          <div className="mt-10 grid gap-5 sm:grid-cols-3">
+            <HangulCard className="p-6" tone="paper">
+              <p className="text-5xl font-black tracking-[-0.05em]">{score}/{questions.length}</p>
+              <p className="mt-3 text-lg text-[var(--hangul-soft-ink)]">Correct answers</p>
+            </HangulCard>
+            <HangulCard className="p-6" tone="peach">
+              <p className="text-5xl font-black tracking-[-0.05em]">+{trophy}</p>
+              <p className="mt-3 text-lg text-[var(--hangul-soft-ink)]">Trophy</p>
+            </HangulCard>
+            <HangulCard className="p-6" tone="mint">
+              <p className="text-5xl font-black tracking-[-0.05em]">+{xp}</p>
+              <p className="mt-3 text-lg text-[var(--hangul-soft-ink)]">XP</p>
+            </HangulCard>
           </div>
-        </div>
-      </div>
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <button className="hangul-button-secondary" onClick={() => window.location.reload()} type="button">
+              Retry Lesson
+            </button>
+            <Link className="hangul-button-primary" href="/dashboard">
+              Back to Dashboard
+            </Link>
+          </div>
+        </HangulCard>
+      </HangulPageFrame>
     );
   }
 
-  if (questions.length === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
-        <p className="text-gray-600">Không tìm thấy câu hỏi</p>
-      </div>
-    );
-  }
-
-  const currentQuestion = questions[currentIndex];
-
-  // Guard against undefined currentQuestion
   if (!currentQuestion) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
-        <p className="text-gray-600">Lỗi tải câu hỏi</p>
-      </div>
-    );
+    return null;
   }
-
-  const progress = ((currentIndex + 1) / questions.length) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <Link href="/" className="text-purple-600 hover:text-purple-700">
-            ← Quay Lại
-          </Link>
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-800">Quiz Tiếng Hàn 🎯</h1>
+    <HangulPageFrame activeNav="Lessons">
+      <div className="mx-auto max-w-[1220px] space-y-6">
+        <HangulCard className="px-7 py-8 sm:px-10 sm:py-10">
+          <div className="flex flex-wrap items-center justify-between gap-4 text-xl font-semibold text-[var(--hangul-soft-ink)]">
+            <p>Lesson 4: Greetings</p>
+            <p>{currentIndex + 1} / {questions.length}</p>
           </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold text-purple-600">{currentIndex + 1}/{questions.length}</div>
-          </div>
-        </div>
+          <ProgressBar className="mt-5 h-5" value={progress} />
 
-        <div className="mb-8">
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
-          <div className="text-center mb-8">
-            <div className="text-5xl mb-4">{currentQuestion?.question || 'Loading...'}</div>
-            {currentQuestion?.romanization && (
-              <p className="text-lg text-gray-600 italic">[{currentQuestion.romanization}]</p>
-            )}
-            <p className="text-sm text-gray-500 mt-4">
-              Độ khó: {currentQuestion?.difficulty === 'easy' ? '⭐' : currentQuestion?.difficulty === 'medium' ? '⭐⭐' : '⭐⭐⭐'}
+          <div className="mt-12 text-center">
+            <h1 className="hangul-title text-[clamp(3.4rem,6vw,5.6rem)] font-black text-[var(--hangul-ink)]">
+              {currentQuestion.question}
+            </h1>
+            <p className="mt-5 text-[1.8rem] text-[var(--hangul-soft-ink)]">
+              Select the correct phrase to continue your streak.
             </p>
           </div>
 
-          <div className="space-y-3">
-            {currentQuestion?.options?.map((option, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleSelectAnswer(option)}
-                disabled={showResult}
-                className={`w-full p-4 rounded-lg text-lg font-semibold transition-all ${
-                  selectedAnswer === option
-                    ? showResult
-                      ? option === currentQuestion.correctAnswer
-                        ? 'bg-green-500 text-white'
-                        : 'bg-red-500 text-white'
-                      : 'bg-purple-600 text-white'
-                    : showResult && option === currentQuestion.correctAnswer
-                    ? 'bg-green-500 text-white'
-                    : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                } ${showResult ? 'cursor-default' : 'cursor-pointer'}`}
-              >
-                {option}
-                {showResult && option === currentQuestion.correctAnswer && ' '}
-                {showResult && selectedAnswer === option && option !== currentQuestion.correctAnswer && ' ✗'}
-              </button>
-            ))}
+          <div className="mt-12 grid gap-5 lg:grid-cols-2">
+            {currentQuestion.options.map((option, index) => {
+              const letter = ['A', 'B', 'C', 'D'][index] ?? String(index + 1);
+              const isCorrect = option === currentQuestion.correctAnswer;
+              const isSelected = selectedAnswer === option;
+              const answerClass = showResult
+                ? isCorrect
+                  ? 'bg-[#daf6f2] ring-2 ring-[#3b7875]'
+                  : isSelected
+                    ? 'bg-[#ffe8e1] ring-2 ring-[#a65f54]'
+                    : 'bg-white/64'
+                : isSelected
+                  ? 'bg-[#f7eee6] ring-2 ring-[var(--hangul-accent)]'
+                  : 'bg-white/72 hover:bg-white';
+
+              return (
+                <button
+                  key={option}
+                  className={`rounded-[34px] p-7 text-left shadow-[0_20px_40px_rgba(121,96,79,0.08)] transition ${answerClass}`}
+                  disabled={showResult}
+                  onClick={() => setSelectedAnswer(option)}
+                  type="button"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[3rem] font-black tracking-[-0.05em] text-[var(--hangul-ink)]">{option}</p>
+                      <p className="mt-2 text-xl italic text-[var(--hangul-soft-ink)]">
+                        {currentQuestion.romanization || 'Choose the most natural greeting.'}
+                      </p>
+                    </div>
+                    <div className="grid h-14 w-14 place-items-center rounded-full bg-[rgba(121,97,82,0.06)] text-lg font-bold text-[var(--hangul-muted)]">
+                      {letter}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
-        </div>
 
-        <div className="flex gap-4">
-          {!showResult ? (
-            <button
-              onClick={handleSubmitAnswer}
-              disabled={!selectedAnswer}
-              className="flex-1 py-4 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              Gửi Câu Trả Lời
-            </button>
-          ) : (
-            <button
-              onClick={handleNextQuestion}
-              className="flex-1 py-4 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700"
-            >
-              {currentIndex < questions.length - 1 ? 'Câu Tiếp Theo' : 'Hoàn Thành'}
-            </button>
-          )}
-        </div>
+          <div className="mt-12 grid gap-6 xl:grid-cols-[0.24fr_0.76fr] xl:items-end">
+            <div className="flex items-end gap-4">
+              <MascotPortrait emoji="🦦" tone="sky" className="h-56 w-48 shrink-0" />
+              <div className="rounded-[30px] bg-white px-6 py-5 text-lg leading-8 text-[var(--hangul-ink)] shadow-[0_18px_42px_rgba(121,95,78,0.12)]">
+                Remember: formal greetings often end in <span className="font-bold">-yo</span> or <span className="font-bold">-nida</span>. Look for the most common one.
+              </div>
+            </div>
 
-        <div className="text-center mt-8">
-          <p className="text-lg text-gray-600">
-            Điểm hiện tại: <span className="font-bold text-purple-600">{score}/{currentIndex + (showResult ? 1 : 0)}</span>
-          </p>
-        </div>
+            <div className="flex flex-wrap justify-end gap-4">
+              <button className="hangul-button-secondary" onClick={skipQuestion} type="button">
+                <SkipForward className="mr-2 h-5 w-5" />
+                Skip
+              </button>
+              <button className="hangul-button-primary" onClick={showResult ? goNext : submitAnswer} type="button">
+                {showResult ? 'Next Step' : 'Check Answer'}
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        </HangulCard>
       </div>
-    </div>
+    </HangulPageFrame>
   );
 }

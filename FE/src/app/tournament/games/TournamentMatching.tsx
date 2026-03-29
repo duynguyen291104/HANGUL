@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 
@@ -25,7 +25,7 @@ interface TournamentMatchingProps {
 export default function TournamentMatching({
   onComplete,
   onExit,
-  userLevel,
+  userLevel: _userLevel,
 }: TournamentMatchingProps) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [pairs, setPairs] = useState<Pair[]>([]);
@@ -115,7 +115,7 @@ export default function TournamentMatching({
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="text-white text-xl">Đang tải câu hỏi...</div>
+        <div className="text-white text-xl">Äang táº£i cÃ¢u há»i...</div>
       </div>
     );
   }
@@ -124,7 +124,7 @@ export default function TournamentMatching({
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="text-white text-xl">
-          Không có câu hỏi cho cấp độ của bạn
+          KhÃ´ng cÃ³ cÃ¢u há»i cho cáº¥p Ä‘á»™ cá»§a báº¡n
         </div>
       </div>
     );
@@ -135,12 +135,12 @@ export default function TournamentMatching({
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-white">🔗 Ghép Cặp Giải Đấu</h1>
+          <h1 className="text-3xl font-bold text-white">ðŸ”— GhÃ©p Cáº·p Giáº£i Äáº¥u</h1>
           <button
             onClick={onExit}
             className="text-white hover:text-gray-300 text-2xl"
           >
-            ✕
+            âœ•
           </button>
         </div>
 
@@ -148,23 +148,23 @@ export default function TournamentMatching({
         <div className="bg-white/20 backdrop-blur rounded-xl p-6 text-white mb-8">
           <div className="grid grid-cols-4 gap-4">
             <div className="text-center">
-              <p className="text-sm opacity-80">✅ Ghép đúng</p>
+              <p className="text-sm opacity-80">âœ… GhÃ©p Ä‘Ãºng</p>
               <p className="text-3xl font-bold text-green-300">
                 {correctAnswers}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-sm opacity-80">⭐ Điểm</p>
+              <p className="text-sm opacity-80">â­ Äiá»ƒm</p>
               <p className="text-3xl font-bold text-yellow-300">{score}</p>
             </div>
             <div className="text-center">
-              <p className="text-sm opacity-80">📦 Còn lại</p>
+              <p className="text-sm opacity-80">ðŸ“¦ CÃ²n láº¡i</p>
               <p className="text-3xl font-bold text-blue-300">
                 {unmatchedPairs.length}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-sm opacity-80">📊 Tiến độ</p>
+              <p className="text-sm opacity-80">ðŸ“Š Tiáº¿n Ä‘á»™</p>
               <p className="text-3xl font-bold text-purple-300">
                 {Math.round(
                   ((correctAnswers / questions.length) * 100)
@@ -179,7 +179,7 @@ export default function TournamentMatching({
           <div className="grid grid-cols-2 gap-8">
             {/* Korean Column */}
             <div>
-              <h2 className="text-2xl font-bold text-white mb-4">🇰🇷 Tiếng Hàn</h2>
+              <h2 className="text-2xl font-bold text-white mb-4">ðŸ‡°ðŸ‡· Tiáº¿ng HÃ n</h2>
               <div className="space-y-3">
                 {unmatchedPairs.map((pair) => (
                   <button
@@ -199,7 +199,7 @@ export default function TournamentMatching({
 
             {/* Vietnamese Column */}
             <div>
-              <h2 className="text-2xl font-bold text-white mb-4">🇻🇳 Tiếng Việt</h2>
+              <h2 className="text-2xl font-bold text-white mb-4">ðŸ‡»ðŸ‡³ Tiáº¿ng Viá»‡t</h2>
               <div className="space-y-3">
                 {unmatchedPairs
                   .slice()
@@ -224,25 +224,25 @@ export default function TournamentMatching({
           /* Completion Screen */
           <div className="bg-white rounded-xl shadow-xl p-12 text-center">
             <h2 className="text-4xl font-bold text-gray-800 mb-4">
-              🎉 Hoàn thành!
+              ðŸŽ‰ HoÃ n thÃ nh!
             </h2>
             <p className="text-xl text-gray-600 mb-8">
-              Bạn đã ghép đúng tất cả {correctAnswers} cặp từ
+              Báº¡n Ä‘Ã£ ghÃ©p Ä‘Ãºng táº¥t cáº£ {correctAnswers} cáº·p tá»«
             </p>
 
             <div className="grid grid-cols-3 gap-4 mb-8">
               <div className="bg-green-100 rounded-lg p-4">
-                <p className="text-gray-600 text-sm">Cặp đúng</p>
+                <p className="text-gray-600 text-sm">Cáº·p Ä‘Ãºng</p>
                 <p className="text-3xl font-bold text-green-600">
                   {correctAnswers}
                 </p>
               </div>
               <div className="bg-yellow-100 rounded-lg p-4">
-                <p className="text-gray-600 text-sm">Tổng điểm</p>
+                <p className="text-gray-600 text-sm">Tá»•ng Ä‘iá»ƒm</p>
                 <p className="text-3xl font-bold text-yellow-600">{score}</p>
               </div>
               <div className="bg-blue-100 rounded-lg p-4">
-                <p className="text-gray-600 text-sm">Cấp độ</p>
+                <p className="text-gray-600 text-sm">Cáº¥p Ä‘á»™</p>
                 <p className="text-3xl font-bold text-blue-600">
                   {questions[0]?.level}
                 </p>
@@ -253,7 +253,7 @@ export default function TournamentMatching({
               onClick={() => onComplete(score, correctAnswers)}
               className="bg-gradient-to-r from-purple-500 to-blue-500 text-white font-bold py-4 px-8 rounded-lg hover:shadow-lg transition-all"
             >
-              ✓ Hoàn tất & Quay lại
+              âœ“ HoÃ n táº¥t & Quay láº¡i
             </button>
           </div>
         )}
@@ -261,3 +261,4 @@ export default function TournamentMatching({
     </div>
   );
 }
+
