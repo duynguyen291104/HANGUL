@@ -37,13 +37,16 @@ export default function WritingTournament({ onComplete, onExit }: WritingTournam
       });
       const data = await res.json();
 
-      if (!data || !Array.isArray(data.data)) {
+      // Handle both response formats: direct array or {data: array}
+      const vocabArray = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : null);
+
+      if (!vocabArray || vocabArray.length === 0) {
         console.error('Invalid API response:', data);
         setLoading(false);
         return;
       }
 
-      setQuestions(data.data.slice(0, 10));
+      setQuestions(vocabArray.slice(0, 10));
       setLoading(false);
     } catch (error) {
       console.error('Error loading questions:', error);

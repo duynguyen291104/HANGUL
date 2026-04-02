@@ -39,13 +39,16 @@ export default function MatchingTournament({ onComplete, onExit }: MatchingTourn
       });
       const data = await res.json();
 
-      if (!data || !Array.isArray(data.data)) {
+      // Handle both response formats: direct array or {data: array}
+      const vocabArray = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : null);
+
+      if (!vocabArray || vocabArray.length === 0) {
         console.error('Invalid API response:', data);
         setLoading(false);
         return;
       }
 
-      const newPairs: MatchPair[] = data.data.slice(0, 8).map((vocab: any, idx: number) => ({
+      const newPairs: MatchPair[] = vocabArray.slice(0, 8).map((vocab: any, idx: number) => ({
         id: `pair-${idx}`,
         korean: vocab.korean,
         vietnamese: vocab.vietnamese,

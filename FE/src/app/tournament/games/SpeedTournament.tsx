@@ -52,14 +52,17 @@ export default function SpeedTournament({ onComplete, onExit }: SpeedTournamentP
       });
       const data = await res.json();
 
-      if (!data || !Array.isArray(data.data)) {
+      // Handle both response formats: direct array or {data: array}
+      const vocabArray = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : null);
+
+      if (!vocabArray || vocabArray.length === 0) {
         console.error('Invalid API response:', data);
         setLoading(false);
         return;
       }
 
-      const quizQuestions = data.data.slice(0, 20).map((vocab: any) => {
-        const wrongAnswers = data.data
+      const quizQuestions = vocabArray.slice(0, 20).map((vocab: any) => {
+        const wrongAnswers = vocabArray
           .filter((v: any) => v.id !== vocab.id)
           .sort(() => Math.random() - 0.5)
           .slice(0, 3)

@@ -55,13 +55,16 @@ export default function PronunciationTournament({ onComplete, onExit }: Pronunci
       });
       const data = await res.json();
 
-      if (!data || !Array.isArray(data.data)) {
+      // Handle both response formats: direct array or {data: array}
+      const vocabArray = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : null);
+
+      if (!vocabArray || vocabArray.length === 0) {
         console.error('Invalid API response:', data);
         setIsLoading(false);
         return;
       }
 
-      const vocabList = data.data.slice(0, 10).map((vocab: any) => ({
+      const vocabList = vocabArray.slice(0, 10).map((vocab: any) => ({
         korean: vocab.korean,
         romanization: vocab.romanization || '',
         english: vocab.english,
