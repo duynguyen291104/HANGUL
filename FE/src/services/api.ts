@@ -22,10 +22,29 @@ export const apiCall = async (
   });
 
   if (!response.ok) {
-    throw new Error(`Lỗi API: ${response.statusText}`);
+    const errorData = await response.json().catch(() => null);
+    throw new Error(
+      errorData?.message ||
+      errorData?.error ||
+      `Lỗi API: ${response.status} ${response.statusText}`
+    );
   }
 
   return response.json();
+};
+
+export const handwritingService = {
+  submit: (data: any) =>
+    apiCall('/handwriting/submit', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  getStats: () =>
+    apiCall('/handwriting/stats'),
+
+  getHistory: (page = 1, limit = 10) =>
+    apiCall(`/handwriting/history?page=${page}&limit=${limit}`),
 };
 
 // ========================
@@ -111,6 +130,7 @@ export const userService = {
       body: JSON.stringify({ isActive }),
     }),
 };
+
 
 // ========================
 // LEADERBOARD SERVICE

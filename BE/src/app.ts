@@ -19,7 +19,7 @@ const pronunciationRouter = require('./routes/pronunciation.routes');
 const cameraRouter = require('./routes/camera.routes');
 const yoloRouter = require('./routes/yolo.routes.js');
 const tournamentRouter = require('./routes/tournament.routes.ts');
-
+const handwritingRouter = require('./routes/handwriting.routes');
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
 const authenticate = require('./middleware/authenticate');
@@ -175,6 +175,7 @@ app.use('/api/tournament', authenticate, tournamentRouter);
 app.use('/api/pronunciation', pronunciationRouter);
 app.use('/api/camera', cameraRouter);
 app.use('/api/yolo', authenticate, yoloRouter);
+app.use('/api/handwriting', authenticate, handwritingRouter);
 
 // ========================
 // 404 HANDLER
@@ -197,5 +198,5 @@ server.listen(PORT, () => {
   console.log(`🎮 Socket.IO running for tournament`);
   console.log(`Environment: ${process.env.NODE_ENV}`);
 });
-
+export {};
 module.exports = app;

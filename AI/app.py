@@ -52,8 +52,8 @@ def get_env(*names: str, default: str = "") -> str:
 
 
 GEMINI_API_KEY = get_env("GEMINI_API_KEY", "Gemini_API_KEY")
-GEMINI_MODEL = get_env("GEMINI_MODEL", default="gemini-2.5-flash")
-WHISPER_MODEL_SIZE = get_env("WHISPER_MODEL_SIZE", default="small")
+GEMINI_MODEL = get_env("GEMINI_MODEL", default="gemini-2.5-flash-lite")
+WHISPER_MODEL_SIZE = get_env("WHISPER_MODEL_SIZE", default="base")
 WHISPER_DEVICE = get_env("WHISPER_DEVICE", default="cpu")
 WHISPER_COMPUTE_TYPE = get_env("WHISPER_COMPUTE_TYPE", default="int8")
 
@@ -97,26 +97,26 @@ def split_syllables(value: str) -> list[str]:
 
 def levenshtein(left: str, right: str) -> int:
     if left == right:
-      return 0
+        return 0
     if not left:
-      return len(right)
+        return len(right)
     if not right:
-      return len(left)
+        return len(left)
 
     rows = [[0] * (len(right) + 1) for _ in range(len(left) + 1)]
     for i in range(len(left) + 1):
-      rows[i][0] = i
+        rows[i][0] = i
     for j in range(len(right) + 1):
-      rows[0][j] = j
+        rows[0][j] = j
 
     for i in range(1, len(left) + 1):
-      for j in range(1, len(right) + 1):
-        cost = 0 if left[i - 1] == right[j - 1] else 1
-        rows[i][j] = min(
-          rows[i - 1][j] + 1,
-          rows[i][j - 1] + 1,
-          rows[i - 1][j - 1] + cost,
-        )
+        for j in range(1, len(right) + 1):
+            cost = 0 if left[i - 1] == right[j - 1] else 1
+            rows[i][j] = min(
+                rows[i - 1][j] + 1,
+                rows[i][j - 1] + 1,
+                rows[i - 1][j - 1] + cost,
+            )
 
     return rows[len(left)][len(right)]
 
@@ -176,8 +176,11 @@ def transcribe_with_local_whisper(audio_path: str) -> str:
         audio_path,
         language="ko",
         task="transcribe",
-        beam_size=5,
-        vad_filter=True,
+        beam_size=1,
+        vad_filter=False,
+        condition_on_previous_text=False,
+        compression_ratio_threshold=2.4,
+        no_speech_threshold=0.6,
     )
 
     transcript = " ".join(segment.text for segment in segments).strip()
@@ -244,7 +247,7 @@ def detect_pronunciation_issues(transcript: str, target: str) -> list[dict[str, 
             "unit": target,
             "error_type": "Unclear",
             "score": 82,
-            "advice_vi": "Transcript đã khớp với từ mục tiêu, nhưng đây vẫn chỉ là đánh giá dựa trên transcript. Hãy nghe lại audio mẫu để chỉnh ngữ điệu tự nhiên hơn."
+            "advice_vi": "Transcript đã khớp với từ mục tiêu. Đây vẫn là đánh giá dựa trên transcript nên bạn hãy luyện thêm ngữ điệu và âm cuối."
         }]
 
     deduped: list[dict[str, Any]] = []
@@ -264,9 +267,9 @@ def build_rule_based_assessment(transcript: str, target: str) -> dict[str, Any]:
 
     if normalize_text(transcript) == normalize_text(target):
         accuracy = min(accuracy, 88)
-        fluency = 80
-        prosody = 74
-        overall = 82
+        fluency = 81
+        prosody = 75
+        overall = 83
     else:
         fluency = clamp_score(accuracy - 6 if accuracy > 10 else accuracy)
         prosody = clamp_score(accuracy - 10 if accuracy > 15 else accuracy)
@@ -295,6 +298,23 @@ def build_rule_based_assessment(transcript: str, target: str) -> dict[str, Any]:
     }
 
 
+def should_skip_gemini(transcript: str, target: str, baseline: dict[str, Any]) -> bool:
+    normalized_transcript = normalize_text(transcript)
+    normalized_target = normalize_text(target)
+    overall = baseline["metrics"]["overall"]
+
+    if not gemini_client:
+        return True
+
+    if normalized_transcript == normalized_target and overall >= 80:
+        return True
+
+    if overall >= 86:
+        return True
+
+    return False
+
+
 def build_gemini_prompt(target: str, transcript: str, baseline: dict[str, Any]) -> str:
     return f"""
 Bạn là giám khảo luyện phát âm tiếng Hàn cho người Việt.
@@ -302,19 +322,19 @@ Bạn là giám khảo luyện phát âm tiếng Hàn cho người Việt.
 Từ mục tiêu:
 "{target}"
 
-Transcript hệ thống local Whisper nghe được:
+Transcript từ local Whisper:
 "{transcript}"
 
-Baseline assessment để tham khảo:
+Baseline assessment:
 {json.dumps(baseline, ensure_ascii=False)}
 
 Yêu cầu:
 1. So sánh transcript với target.
-2. Sửa lại baseline nếu thấy hợp lý hơn, nhưng vẫn phải thận trọng.
+2. Điều chỉnh baseline nếu cần.
 3. Đây chỉ là transcript-based assessment, không phải phoneme-level assessment.
 4. Không được khen quá mức nếu transcript lệch target.
 5. Nếu transcript trùng target, không được tự động cho điểm 95-100.
-6. Feedback phải bằng tiếng Việt, ngắn gọn, đúng lỗi.
+6. Feedback phải bằng tiếng Việt, ngắn gọn, thực tế.
 7. Trả đúng JSON, không markdown.
 
 Schema:
@@ -370,10 +390,10 @@ def normalize_gemini_assessment(payload: dict[str, Any], transcript: str, target
     baseline_metrics = baseline["metrics"]
 
     metrics = {
-        "overall": min(clamp_score(raw_metrics.get("overall", baseline_metrics["overall"])), baseline_metrics["overall"] + 10),
-        "accuracy": min(clamp_score(raw_metrics.get("accuracy", baseline_metrics["accuracy"])), baseline_metrics["accuracy"] + 10),
-        "fluency": min(clamp_score(raw_metrics.get("fluency", baseline_metrics["fluency"])), baseline_metrics["fluency"] + 10),
-        "prosody": min(clamp_score(raw_metrics.get("prosody", baseline_metrics["prosody"])), baseline_metrics["prosody"] + 10),
+        "overall": clamp_score(raw_metrics.get("overall", baseline_metrics["overall"])),
+        "accuracy": clamp_score(raw_metrics.get("accuracy", baseline_metrics["accuracy"])),
+        "fluency": clamp_score(raw_metrics.get("fluency", baseline_metrics["fluency"])),
+        "prosody": clamp_score(raw_metrics.get("prosody", baseline_metrics["prosody"])),
     }
 
     if normalize_text(transcript) == normalize_text(target):
@@ -406,18 +426,14 @@ def normalize_gemini_assessment(payload: dict[str, Any], transcript: str, target
     }
 
 
-def analyze_with_gemini(transcript: str, target: str) -> dict[str, Any]:
-    baseline = build_rule_based_assessment(transcript, target)
-
-    if gemini_client is None:
-        return baseline
-
+def analyze_with_gemini(transcript: str, target: str, baseline: dict[str, Any]) -> dict[str, Any]:
     prompt = build_gemini_prompt(target, transcript, baseline)
+
     response = gemini_client.models.generate_content(
         model=GEMINI_MODEL,
         contents=prompt,
         config=types.GenerateContentConfig(
-            temperature=0.2,
+            temperature=0.15,
             response_mime_type="application/json",
         ) if types is not None else None,
     )
@@ -522,12 +538,18 @@ def transcribe():
                 "message": "Không nhận diện được transcript từ audio."
             }), 422
 
-        try:
-            analysis = analyze_with_gemini(transcript, target)
-            assessment_mode = "local_whisper_plus_gemini_estimated" if gemini_client else "local_whisper_rule_based_fallback"
-        except Exception:
-            analysis = build_rule_based_assessment(transcript, target)
-            assessment_mode = "local_whisper_rule_based_fallback"
+        baseline = build_rule_based_assessment(transcript, target)
+
+        if should_skip_gemini(transcript, target, baseline):
+            analysis = baseline
+            assessment_mode = "local_whisper_fast_path"
+        else:
+            try:
+                analysis = analyze_with_gemini(transcript, target, baseline)
+                assessment_mode = "local_whisper_plus_gemini_estimated"
+            except Exception:
+                analysis = baseline
+                assessment_mode = "local_whisper_rule_based_fallback"
 
         return jsonify({
             "success": True,
