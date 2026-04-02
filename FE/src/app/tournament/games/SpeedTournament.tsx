@@ -220,44 +220,4 @@ export default function SpeedTournament({ onComplete, onExit }: SpeedTournamentP
       </div>
     </div>
   );
-              <button
-                key={idx}
-                onClick={() => handleAnswer(option)}
-                disabled={answered}
-                className={`w-full p-4 rounded-lg font-semibold transition-all text-left ${
-                  answered
-                    ? option === question.vietnamese
-                      ? 'bg-green-500 text-white'
-                      : 'bg-gray-100 text-gray-600'
-                    : 'bg-blue-100 hover:bg-blue-200 text-gray-800'
-                }`}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="bg-white/20 backdrop-blur rounded-xl p-6 text-white">
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <p className="text-sm opacity-80">Điểm</p>
-              <p className="text-3xl font-bold">{score}</p>
-            </div>
-            <div>
-              <p className="text-sm opacity-80">Đúng</p>
-              <p className="text-3xl font-bold">{correctAnswers}</p>
-            </div>
-            <div>
-              <p className="text-sm opacity-80">Tiến độ</p>
-              <p className="text-3xl font-bold">
-                {Math.round(((currentQuestion + 1) / questions.length) * 100)}%
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 }
