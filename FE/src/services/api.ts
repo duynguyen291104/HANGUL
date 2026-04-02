@@ -1,5 +1,4 @@
-// API service for backend calls
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
 
 export const apiCall = async (
   endpoint: string,
@@ -9,11 +8,11 @@ export const apiCall = async (
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string> || {}),
+    ...((options.headers as Record<string, string>) || {}),
   };
 
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers.Authorization = `Bearer ${token}`;
   }
 
   const response = await fetch(`${API_URL}${endpoint}`, {
@@ -22,10 +21,42 @@ export const apiCall = async (
   });
 
   if (!response.ok) {
-    throw new Error(`Lỗi API: ${response.statusText}`);
+    const errorData = await response.json().catch(() => null);
+    throw new Error(
+      errorData?.message ||
+        errorData?.error ||
+        `Lỗi API: ${response.status} ${response.statusText}`
+    );
   }
 
   return response.json();
+};
+
+export const handwritingService = {
+  submit: (data: any) =>
+    apiCall('/handwriting/submit', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  getStats: () => apiCall('/handwriting/stats'),
+
+  getHistory: (page = 1, limit = 10) =>
+    apiCall(`/handwriting/history?page=${page}&limit=${limit}`),
+};
+
+export const pronunciationService = {
+  tts: (text: string) =>
+    apiCall('/pronunciation/tts', {
+      method: 'POST',
+      body: JSON.stringify({ text }),
+    }),
+
+  transcribe: (audio: string, target: string) =>
+    apiCall('/pronunciation/transcribe', {
+      method: 'POST',
+      body: JSON.stringify({ audio, target }),
+    }),
 };
 
 // ========================
@@ -36,14 +67,13 @@ export const vocabularyService = {
     const params = new URLSearchParams();
     if (level) params.append('level', level);
     if (topic) params.append('topic', topic);
-    return apiCall(`/vocabulary${params.toString() ? '?' + params.toString() : ''}`);
+    return apiCall(`/vocabulary${params.toString() ? `?${params.toString()}` : ''}`);
   },
 
   getById: (id: number) => apiCall(`/vocabulary/${id}`),
 
   addToLearned: (id: number) => apiCall(`/vocabulary/${id}/learn`, { method: 'POST' }),
 
-  // Admin only
   create: (data: any) =>
     apiCall('/vocabulary', { method: 'POST', body: JSON.stringify(data) }),
 
@@ -59,8 +89,7 @@ export const vocabularyService = {
       body: JSON.stringify(data),
     }),
 
-  delete: (id: number) =>
-    apiCall(`/vocabulary/${id}`, { method: 'DELETE' }),
+  delete: (id: number) => apiCall(`/vocabulary/${id}`, { method: 'DELETE' }),
 };
 
 // ========================
@@ -79,11 +108,9 @@ export const quizService = {
       body: JSON.stringify({ sessionId, questionId, selectedAnswer }),
     }),
 
-  endQuiz: (sessionId: number) =>
-    apiCall(`/quiz/end/${sessionId}`, { method: 'POST' }),
+  endQuiz: (sessionId: number) => apiCall(`/quiz/end/${sessionId}`, { method: 'POST' }),
 
-  getHistory: (limit?: number) =>
-    apiCall(`/quiz/history?limit=${limit || 20}`),
+  getHistory: (limit?: number) => apiCall(`/quiz/history?limit=${limit || 20}`),
 };
 
 // ========================
@@ -119,40 +146,30 @@ export const leaderboardService = {
   getTopUsers: (limit?: number, level?: string) =>
     apiCall(`/leaderboard/top?limit=${limit || 50}${level ? `&level=${level}` : ''}`),
 
-  getWeekly: (limit?: number) =>
-    apiCall(`/leaderboard/weekly?limit=${limit || 50}`),
+  getWeekly: (limit?: number) => apiCall(`/leaderboard/weekly?limit=${limit || 50}`),
 
-  getMonthly: (limit?: number) =>
-    apiCall(`/leaderboard/monthly?limit=${limit || 50}`),
+  getMonthly: (limit?: number) => apiCall(`/leaderboard/monthly?limit=${limit || 50}`),
 
-  getUserRank: (userId: number) =>
-    apiCall(`/leaderboard/rank/${userId}`),
+  getUserRank: (userId: number) => apiCall(`/leaderboard/rank/${userId}`),
 
-  getNearby: (range?: number) =>
-    apiCall(`/leaderboard/nearby?range=${range || 10}`),
+  getNearby: (range?: number) => apiCall(`/leaderboard/nearby?range=${range || 10}`),
 
-  getStats: () =>
-    apiCall('/leaderboard/stats'),
+  getStats: () => apiCall('/leaderboard/stats'),
 };
 
 // ========================
 // ACHIEVEMENT SERVICE
 // ========================
 export const achievementService = {
-  getAll: () =>
-    apiCall('/achievements'),
+  getAll: () => apiCall('/achievements'),
 
-  getUnlocked: () =>
-    apiCall('/achievements/unlocked'),
+  getUnlocked: () => apiCall('/achievements/unlocked'),
 
-  getProgress: () =>
-    apiCall('/achievements/progress'),
+  getProgress: () => apiCall('/achievements/progress'),
 
-  checkAndAward: () =>
-    apiCall('/achievements/check', { method: 'POST' }),
+  checkAndAward: () => apiCall('/achievements/check', { method: 'POST' }),
 
-  getStats: () =>
-    apiCall('/achievements/stats'),
+  getStats: () => apiCall('/achievements/stats'),
 };
 
 // ========================

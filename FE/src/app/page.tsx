@@ -1,25 +1,59 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link'; // Đã thêm import Link
+import { BookOpen, Camera, Mic2, PencilLine, Swords } from 'lucide-react';
+import { FooterBrand, HangulCard, HangulPageFrame, MascotPortrait, Pill, SectionLabel } from '@/components/hangul/ui';
 import { useAuthStore } from '@/store/authStore';
-import Link from 'next/link';
+
+const toolkit = [
+  {
+    title: 'Smart Quiz',
+    description: 'Dynamic testing that adapts to your weak spots and keeps every round fresh.',
+    icon: BookOpen,
+    tone: 'bg-[#ffe3d8] text-[#8b6052]',
+  },
+  {
+    title: 'Writing Pad',
+    description: 'Stroke-order guidance built for tactile repetition and confident handwriting.',
+    icon: PencilLine,
+    tone: 'bg-[#d9f7f4] text-[#2d6764]',
+  },
+  {
+    title: 'Voice Lab',
+    description: 'Native cadence, waveform feedback, and score-based pronunciation coaching.',
+    icon: Mic2,
+    tone: 'bg-[#ffefc7] text-[#926602]',
+  },
+  {
+    title: 'Lens Scan',
+    description: 'Scan real objects, spot Korean labels, and translate the world around you.',
+    icon: Camera,
+    tone: 'bg-[#ffd9d3] text-[#b1473e]',
+  },
+  {
+    title: 'The Arena',
+    description: 'Live battle modes that turn vocabulary and listening drills into competition.',
+    icon: Swords,
+    tone: 'bg-[#f0e7db] text-[#7e6457]',
+  },
+] as const;
 
 export default function LandingPage() {
   const router = useRouter();
   const { user } = useAuthStore();
 
-  // Nếu đã login → redirect đến dashboard
   useEffect(() => {
     if (user) {
       router.push('/dashboard');
     }
-  }, [user, router]);
+  }, [router, user]);
 
   return (
     <div className="min-h-screen bg-[#fafaf5] font-['Be_Vietnam_Pro'] text-[#1a1c19]">
       {/* Top Navigation */}
-      <header className="bg-[#fafaf5]/80 backdrop-blur-xl flex justify-between items-center w-full pl-[400px] pr-[400px] py-4 sticky top-0 z-50 shadow-[0_20px_40px_rgba(43,22,15,0.06)] h-20 relative">
+      <header className="bg-[#fafaf5]/80 backdrop-blur-xl flex justify-between items-center w-full pl-[400px] pr-[400px] py-4 sticky top-0 z-50 shadow-[0_20px_40px_rgba(43,22,15,0.06)] h-20">
         <div className="flex items-center gap-2">
           <img 
             src="https://res.cloudinary.com/dds5jlp7e/image/upload/v1774702475/Screenshot_from_2026-03-28_19-52-57-removebg-preview_xvqdug.png" 
@@ -77,7 +111,7 @@ export default function LandingPage() {
                 See the Arena
               </button>
             </div>
-          </div>
+          </div> {/* Đã thêm thẻ đóng div bị thiếu ở đây */}
 
           {/* Mascot Showcase */}
           <div className="relative z-20 w-full max-w-6xl h-[400px] flex items-end justify-center gap-4 px-4">
@@ -169,7 +203,7 @@ export default function LandingPage() {
         <section id="features" className="py-24 bg-[#f4f4ef]">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-20">
-              <h2 className="text-4xl md:text-5xl font-['Plus_Jakarta_Sans'] font-black text-[#72564c] tracking-tight mb-4">Your Learning Toolkit</h2>
+              <h2 className="text-4xl md:text-5 peso font-['Plus_Jakarta_Sans'] font-black text-[#72564c] tracking-tight mb-4">Your Learning Toolkit</h2>
               <p className="text-xl text-[#504441] max-w-2xl mx-auto">Everything you need to go from beginner to fluent, all in one playful experience.</p>
             </div>
 
@@ -288,7 +322,7 @@ export default function LandingPage() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto pt-12 mt-12 border-t border-[#d4c3be]/20 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-[#504441] text-sm">© 2024 HANGUL Edu. All rights reserved.</p>
+          <p className="text-[#504441] text-sm">© 2026 HANGUL Edu. All rights reserved.</p>
           <div className="flex gap-6">
             <a className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#72564c] hover:bg-[#72564c] hover:text-white transition-all" href="#">
               🌐

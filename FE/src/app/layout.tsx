@@ -1,12 +1,9 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+﻿import type { Metadata } from 'next';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
-
 export const metadata: Metadata = {
-  title: ' HANGUL - Học tiếng Hàn',
-  description: 'Ứng dụng học tiếng Hàn tương tác với quiz, luyện viết, phát âm, và camera detection',
+  title: 'HANGUL',
+  description: 'Tactile Korean learning experience with lessons, practice, arena, and writing tools.',
 };
 
 export default function RootLayout({
@@ -15,8 +12,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi" suppressHydrationWarning>
-      <body className={inter.className}>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body>{children}</body>
     </html>
   );
 }

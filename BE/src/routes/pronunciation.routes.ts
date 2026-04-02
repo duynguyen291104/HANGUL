@@ -5,197 +5,176 @@ import { PrismaClient } from '@prisma/client';
 const router = Router();
 const prisma = new PrismaClient();
 
-// AI Backend URL - Flask running on port 5001
-const AI_BACKEND_URL = process.env.AI_BACKEND_URL || 'http://localhost:5001';
+const AI_BACKEND_URL = (
+  process.env.AI_BACKEND_URL ||
+  process.env.FLASK_API_URL ||
+  'http://localhost:5001'
+).replace(/\/+$/, '');
 
-// Transcribe audio and check pronunciation
 router.post('/transcribe', async (req: Request, res: Response) => {
   try {
-    const { audio, target } = req.body;
+    const audio = req.body?.audio;
+    const target = String(req.body?.target || '').trim();
 
     if (!audio) {
-      return res.status(400).json({ error: 'Audio data required' });
+      return res.status(400).json({
+        success: false,
+        error: 'Audio data required',
+      });
     }
 
-    console.log(`🎙️ [${new Date().toISOString()}] Transcribing audio with Whisper...`);
-    
+    if (!target) {
+      return res.status(400).json({
+        success: false,
+        error: 'Target text required',
+      });
+    }
+
     try {
-      // Call Flask Whisper endpoint
       const aiResponse = await axios.post(
         `${AI_BACKEND_URL}/transcribe`,
         { audio, target },
-        { 
-          timeout: 30000,
+        {
+          timeout: 60000,
           headers: {
-            'Content-Type': 'application/json'
-          }
+            'Content-Type': 'application/json',
+          },
         }
       );
 
-      console.log(` Transcription complete: ${aiResponse.data.transcribed_text}`);
-      
-      res.json({
-        success: true,
-        transcribed_text: aiResponse.data.transcribed_text,
-        target_text: aiResponse.data.target_text,
-        score: aiResponse.data.score,
+      return res.json({
+        ...aiResponse.data,
+        success: aiResponse.data?.success ?? true,
         timestamp: new Date().toISOString(),
       });
     } catch (aiError: any) {
-      console.error(` AI Backend error: ${aiError.message}`);
-      
-      res.status(502).json({
+      const statusCode = aiError?.response?.status || 502;
+
+      return res.status(statusCode).json({
         success: false,
         message: 'Transcription failed',
-        error: aiError.message,
+        error: aiError?.response?.data?.error || aiError.message,
+        details: aiError?.response?.data || null,
       });
     }
   } catch (error: any) {
-    console.error(` Transcription error: ${error.message}`);
-    res.status(500).json({ 
+    return res.status(500).json({
       success: false,
       error: 'Transcription failed',
-      message: error.message 
+      message: error.message,
     });
   }
 });
 
-// Generate pronunciation audio (TTS)
 router.post('/tts', async (req: Request, res: Response) => {
   try {
-    const { text } = req.body;
+    const text = String(req.body?.text || '').trim();
 
     if (!text) {
-      return res.status(400).json({ error: 'Text required' });
+      return res.status(400).json({
+        success: false,
+        error: 'Text required',
+      });
     }
 
-    console.log(`🔊 [${new Date().toISOString()}] Generating TTS for: ${text}`);
-    
     try {
-      // Call Flask TTS endpoint
       const aiResponse = await axios.post(
         `${AI_BACKEND_URL}/tts`,
         { text },
-        { 
+        {
           timeout: 30000,
           headers: {
-            'Content-Type': 'application/json'
-          }
+            'Content-Type': 'application/json',
+          },
         }
       );
 
-      console.log(` TTS generated successfully`);
-      
-      res.json({
-        success: true,
-        text: aiResponse.data.text,
-        audio: aiResponse.data.audio,
+      return res.json({
+        ...aiResponse.data,
+        success: aiResponse.data?.success ?? true,
         timestamp: new Date().toISOString(),
       });
     } catch (aiError: any) {
-      console.error(` AI Backend error: ${aiError.message}`);
-      
-      res.status(502).json({
+      const statusCode = aiError?.response?.status || 502;
+
+      return res.status(statusCode).json({
         success: false,
         message: 'TTS generation failed',
-        error: aiError.message,
+        error: aiError?.response?.data?.error || aiError.message,
+        details: aiError?.response?.data || null,
       });
     }
   } catch (error: any) {
-    console.error(` TTS error: ${error.message}`);
-    res.status(500).json({ 
+    return res.status(500).json({
       success: false,
       error: 'TTS failed',
-      message: error.message 
+      message: error.message,
     });
   }
 });
 
-// Get vocabulary by level for pronunciation practice (from Database)
 router.get('/vocabulary/:level', async (req: Request, res: Response) => {
   try {
     const { level } = req.params;
-    const { limit = 10 } = req.query;
+    const limit = Math.max(1, Math.min(50, Number(req.query.limit || 10)));
 
-    const levelUpper = level.toUpperCase();
-
-    // Validate level
+    const levelUpper = String(level || '').toUpperCase();
     const validLevels = ['NEWBIE', 'BEGINNER', 'INTERMEDIATE', 'UPPER_INTERMEDIATE', 'ADVANCED'];
+
     if (!validLevels.includes(levelUpper)) {
-      console.warn(`⚠️ Invalid level requested: ${level}`);
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Invalid level',
-        validLevels 
+        validLevels,
       });
     }
 
-    console.log(`🎤 [Pronunciation API] Fetching vocabulary for level: ${levelUpper}, limit: ${limit}`);
-
-    try {
-      // Query vocabulary from database
-      const vocabulary = await prisma.vocabulary.findMany({
-        where: {
-          level: levelUpper,
-          isActive: true,
-        },
-        include: {
-          examples: true,
-          topic: {
-            select: {
-              name: true,
-            }
-          }
-        },
-        take: parseInt(limit as string),
-        orderBy: {
-          createdAt: 'asc',
-        }
-      });
-
-      console.log(`✅ Found ${vocabulary.length} vocabulary words for ${levelUpper}`);
-
-      if (vocabulary.length === 0) {
-        console.warn(`⚠️ No vocabulary found for level: ${levelUpper}`);
-      }
-
-      // Shuffle the results (simulating random selection)
-      const shuffled = vocabulary.sort(() => Math.random() - 0.5);
-
-      res.json({
-        success: true,
-        source: 'database',
+    const vocabulary = await prisma.vocabulary.findMany({
+      where: {
         level: levelUpper,
-        count: shuffled.length,
-        vocabulary: shuffled.map((item) => ({
-          id: item.id,
-          korean: item.korean,
-          english: item.english,
-          vietnamese: item.vietnamese,
-          romanization: item.romanization,
-          type: item.type,
-          topic: item.topic?.name,
-          difficulty: 1,
-          examples: item.examples?.map(ex => ({
-            korean: ex.korean,
-            english: ex.english,
-            vietnamese: ex.vietnamese,
-          })) || []
-        }))
-      });
-    } catch (dbError: any) {
-      console.error(`❌ Database error: ${dbError.message}`);
-      console.error(`Stack: ${dbError.stack}`);
-      res.status(500).json({ 
-        error: 'Database query failed',
-        message: dbError.message,
-        hint: 'Check if PostgreSQL is running and has vocabulary data'
-      });
-    }
+        isActive: true,
+      },
+      include: {
+        examples: true,
+        topic: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      take: limit,
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+
+    const shuffled = [...vocabulary].sort(() => Math.random() - 0.5);
+
+    return res.json({
+      success: true,
+      source: 'database',
+      level: levelUpper,
+      count: shuffled.length,
+      vocabulary: shuffled.map((item) => ({
+        id: item.id,
+        korean: item.korean,
+        english: item.english,
+        vietnamese: item.vietnamese,
+        romanization: item.romanization,
+        type: item.type,
+        topic: item.topic?.name,
+        difficulty: 1,
+        examples:
+          item.examples?.map((example) => ({
+            korean: example.korean,
+            english: example.english,
+            vietnamese: example.vietnamese,
+          })) || [],
+      })),
+    });
   } catch (error: any) {
-    console.error(`❌ Pronunciation API error: ${error.message}`);
-    res.status(500).json({ 
+    return res.status(500).json({
       error: 'Failed to fetch vocabulary from database',
-      message: error.message 
+      message: error.message,
     });
   }
 });
