@@ -23,6 +23,8 @@ export default function SpeedTournament({ onComplete, onExit }: SpeedTournamentP
   const [loading, setLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState(60);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [isCorrect, setIsCorrect] = useState(false);
 
   useEffect(() => {
     loadQuestions();
@@ -92,9 +94,12 @@ export default function SpeedTournament({ onComplete, onExit }: SpeedTournamentP
   const handleAnswer = (answer: string) => {
     if (answered) return;
 
+    const correct = answer === questions[currentQuestion].vietnamese;
+    setSelectedAnswer(answer);
+    setIsCorrect(correct);
     setAnswered(true);
 
-    if (answer === questions[currentQuestion].vietnamese) {
+    if (correct) {
       setScore((prev) => prev + 10);
       setCorrectAnswers((prev) => prev + 1);
     }
@@ -103,6 +108,8 @@ export default function SpeedTournament({ onComplete, onExit }: SpeedTournamentP
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion((prev) => prev + 1);
         setAnswered(false);
+        setSelectedAnswer(null);
+        setIsCorrect(false);
       } else {
         finishGame();
       }
@@ -179,10 +186,12 @@ export default function SpeedTournament({ onComplete, onExit }: SpeedTournamentP
                 onClick={() => handleAnswer(option)}
                 disabled={answered}
                 className={`p-4 rounded-lg font-bold transition-all ${
-                  answered && option === question.vietnamese
+                  answered && option === selectedAnswer
+                    ? isCorrect
+                      ? 'bg-green-100 text-green-700 border-2 border-green-500'
+                      : 'bg-red-100 text-red-700 border-2 border-red-500'
+                    : answered && option === question.vietnamese && !isCorrect
                     ? 'bg-green-100 text-green-700 border-2 border-green-500'
-                    : answered && option !== question.vietnamese
-                    ? 'bg-red-100 text-red-700 border-2 border-red-500'
                     : 'bg-[#f0e6e0] text-[#72564c] hover:bg-[#e8dcd4] border-2 border-transparent active:scale-95'
                 }`}
               >
@@ -191,13 +200,13 @@ export default function SpeedTournament({ onComplete, onExit }: SpeedTournamentP
             ))}
           </div>
 
-          {showResult && (
+          {answered && (
             <div className={`p-4 rounded-lg text-center font-bold mb-6 ${
-              answered && currentQuestion === questions[currentQuestion].vietnamese
+              isCorrect
                 ? 'bg-green-100 text-green-700 border-2 border-green-500'
                 : 'bg-red-100 text-red-700 border-2 border-red-500'
             }`}>
-              {answered && currentQuestion === questions[currentQuestion].vietnamese ? '✓ Chính xác!' : '✗ Sai rồi!'}
+              {isCorrect ? '✓ Chính xác!' : '✗ Sai rồi!'}
             </div>
           )}
 

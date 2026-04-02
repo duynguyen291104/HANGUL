@@ -2,7 +2,6 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect } from 'react';
-import QuizTournament from '../QuizTournament';
 import SpeedTournament from '../SpeedTournament';
 import WritingTournament from '../WritingTournament';
 import MatchingTournament from '../MatchingTournament';
@@ -42,7 +41,7 @@ export default function GamePage() {
       case 'perfect-speaking':
         return <PronunciationTournament onComplete={handleComplete} onExit={handleExit} />;
       default:
-        return <QuizTournament onComplete={handleComplete} onExit={handleExit} />;
+        return <SpeedTournament onComplete={handleComplete} onExit={handleExit} />;
     }
   };
 

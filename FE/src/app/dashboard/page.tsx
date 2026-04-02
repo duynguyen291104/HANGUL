@@ -15,22 +15,11 @@ interface GameStats {
   eligible?: boolean;
 }
 
-interface UserData {
-  id: number;
-  email: string;
-  name: string;
-  level: string;
-  levelLocked?: boolean;
-}
-
 export default function Dashboard() {
   const router = useRouter();
   const { user: authUser, logout } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<GameStats | null>(null);
-  const [user, setUser] = useState<UserData | null>(null);
-  const [error, setError] = useState('');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
@@ -56,29 +45,24 @@ export default function Dashboard() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      const [userRes, statsRes] = await Promise.all([
+      const [, statsRes] = await Promise.allSettled([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
           signal: controller.signal,
-        }).catch(err => ({ ok: false, error: err.message })),
+        }),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/stats`, {
           headers: { Authorization: `Bearer ${token}` },
           signal: controller.signal,
-        }).catch(err => ({ ok: false, error: err.message })),
+        }),
       ]);
 
       clearTimeout(timeoutId);
 
-      // Use default data if API fails
-      if (!userRes.ok || !statsRes.ok) {
+      // Check if requests succeeded
+      const statsOk = statsRes.status === 'fulfilled' && statsRes.value.ok;
+
+      if (!statsOk) {
         console.warn('API calls failed, using default data');
-        setUser({
-          id: 1,
-          email: 'user@hangul.com',
-          name: 'Learner',
-          level: 'NEWBIE',
-          levelLocked: false,
-        });
         setStats({
           trophy: 0,
           xp: 0,
@@ -88,24 +72,16 @@ export default function Dashboard() {
           rank: 'Beginner',
           eligible: true,
         });
+        setLoading(false);
         return;
       }
 
-      const userData = await userRes.json();
-      const statsData = await statsRes.json();
-
-      setUser(userData);
+      const statsData = await statsRes.value.json();
       setStats(statsData);
+      setLoading(false);
     } catch (err) {
       console.error('Lỗi tải dữ liệu:', err);
       // Set default data on error
-      setUser({
-        id: 1,
-        email: 'user@hangul.com',
-        name: 'Learner',
-        level: 'NEWBIE',
-        levelLocked: false,
-      });
       setStats({
         trophy: 0,
         xp: 0,
@@ -130,14 +106,6 @@ export default function Dashboard() {
       </div>
     );
   }
-
-  const menuItems = [
-    { label: 'Current Course', icon: '📚', href: '/quiz', description: 'Common Verbs & Sentence Structures' },
-    { label: 'Learning Path', icon: '🗺️', href: '/learning-map', description: 'Track your progress' },
-    { label: 'Vocabulary', icon: '📖', href: '/camera', description: '42 words to review' },
-    { label: 'Achievements', icon: '🏆', href: '/tournament', description: 'Unlock badges' },
-    { label: 'Otter Friends', icon: '🦦', href: '/dashboard', description: 'Connect with learners' },
-  ];
 
   return (
     <div className="min-h-screen bg-[#fafaf5] font-['Be_Vietnam_Pro']">
@@ -219,11 +187,6 @@ export default function Dashboard() {
 
         {/* Main Content */}
         <main className="flex-grow p-8 lg:p-12 max-w-7xl mx-auto">
-          {error && (
-            <div className="bg-[#ffdad6] rounded-lg p-4 mb-6 border border-[#ffdad6]">
-              <p className="text-[#93000a] text-sm font-medium">{error}</p>
-            </div>
-          )}
 
           {/* Welcome Section */}
           <section className="relative mb-12 pt-8">
