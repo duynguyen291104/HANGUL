@@ -36,7 +36,17 @@ export default function WritingTournament({ onComplete, onExit }: WritingTournam
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      setQuestions(data.data.slice(0, 10));
+
+      // Handle both response formats: direct array or {data: array}
+      const vocabArray = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : null);
+
+      if (!vocabArray || vocabArray.length === 0) {
+        console.error('Invalid API response:', data);
+        setLoading(false);
+        return;
+      }
+
+      setQuestions(vocabArray.slice(0, 10));
       setLoading(false);
     } catch (error) {
       console.error('Error loading questions:', error);
@@ -91,92 +101,118 @@ export default function WritingTournament({ onComplete, onExit }: WritingTournam
     return <div className="flex justify-center items-center min-h-screen text-white text-xl">Đang tải...</div>;
   }
 
+  if (questions.length === 0 || !questions[currentQuestion]) {
+    return <div className="flex justify-center items-center min-h-screen text-white text-xl">Không có dữ liệu</div>;
+  }
+
   const question = questions[currentQuestion];
   const isCorrect = userInput.trim().toLowerCase() === question.vietnamese.toLowerCase();
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-6 bg-[#fafaf5] font-['Be_Vietnam_Pro']">
       <div className="max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-white">✍️ Viết</h1>
-          <button onClick={onExit} className="text-white hover:text-gray-300 text-2xl">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-4xl">✍️</span>
+              <h1 className="text-3xl font-bold text-[#72564c]">Viết</h1>
+            </div>
+            <p className="text-[#8d6e63] text-sm">Luyện viết từ vựng</p>
+          </div>
+          <button onClick={onExit} className="text-[#72564c] hover:bg-[#f0e6e0] p-3 rounded-lg transition-all text-2xl">
             ✕
           </button>
         </div>
 
-        <div className="bg-white rounded-xl shadow-xl p-8 mb-6">
-          <p className="text-gray-600 mb-4">Nhập tiếng Việt của từ Hàn Quốc</p>
-
-          <div className="flex gap-2 mb-6">
-            <button
-              onClick={() => playAudio(question.korean)}
-              disabled={playing}
-              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 rounded-lg"
-            >
-              {playing ? '🔊 Đang phát...' : '🔊 Nghe'}
-            </button>
-            <button
-              onClick={() => setShowHint(!showHint)}
-              className="flex-1 bg-purple-500 hover:bg-purple-600 text-white font-bold py-4 rounded-lg"
-            >
-              💡 Gợi ý
-            </button>
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-6">
+          <div className="mb-6">
+            <p className="text-[#8d6e63] text-sm mb-3 font-medium">Nhập tiếng Việt của từ Hàn Quốc</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => playAudio(question.korean)}
+                disabled={playing}
+                className="flex-1 bg-gradient-to-r from-[#72564c] to-[#8d6e63] hover:opacity-90 text-white font-bold py-3 rounded-lg transition-all active:scale-95"
+              >
+                {playing ? '🔊 Đang phát...' : '🔊 Nghe'}
+              </button>
+              <button
+                onClick={() => setShowHint(!showHint)}
+                className="flex-1 bg-[#f0e6e0] hover:bg-[#e8dcd4] text-[#72564c] font-bold py-3 rounded-lg transition-all active:scale-95"
+              >
+                💡 Gợi ý
+              </button>
+            </div>
           </div>
 
           {showHint && (
-            <div className="bg-yellow-100 border-2 border-yellow-400 p-4 rounded-lg mb-6">
-              <p className="text-gray-800 font-semibold">
-                💬 Phiên âm: {question.romanization || 'N/A'}
+            <div className="bg-[#fff8f0] border-2 border-[#e8dcd4] p-4 rounded-lg mb-6">
+              <p className="text-[#72564c] font-semibold">
+                Phiên âm: <span className="text-[#8d6e63]">{question.romanization || 'N/A'}</span>
               </p>
             </div>
           )}
 
-          <div>
-            <p className="text-2xl font-bold text-gray-800 mb-4">
-              {question.korean} = ?
-            </p>
-            <input
-              type="text"
-              value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && !answered && handleSubmit()}
-              disabled={answered}
-              placeholder="Nhập câu trả lời..."
-              className="w-full p-4 border-2 border-gray-300 rounded-lg mb-4 text-lg focus:outline-none focus:border-blue-500"
-            />
+          <div className="mb-6">
+            <div className="text-center">
+              <p className="text-5xl font-bold text-[#72564c] mb-2">{question.korean}</p>
+              <p className="text-[#8d6e63]">=?</p>
+            </div>
+          </div>
 
-            {answered && (
-              <div
-                className={`p-4 rounded-lg font-semibold ${
-                  isCorrect
-                    ? 'bg-green-100 text-green-900 border-2 border-green-500'
-                    : 'bg-red-100 text-red-900 border-2 border-red-500'
-                }`}
+          <input
+            type="text"
+            value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && !answered && handleSubmit()}
+            placeholder="Nhập từ tiếng Việt tại đây..."
+            disabled={answered}
+            className="w-full px-4 py-3 mb-4 border-2 border-[#e8dcd4] rounded-lg focus:outline-none focus:border-[#72564c] text-[#72564c] placeholder-[#8d6e63]"
+          />
+
+          {answered && (
+            <div className={`p-4 rounded-lg text-center font-bold mb-6 ${
+              isCorrect
+                ? 'bg-green-100 text-green-700 border-2 border-green-500'
+                : 'bg-red-100 text-red-700 border-2 border-red-500'
+            }`}>
+              {isCorrect ? '✓ Chính xác! Đáp án đúng: ' + question.vietnamese : '✗ Sai! Đáp án đúng: ' + question.vietnamese}
+            </div>
+          )}
+
+          <div className="flex gap-3">
+            {!answered ? (
+              <button
+                onClick={handleSubmit}
+                className="flex-1 bg-gradient-to-r from-[#72564c] to-[#8d6e63] text-white font-bold py-3 rounded-lg hover:opacity-90 transition-all active:scale-95"
               >
-                {isCorrect ? `✅ Đúng! Đáp án: ${question.vietnamese}` : `❌ Sai! Đáp án: ${question.vietnamese}`}
-              </div>
+                Kiểm tra
+              </button>
+            ) : (
+              <button
+                onClick={handleNext}
+                className="flex-1 bg-gradient-to-r from-[#72564c] to-[#8d6e63] text-white font-bold py-3 rounded-lg hover:opacity-90 transition-all active:scale-95"
+              >
+                {currentQuestion < questions.length - 1 ? 'Tiếp tục' : 'Hoàn thành'}
+              </button>
             )}
           </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-[#e8dcd4]">
+            <div className="text-center">
+              <p className="text-xs text-[#8d6e63] mb-1">Điểm</p>
+              <p className="text-2xl font-bold text-[#72564c]">{score}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-[#8d6e63] mb-1">Đúng</p>
+              <p className="text-2xl font-bold text-[#72564c]">{correctAnswers}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-[#8d6e63] mb-1">Từ</p>
+              <p className="text-2xl font-bold text-[#72564c]">{currentQuestion + 1}/{questions.length}</p>
+            </div>
+          </div>
         </div>
-
-        {!answered && (
-          <button
-            onClick={handleSubmit}
-            disabled={!userInput.trim()}
-            className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-bold py-4 rounded-lg"
-          >
-            Kiểm tra
-          </button>
-        )}
-
-        {answered && (
-          <button
-            onClick={handleNext}
-            className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-4 rounded-lg"
-          >
-            {currentQuestion < questions.length - 1 ? 'Tiếp →' : 'Kết thúc 🎉'}
-          </button>
-        )}
       </div>
     </div>
   );

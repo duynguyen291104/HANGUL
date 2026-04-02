@@ -5,17 +5,29 @@ import { PrismaClient } from '@prisma/client';
 const router = Router();
 const prisma = new PrismaClient();
 
-const AI_BACKEND_URL =
+const AI_BACKEND_URL = (
   process.env.AI_BACKEND_URL ||
   process.env.FLASK_API_URL ||
-  'http://localhost:5001';
+  'http://localhost:5001'
+).replace(/\/+$/, '');
 
 router.post('/transcribe', async (req: Request, res: Response) => {
   try {
-    const { audio, target } = req.body;
+    const audio = req.body?.audio;
+    const target = String(req.body?.target || '').trim();
 
     if (!audio) {
-      return res.status(400).json({ error: 'Audio data required' });
+      return res.status(400).json({
+        success: false,
+        error: 'Audio data required',
+      });
+    }
+
+    if (!target) {
+      return res.status(400).json({
+        success: false,
+        error: 'Target text required',
+      });
     }
 
     try {
@@ -30,14 +42,15 @@ router.post('/transcribe', async (req: Request, res: Response) => {
         }
       );
 
-      res.json({
+      return res.json({
         ...aiResponse.data,
-        success: aiResponse.data.success ?? true,
+        success: aiResponse.data?.success ?? true,
         timestamp: new Date().toISOString(),
       });
     } catch (aiError: any) {
       const statusCode = aiError?.response?.status || 502;
-      res.status(statusCode).json({
+
+      return res.status(statusCode).json({
         success: false,
         message: 'Transcription failed',
         error: aiError?.response?.data?.error || aiError.message,
@@ -45,7 +58,7 @@ router.post('/transcribe', async (req: Request, res: Response) => {
       });
     }
   } catch (error: any) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Transcription failed',
       message: error.message,
@@ -55,10 +68,13 @@ router.post('/transcribe', async (req: Request, res: Response) => {
 
 router.post('/tts', async (req: Request, res: Response) => {
   try {
-    const { text } = req.body;
+    const text = String(req.body?.text || '').trim();
 
     if (!text) {
-      return res.status(400).json({ error: 'Text required' });
+      return res.status(400).json({
+        success: false,
+        error: 'Text required',
+      });
     }
 
     try {
@@ -73,14 +89,15 @@ router.post('/tts', async (req: Request, res: Response) => {
         }
       );
 
-      res.json({
+      return res.json({
         ...aiResponse.data,
-        success: aiResponse.data.success ?? true,
+        success: aiResponse.data?.success ?? true,
         timestamp: new Date().toISOString(),
       });
     } catch (aiError: any) {
       const statusCode = aiError?.response?.status || 502;
-      res.status(statusCode).json({
+
+      return res.status(statusCode).json({
         success: false,
         message: 'TTS generation failed',
         error: aiError?.response?.data?.error || aiError.message,
@@ -88,7 +105,7 @@ router.post('/tts', async (req: Request, res: Response) => {
       });
     }
   } catch (error: any) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'TTS failed',
       message: error.message,
@@ -99,9 +116,9 @@ router.post('/tts', async (req: Request, res: Response) => {
 router.get('/vocabulary/:level', async (req: Request, res: Response) => {
   try {
     const { level } = req.params;
-    const { limit = 10 } = req.query;
+    const limit = Math.max(1, Math.min(50, Number(req.query.limit || 10)));
 
-    const levelUpper = level.toUpperCase();
+    const levelUpper = String(level || '').toUpperCase();
     const validLevels = ['NEWBIE', 'BEGINNER', 'INTERMEDIATE', 'UPPER_INTERMEDIATE', 'ADVANCED'];
 
     if (!validLevels.includes(levelUpper)) {
@@ -124,15 +141,15 @@ router.get('/vocabulary/:level', async (req: Request, res: Response) => {
           },
         },
       },
-      take: parseInt(limit as string, 10),
+      take: limit,
       orderBy: {
         createdAt: 'asc',
       },
     });
 
-    const shuffled = vocabulary.sort(() => Math.random() - 0.5);
+    const shuffled = [...vocabulary].sort(() => Math.random() - 0.5);
 
-    res.json({
+    return res.json({
       success: true,
       source: 'database',
       level: levelUpper,
@@ -146,15 +163,16 @@ router.get('/vocabulary/:level', async (req: Request, res: Response) => {
         type: item.type,
         topic: item.topic?.name,
         difficulty: 1,
-        examples: item.examples?.map((example) => ({
-          korean: example.korean,
-          english: example.english,
-          vietnamese: example.vietnamese,
-        })) || [],
+        examples:
+          item.examples?.map((example) => ({
+            korean: example.korean,
+            english: example.english,
+            vietnamese: example.vietnamese,
+          })) || [],
       })),
     });
   } catch (error: any) {
-    res.status(500).json({
+    return res.status(500).json({
       error: 'Failed to fetch vocabulary from database',
       message: error.message,
     });

@@ -6,12 +6,7 @@ import { PrismaClient } from '@prisma/client';
 const router = Router();
 const prisma = new PrismaClient();
 
-const HANDWRITING_AI_URL =
-  process.env.HANDWRITING_AI_URL ||
-  process.env.AI_BACKEND_URL ||
-  process.env.FLASK_API_URL ||
-  '';
-
+const HANDWRITING_AI_URL = (process.env.HANDWRITING_AI_URL || '').replace(/\/+$/, '');
 const OPENAI_MODEL = process.env.HANDWRITING_OPENAI_MODEL || 'gpt-4o-mini';
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -19,6 +14,63 @@ const openai = process.env.OPENAI_API_KEY
 
 const DEFAULT_TOPIC_NAME = 'Handwriting Practice';
 const DEFAULT_LEVEL = 'NEWBIE';
+
+type HandwritingMetrics = {
+  accuracy: number;
+  strokeBalance: number;
+  neatness: number;
+  completion: number;
+};
+
+type DrawingGeometry = {
+  canvasWidth: number;
+  canvasHeight: number;
+  width: number;
+  height: number;
+  widthRatio: number;
+  heightRatio: number;
+  centerOffsetX: number;
+  centerOffsetY: number;
+  aspectRatio: number;
+  avgStrokeLength: number;
+  avgPointsPerStroke: number;
+};
+
+type DiagnosticIssue = {
+  id: string;
+  severity: number;
+  detail: string;
+  suggestion: string;
+};
+
+type CharProfile = {
+  minCoverage: number;
+  maxCoverage: number;
+  aspectMin: number;
+  aspectMax: number;
+  centerToleranceX: number;
+  centerToleranceY: number;
+};
+
+const DEFAULT_CHAR_PROFILE: CharProfile = {
+  minCoverage: 0.28,
+  maxCoverage: 0.78,
+  aspectMin: 0.45,
+  aspectMax: 1.08,
+  centerToleranceX: 0.1,
+  centerToleranceY: 0.1,
+};
+
+const CHAR_PROFILES: Record<string, CharProfile> = {
+  한: { minCoverage: 0.3, maxCoverage: 0.8, aspectMin: 0.55, aspectMax: 1.02, centerToleranceX: 0.1, centerToleranceY: 0.1 },
+  글: { minCoverage: 0.24, maxCoverage: 0.72, aspectMin: 0.32, aspectMax: 0.82, centerToleranceX: 0.12, centerToleranceY: 0.1 },
+  가: { minCoverage: 0.24, maxCoverage: 0.7, aspectMin: 0.38, aspectMax: 0.95, centerToleranceX: 0.1, centerToleranceY: 0.1 },
+  나: { minCoverage: 0.24, maxCoverage: 0.7, aspectMin: 0.38, aspectMax: 0.95, centerToleranceX: 0.1, centerToleranceY: 0.1 },
+  다: { minCoverage: 0.25, maxCoverage: 0.74, aspectMin: 0.42, aspectMax: 1.0, centerToleranceX: 0.1, centerToleranceY: 0.1 },
+  라: { minCoverage: 0.25, maxCoverage: 0.74, aspectMin: 0.42, aspectMax: 1.0, centerToleranceX: 0.1, centerToleranceY: 0.1 },
+  마: { minCoverage: 0.28, maxCoverage: 0.8, aspectMin: 0.55, aspectMax: 1.08, centerToleranceX: 0.1, centerToleranceY: 0.1 },
+  바: { minCoverage: 0.28, maxCoverage: 0.8, aspectMin: 0.55, aspectMax: 1.08, centerToleranceX: 0.1, centerToleranceY: 0.1 },
+};
 
 function clamp(value: any, min = 0, max = 100) {
   const num = Number(value);
@@ -42,11 +94,15 @@ function safeJsonParse<T>(value: any, fallback: T): T {
 }
 
 function extractJsonObject(value: string) {
-  const raw = (value || '').trim();
+  const raw = String(value || '').trim();
   const start = raw.indexOf('{');
   const end = raw.lastIndexOf('}');
   if (start < 0 || end <= start) return {};
-  return JSON.parse(raw.slice(start, end + 1));
+  try {
+    return JSON.parse(raw.slice(start, end + 1));
+  } catch {
+    return {};
+  }
 }
 
 function toDataUrl(imageBase64: string) {
@@ -57,49 +113,44 @@ function toDataUrl(imageBase64: string) {
 }
 
 function scoreToGrade(score: number) {
-  if (score >= 90) return 'A';
-  if (score >= 80) return 'B';
-  if (score >= 65) return 'C';
-  if (score >= 50) return 'D';
+  if (score >= 93) return 'A';
+  if (score >= 85) return 'B';
+  if (score >= 75) return 'C';
+  if (score >= 60) return 'D';
   return 'E';
 }
 
-function buildFeedback(score: number, strokeDiff: number) {
-  if (score >= 90) return 'Chữ khá chuẩn, bố cục ổn và độ hoàn thiện tốt.';
-  if (score >= 80) return 'Bài viết ổn, chỉ cần cân lại tỉ lệ và điểm dừng của vài nét.';
-  if (score >= 65) {
-    return strokeDiff > 0
-      ? 'Hình chữ đã gần đúng nhưng số nét còn lệch, nên viết chậm và đủ nét hơn.'
-      : 'Hình chữ đã đúng hướng, nhưng nét còn chưa đều và hơi thiếu kiểm soát.';
-  }
-  return 'Cần luyện lại cấu trúc cơ bản, viết chậm hơn và tách rõ từng nét.';
+function normalizeSuggestions(value: any, fallback: string[] = []) {
+  if (!Array.isArray(value)) return fallback;
+  const normalized = value
+    .map((item) => String(item || '').trim())
+    .filter(Boolean);
+  return normalized.length ? normalized.slice(0, 5) : fallback;
 }
 
-function buildSuggestions(score: number, expectedStrokes = 0, actualStrokes = 0) {
-  const suggestions: string[] = [];
+function mergeSuggestions(primary: string[], secondary: string[]) {
+  const seen = new Set<string>();
 
-  if (expectedStrokes && actualStrokes && expectedStrokes !== actualStrokes) {
-    suggestions.push(`Số nét hiện tại là ${actualStrokes}, nên bám gần hơn mốc ${expectedStrokes} nét.`);
-  }
+  return [...primary, ...secondary]
+    .map((item) => String(item || '').trim())
+    .filter((item) => {
+      if (!item || seen.has(item)) return false;
+      seen.add(item);
+      return true;
+    })
+    .slice(0, 3);
+}
 
-  if (score < 70) {
-    suggestions.push('Giữ các nét tách bạch, không kéo liền quá nhanh giữa các đoạn.');
-  }
-
-  if (score < 85) {
-    suggestions.push('Cân lại chiều cao, chiều rộng và điểm kết thúc của từng nét.');
-  }
-
-  if (!suggestions.length) {
-    suggestions.push('Tiếp tục giữ nhịp viết ổn định và lặp lại đúng tỉ lệ chữ mẫu.');
-  }
-
-  return suggestions.slice(0, 3);
+function distanceBetweenPoints(left: any, right: any) {
+  const dx = Number(right?.x || 0) - Number(left?.x || 0);
+  const dy = Number(right?.y || 0) - Number(left?.y || 0);
+  return Math.sqrt(dx * dx + dy * dy);
 }
 
 function expectedStrokesForChar(character: string) {
   const mapping: Record<string, number> = {
     한: 6,
+    글: 5,
     가: 4,
     나: 4,
     다: 5,
@@ -112,10 +163,78 @@ function expectedStrokesForChar(character: string) {
   return mapping[character] || Math.max(2, Math.min(10, character ? character.length * 3 : 4));
 }
 
-function normalizeSuggestions(value: any, fallback: string[]) {
-  if (!Array.isArray(value)) return fallback;
-  const suggestions = value.map((item) => String(item).trim()).filter(Boolean);
-  return suggestions.length ? suggestions.slice(0, 3) : fallback;
+function scoreCoverage(coverage: number, profile: CharProfile) {
+  if (!Number.isFinite(coverage) || coverage <= 0) return 18;
+
+  const target = (profile.minCoverage + profile.maxCoverage) / 2;
+  const tolerance = Math.max((profile.maxCoverage - profile.minCoverage) / 2, 0.08);
+  const distance = Math.abs(coverage - target);
+
+  return clamp(100 - Math.round((distance / tolerance) * 32));
+}
+
+function scoreAspectRatio(aspectRatio: number, profile: CharProfile) {
+  if (!Number.isFinite(aspectRatio) || aspectRatio <= 0) return 20;
+
+  const target = (profile.aspectMin + profile.aspectMax) / 2;
+  const tolerance = Math.max((profile.aspectMax - profile.aspectMin) / 2, 0.08);
+  const distance = Math.abs(aspectRatio - target);
+
+  return clamp(100 - Math.round((distance / tolerance) * 35));
+}
+
+function scoreCentering(geometry: Partial<DrawingGeometry>, profile: CharProfile) {
+  const offsetX = Math.abs(Number(geometry.centerOffsetX || 0));
+  const offsetY = Math.abs(Number(geometry.centerOffsetY || 0));
+
+  const xPenalty = (offsetX / Math.max(profile.centerToleranceX, 0.04)) * 18;
+  const yPenalty = (offsetY / Math.max(profile.centerToleranceY, 0.04)) * 18;
+
+  return clamp(100 - Math.round(xPenalty + yPenalty));
+}
+
+function calculateStrictScore(
+  metrics: HandwritingMetrics,
+  expectedStrokes = 0,
+  actualStrokeCount = 0
+) {
+  const strokeDiff =
+    expectedStrokes > 0 && actualStrokeCount > 0
+      ? Math.abs(expectedStrokes - actualStrokeCount)
+      : 0;
+
+  let score = Math.round(
+    metrics.accuracy * 0.62 +
+      metrics.strokeBalance * 0.23 +
+      metrics.neatness * 0.1 +
+      metrics.completion * 0.05
+  );
+
+  if (strokeDiff > 0) {
+    score -= 8 + strokeDiff * 7;
+  }
+
+  if (metrics.accuracy < 85) {
+    score -= Math.round((85 - metrics.accuracy) * 0.35);
+  }
+
+  if (metrics.strokeBalance < 80) {
+    score -= Math.round((80 - metrics.strokeBalance) * 0.25);
+  }
+
+  if (metrics.completion < 60) {
+    score -= Math.round((60 - metrics.completion) * 0.15);
+  }
+
+  if (strokeDiff >= 3) score = Math.min(score, 52);
+  else if (strokeDiff === 2) score = Math.min(score, 64);
+  else if (strokeDiff === 1) score = Math.min(score, 72);
+
+  if (metrics.accuracy < 75) score = Math.min(score, 69);
+  if (metrics.accuracy < 60) score = Math.min(score, 54);
+  if (metrics.strokeBalance < 60) score = Math.min(score, 58);
+
+  return clamp(score);
 }
 
 function normalizeDrawingPayload(body: any) {
@@ -150,16 +269,72 @@ function normalizeDrawingPayload(body: any) {
 
   const durationMs = Number(drawingData.durationMs ?? body?.durationMs ?? inferredDuration) || inferredDuration;
 
+  const canvasWidth = Number(drawingData.canvas?.width ?? body?.canvas?.width ?? 650) || 650;
+  const canvasHeight = Number(drawingData.canvas?.height ?? body?.canvas?.height ?? 600) || 600;
+
+  const xs = flatPoints
+    .map((item: any) => Number(item.x))
+    .filter((value: number) => Number.isFinite(value));
+
+  const ys = flatPoints
+    .map((item: any) => Number(item.y))
+    .filter((value: number) => Number.isFinite(value));
+
+  const bounds =
+    xs.length && ys.length
+      ? {
+          minX: Math.min(...xs),
+          maxX: Math.max(...xs),
+          minY: Math.min(...ys),
+          maxY: Math.max(...ys),
+        }
+      : null;
+
+  const width = bounds ? bounds.maxX - bounds.minX : 0;
+  const height = bounds ? bounds.maxY - bounds.minY : 0;
+  const centerX = bounds ? (bounds.minX + bounds.maxX) / 2 : canvasWidth / 2;
+  const centerY = bounds ? (bounds.minY + bounds.maxY) / 2 : canvasHeight / 2;
+
+  const strokeLengths = strokeGroups.map((stroke: any[]) => {
+    if (!Array.isArray(stroke) || stroke.length < 2) return 0;
+
+    let total = 0;
+    for (let i = 1; i < stroke.length; i += 1) {
+      total += distanceBetweenPoints(stroke[i - 1], stroke[i]);
+    }
+    return total;
+  });
+
+  const nonZeroStrokeLengths = strokeLengths.filter((value) => value > 0);
+  const avgStrokeLength = nonZeroStrokeLengths.length ? average(nonZeroStrokeLengths) : 0;
+  const avgPointsPerStroke = strokeCount > 0 ? Number((pointCount / strokeCount).toFixed(2)) : 0;
+
+  const geometry: DrawingGeometry = {
+    canvasWidth,
+    canvasHeight,
+    width,
+    height,
+    widthRatio: canvasWidth > 0 ? Number((width / canvasWidth).toFixed(4)) : 0,
+    heightRatio: canvasHeight > 0 ? Number((height / canvasHeight).toFixed(4)) : 0,
+    centerOffsetX: canvasWidth > 0 ? Number((centerX / canvasWidth - 0.5).toFixed(4)) : 0,
+    centerOffsetY: canvasHeight > 0 ? Number((centerY / canvasHeight - 0.5).toFixed(4)) : 0,
+    aspectRatio: height > 0 ? Number((width / height).toFixed(4)) : 0,
+    avgStrokeLength: Number(avgStrokeLength || 0),
+    avgPointsPerStroke,
+  };
+
   return {
     strokeCount,
     durationMs,
     pointCount,
+    geometry,
     drawingData: {
       strokes: strokeGroups,
       strokeCount,
       durationMs,
       pointCount,
-      canvas: drawingData.canvas ?? body?.canvas ?? null,
+      geometry,
+      canvas: drawingData.canvas ?? body?.canvas ?? { width: canvasWidth, height: canvasHeight },
       hasImage: Boolean(body?.imageBase64),
     },
   };
@@ -167,6 +342,7 @@ function normalizeDrawingPayload(body: any) {
 
 async function resolveTopic(body: any, level: string) {
   const topicId = Number(body?.topicId || 0);
+
   if (topicId > 0) {
     const topic = await prisma.topic.findUnique({ where: { id: topicId } });
     if (!topic) {
@@ -248,76 +424,342 @@ async function resolveExercise(body: any, level: string) {
   return exercise;
 }
 
-function normalizeEvaluation(raw: any, engine: string) {
+function analyzeHandwritingIssues(payload: any, metrics: HandwritingMetrics) {
+  const issues: DiagnosticIssue[] = [];
+  const geometry: Partial<DrawingGeometry> = payload?.geometry ?? {};
+  const profile = CHAR_PROFILES[payload?.character] || DEFAULT_CHAR_PROFILE;
+
+  const expectedStrokes = Number(payload?.expectedStrokes || 0);
+  const actualStrokeCount = Number(payload?.actualStrokeCount || 0);
+  const strokeDiff =
+    expectedStrokes > 0 && actualStrokeCount > 0
+      ? actualStrokeCount - expectedStrokes
+      : 0;
+
+  if (strokeDiff < 0) {
+    issues.push({
+      id: 'missing_strokes',
+      severity: 100 + Math.abs(strokeDiff) * 10,
+      detail: `Bạn đang viết thiếu ${Math.abs(strokeDiff)} nét so với mẫu, nên khung chữ hiện chưa đúng ngay từ cấu trúc cơ bản.`,
+      suggestion: `Viết đủ ${expectedStrokes} nét trước, đừng gộp các nét chính lại với nhau.`,
+    });
+  }
+
+  if (strokeDiff > 0) {
+    issues.push({
+      id: 'extra_strokes',
+      severity: 94 + strokeDiff * 8,
+      detail: `Bạn đang thừa ${strokeDiff} nét so với mẫu, nên chữ bị rối và sai cấu trúc nét chính.`,
+      suggestion: `Bỏ các nét phụ không cần thiết và quay lại đúng số nét chuẩn là ${expectedStrokes}.`,
+    });
+  }
+
+  const coverage = Math.max(Number(geometry.widthRatio || 0), Number(geometry.heightRatio || 0));
+
+  if (coverage > 0 && coverage < profile.minCoverage) {
+    issues.push({
+      id: 'too_small',
+      severity: 76,
+      detail: 'Chữ hiện đang quá nhỏ trong ô viết, khiến độ dài và tỷ lệ giữa các nét không ra đúng form mẫu.',
+      suggestion: 'Tăng độ phủ của chữ trong ô viết, nhưng vẫn giữ đúng tỷ lệ giữa các nét.',
+    });
+  }
+
+  if (coverage > profile.maxCoverage) {
+    issues.push({
+      id: 'too_large',
+      severity: 73,
+      detail: 'Chữ đang chiếm quá nhiều diện tích ô viết, nên các nét dễ chạm biên và mất kiểm soát ở điểm dừng.',
+      suggestion: 'Thu chữ gọn lại một chút để giữ khoảng thở quanh chữ và dễ kiểm soát điểm kết thúc nét.',
+    });
+  }
+
+  const offsetX = Number(geometry.centerOffsetX || 0);
+  const offsetY = Number(geometry.centerOffsetY || 0);
+
+  if (offsetX < -profile.centerToleranceX) {
+    issues.push({
+      id: 'left_shift',
+      severity: 68,
+      detail: 'Cụm chữ đang lệch sang trái, nên vị trí tương đối giữa các nét chưa cân trong ô viết.',
+      suggestion: 'Đặt cụm chữ cân hơn vào giữa ô, đặc biệt là nét mở đầu.',
+    });
+  }
+
+  if (offsetX > profile.centerToleranceX) {
+    issues.push({
+      id: 'right_shift',
+      severity: 68,
+      detail: 'Cụm chữ đang lệch sang phải, làm bố cục các nét chính mất cân đối.',
+      suggestion: 'Lùi vị trí đặt nét đầu vào giữa hơn để bố cục chữ cân lại.',
+    });
+  }
+
+  if (offsetY < -profile.centerToleranceY) {
+    issues.push({
+      id: 'top_shift',
+      severity: 64,
+      detail: 'Chữ đang bị dồn lên phía trên, nên khoảng phân bổ giữa các nét theo chiều dọc chưa ổn.',
+      suggestion: 'Hạ cụm chữ xuống một chút để các nét có không gian đều hơn theo chiều dọc.',
+    });
+  }
+
+  if (offsetY > profile.centerToleranceY) {
+    issues.push({
+      id: 'bottom_shift',
+      severity: 64,
+      detail: 'Chữ đang tụt xuống thấp, làm trọng tâm chữ bị nặng ở phần dưới.',
+      suggestion: 'Nâng cụm chữ lên nhẹ để cân lại trọng tâm theo chiều dọc.',
+    });
+  }
+
+  const aspectRatio = Number(geometry.aspectRatio || 0);
+
+  if (aspectRatio > 0 && aspectRatio < profile.aspectMin) {
+    issues.push({
+      id: 'too_narrow',
+      severity: 72,
+      detail: 'Chữ đang bị hẹp ngang hoặc quá đứng, khiến khoảng cách giữa các nét không đúng kiểu chữ mẫu.',
+      suggestion: 'Mở bề ngang ra thêm một chút, đừng ép các nét sát nhau quá.',
+    });
+  }
+
+  if (aspectRatio > profile.aspectMax) {
+    issues.push({
+      id: 'too_wide',
+      severity: 72,
+      detail: 'Chữ đang bị bè ngang, nên các nét chính bị trải ra và mất liên kết hình khối.',
+      suggestion: 'Thu bề ngang lại để chữ gọn hơn và bám đúng form chuẩn.',
+    });
+  }
+
+  const avgPointsPerStroke = Number(geometry.avgPointsPerStroke || 0);
+
+  if (avgPointsPerStroke > 0 && avgPointsPerStroke < 5) {
+    issues.push({
+      id: 'short_or_incomplete_strokes',
+      severity: 66,
+      detail: 'Một số nét có dấu hiệu quá ngắn hoặc dừng sớm, nên chữ chưa hoàn thiện ở các nét chính.',
+      suggestion: 'Đi hết trọn từng nét trước khi nhấc bút, đừng cắt nét giữa chừng.',
+    });
+  }
+
+  if (avgPointsPerStroke > 25) {
+    issues.push({
+      id: 'hesitant_strokes',
+      severity: 55,
+      detail: 'Nét viết có dấu hiệu ngập ngừng hoặc rê bút quá nhiều, nên đường nét chưa dứt khoát.',
+      suggestion: 'Đi bút liền mạch hơn và hạn chế sửa nét quá nhiều giữa chừng.',
+    });
+  }
+
+  if (metrics.accuracy < 70 && !issues.length) {
+    issues.push({
+      id: 'generic_accuracy',
+      severity: 70,
+      detail: 'Tổng thể chữ đã có hình, nhưng độ chính xác của từng nét vẫn chưa bám sát mẫu.',
+      suggestion: 'Viết chậm hơn và kiểm tra lại điểm bắt đầu, hướng đi và điểm kết thúc của từng nét.',
+    });
+  }
+
+  return issues.sort((left, right) => right.severity - left.severity);
+}
+
+function buildFeedbackFromIssues(
+  issues: DiagnosticIssue[],
+  metrics: HandwritingMetrics,
+  score: number
+) {
+  if (!issues.length) {
+    if (metrics.accuracy >= 90) {
+      return 'Các nét chính đang bám rất sát chữ mẫu. Độ dài, vị trí và tỷ lệ nét hiện khá chuẩn.';
+    }
+
+    if (metrics.accuracy >= 80) {
+      return 'Tổng thể chữ đã khá đúng form. Sai số còn lại chủ yếu nằm ở vài điểm đặt bút và độ dài nét.';
+    }
+
+    return 'Chữ đã có form tương đối ổn, nhưng vẫn cần siết lại độ chính xác của các nét chính.';
+  }
+
+  const parts: string[] = [issues[0].detail];
+
+  if (issues[1] && issues[1].severity >= 65) {
+    parts.push(issues[1].detail);
+  }
+
+  if (metrics.accuracy < 70) {
+    parts.push('Hiện tại lỗi chính nằm ở độ chính xác nét nhiều hơn là yếu tố thẩm mỹ.');
+  } else if (metrics.neatness < 70 && score >= 70) {
+    parts.push('Sau khi sửa đúng nét chính, bạn có thể làm đều tay hơn để chữ gọn hơn.');
+  }
+
+  return parts.join(' ');
+}
+
+function buildSuggestionsFromIssues(issues: DiagnosticIssue[], metrics: HandwritingMetrics) {
+  const seen = new Set<string>();
+
+  const suggestions = issues
+    .map((item) => item.suggestion)
+    .filter((item) => {
+      const value = String(item || '').trim();
+      if (!value || seen.has(value)) return false;
+      seen.add(value);
+      return true;
+    });
+
+  if (metrics.accuracy < 65) {
+    const generic = 'Ưu tiên luyện đúng từng nét chính trước, chưa cần viết nhanh.';
+    if (!seen.has(generic)) {
+      suggestions.push(generic);
+    }
+  }
+
+  return suggestions.length
+    ? suggestions.slice(0, 3)
+    : ['Viết chậm hơn và kiểm tra kỹ điểm bắt đầu, hướng đi và điểm kết thúc của từng nét.'];
+}
+
+function normalizeEvaluation(raw: any, engine: string, payload: any) {
   const metrics = raw?.metrics ?? {};
 
-  const accuracy = clamp(metrics.accuracy ?? raw?.accuracy ?? raw?.score ?? 0);
-  const strokeBalance = clamp(
-    metrics.strokeBalance ??
-      metrics.stroke_balance ??
-      raw?.strokeBalance ??
-      raw?.stroke_balance ??
-      accuracy
+  const strictMetrics: HandwritingMetrics = {
+    accuracy: clamp(metrics.accuracy ?? raw?.accuracy ?? raw?.score ?? 0),
+    strokeBalance: clamp(
+      metrics.strokeBalance ??
+        metrics.stroke_balance ??
+        raw?.strokeBalance ??
+        raw?.stroke_balance ??
+        metrics.accuracy ??
+        raw?.accuracy ??
+        raw?.score ??
+        0
+    ),
+    neatness: clamp(metrics.neatness ?? metrics.shape ?? raw?.neatness ?? raw?.shape ?? raw?.score ?? 0),
+    completion: clamp(metrics.completion ?? raw?.completion ?? raw?.score ?? 0),
+  };
+
+  const score = calculateStrictScore(
+    strictMetrics,
+    Number(payload?.expectedStrokes || 0),
+    Number(payload?.actualStrokeCount || 0)
   );
-  const neatness = clamp(metrics.neatness ?? metrics.shape ?? raw?.neatness ?? raw?.shape ?? accuracy);
-  const completion = clamp(metrics.completion ?? raw?.completion ?? accuracy);
 
-  const score = clamp(
-    raw?.score ??
-      metrics.overall ??
-      Math.round(accuracy * 0.45 + strokeBalance * 0.2 + neatness * 0.2 + completion * 0.15)
-  );
+  const issues = analyzeHandwritingIssues(payload, strictMetrics);
+  const feedback = buildFeedbackFromIssues(issues, strictMetrics, score);
 
-  const feedback =
-    String(raw?.feedback ?? raw?.feedback_vi ?? raw?.message ?? '').trim() || buildFeedback(score, 0);
-
-  const suggestions = normalizeSuggestions(
+  const modelSuggestions = normalizeSuggestions(
     raw?.suggestions ?? raw?.tips ?? raw?.recommendations,
-    buildSuggestions(score)
+    []
+  );
+
+  const suggestions = mergeSuggestions(
+    buildSuggestionsFromIssues(issues, strictMetrics),
+    modelSuggestions
   );
 
   return {
     score,
     grade: String(raw?.grade || scoreToGrade(score)),
     feedback,
-    metrics: {
-      accuracy,
-      strokeBalance,
-      neatness,
-      completion,
-    },
+    metrics: strictMetrics,
     suggestions,
+    issues,
     engine,
   };
 }
 
 function buildRuleBasedEvaluation(payload: any) {
+  const expectedStrokes = Number(payload.expectedStrokes || 0);
+  const actualStrokeCount = Number(payload.actualStrokeCount || 0);
+  const pointCount = Number(payload.pointCount || 0);
+  const durationMs = Number(payload.durationMs || 0);
+  const geometry: Partial<DrawingGeometry> = payload.geometry || {};
+  const profile = CHAR_PROFILES[payload.character] || DEFAULT_CHAR_PROFILE;
+
+  if (pointCount < 8) {
+    const strictMetrics: HandwritingMetrics = {
+      accuracy: 12,
+      strokeBalance: 10,
+      neatness: 18,
+      completion: 10,
+    };
+
+    const issues = analyzeHandwritingIssues(payload, strictMetrics);
+    const score = calculateStrictScore(strictMetrics, expectedStrokes, actualStrokeCount);
+
+    return {
+      score,
+      grade: scoreToGrade(score),
+      feedback:
+        'Bài viết gần như chưa thành hình. Độ chính xác nét hiện quá thấp nên chưa thể xem là viết đúng chữ mẫu.',
+      metrics: strictMetrics,
+      suggestions: buildSuggestionsFromIssues(issues, strictMetrics),
+      issues,
+      engine: 'rule-based-fallback',
+    };
+  }
+
+  const coverage = Math.max(Number(geometry.widthRatio || 0), Number(geometry.heightRatio || 0));
+  const coverageScore = scoreCoverage(coverage, profile);
+  const aspectScore = scoreAspectRatio(Number(geometry.aspectRatio || 0), profile);
+  const centeringScore = scoreCentering(geometry, profile);
+
+  const strokeCountScore =
+    expectedStrokes > 0 && actualStrokeCount > 0
+      ? clamp(100 - Math.abs(expectedStrokes - actualStrokeCount) * 22)
+      : 55;
+
   const strokeDiff =
-    payload.expectedStrokes > 0 && payload.actualStrokeCount > 0
-      ? Math.abs(payload.expectedStrokes - payload.actualStrokeCount)
+    expectedStrokes > 0 && actualStrokeCount > 0
+      ? Math.abs(expectedStrokes - actualStrokeCount)
       : 0;
 
-  const strokeBalance = Math.max(35, clamp(100 - strokeDiff * 18));
-  const completion = Math.max(20, clamp(Math.min(100, 32 + payload.pointCount * 2)));
-  const tempoBonus = payload.durationMs > 0 ? Math.min(24, Math.round(payload.durationMs / 250)) : 10;
-  const neatness = Math.max(
-    30,
-    clamp(42 + tempoBonus + Math.min(22, Math.round(payload.pointCount / 5)) - Math.max(0, strokeDiff - 1) * 8)
-  );
-  const accuracy = clamp(Math.round(strokeBalance * 0.55 + completion * 0.45));
-  const score = clamp(Math.round(accuracy * 0.45 + strokeBalance * 0.2 + neatness * 0.2 + completion * 0.15));
+  const strictMetrics: HandwritingMetrics = {
+    accuracy: clamp(
+      Math.round(
+        strokeCountScore * 0.44 +
+          coverageScore * 0.18 +
+          aspectScore * 0.18 +
+          centeringScore * 0.2 -
+          strokeDiff * 6
+      )
+    ),
+    strokeBalance: clamp(
+      Math.round(
+        strokeCountScore * 0.36 +
+          aspectScore * 0.34 +
+          centeringScore * 0.3 -
+          strokeDiff * 5
+      )
+    ),
+    neatness: clamp(
+      Math.round(
+        36 +
+          Math.min(22, Number(geometry.avgPointsPerStroke || 0) * 3) +
+          Math.min(16, durationMs / 600) -
+          strokeDiff * 8
+      )
+    ),
+    completion: clamp(
+      Math.round(
+        Math.min(100, 18 + pointCount * 1.55 + Math.min(14, durationMs / 450)) -
+          strokeDiff * 6
+      )
+    ),
+  };
+
+  const issues = analyzeHandwritingIssues(payload, strictMetrics);
+  const score = calculateStrictScore(strictMetrics, expectedStrokes, actualStrokeCount);
 
   return {
     score,
     grade: scoreToGrade(score),
-    feedback: buildFeedback(score, strokeDiff),
-    metrics: {
-      accuracy,
-      strokeBalance,
-      neatness,
-      completion,
-    },
-    suggestions: buildSuggestions(score, payload.expectedStrokes, payload.actualStrokeCount),
+    feedback: buildFeedbackFromIssues(issues, strictMetrics, score),
+    metrics: strictMetrics,
+    suggestions: buildSuggestionsFromIssues(issues, strictMetrics),
+    issues,
     engine: 'rule-based-fallback',
   };
 }
@@ -325,8 +767,10 @@ function buildRuleBasedEvaluation(payload: any) {
 async function scoreWithRemoteAI(payload: any) {
   if (!HANDWRITING_AI_URL || !payload.imageBase64) return null;
 
-  const base = HANDWRITING_AI_URL.replace(/\/+$/, '');
-  const candidates = [`${base}/handwriting/score`, `${base}/api/handwriting/score`];
+  const candidates = [
+    `${HANDWRITING_AI_URL}/handwriting/score`,
+    `${HANDWRITING_AI_URL}/api/handwriting/score`,
+  ];
 
   for (const url of candidates) {
     try {
@@ -343,10 +787,12 @@ async function scoreWithRemoteAI(payload: any) {
         { timeout: 20000 }
       );
 
-      return normalizeEvaluation(data?.data || data, 'remote-ai');
+      return normalizeEvaluation(data?.data || data, 'remote-ai', payload);
     } catch (error: any) {
       const status = error?.response?.status;
-      if (status === 404 || status === 405) continue;
+      if (status === 404 || status === 405) {
+        continue;
+      }
       return null;
     }
   }
@@ -360,8 +806,8 @@ async function scoreWithOpenAI(payload: any) {
   try {
     const completion = await openai.chat.completions.create({
       model: OPENAI_MODEL,
-      response_format: { type: 'json_object' },
-      temperature: 0.2,
+      response_format: { type: 'json_object' } as any,
+      temperature: 0.1,
       max_tokens: 500,
       messages: [
         {
@@ -370,8 +816,10 @@ async function scoreWithOpenAI(payload: any) {
             'You are an expert Hangul handwriting evaluator.',
             'Return JSON only.',
             'Feedback and suggestions must be in Vietnamese.',
-            'Be strict but fair.',
-            'If the image is blank or unreadable, keep the score at 25 or below.',
+            'Be strict.',
+            'Prioritize stroke accuracy over aesthetics.',
+            'Wrong stroke count, missing main strokes, merged strokes, misplaced intersections, or wrong stroke direction must reduce the score heavily.',
+            'Do not give a score above 80 unless the core stroke structure is very close to the target.',
             'Required schema:',
             '{',
             '  "score": 0,',
@@ -394,6 +842,8 @@ async function scoreWithOpenAI(payload: any) {
                 `Actual strokes: ${payload.actualStrokeCount}`,
                 `Duration(ms): ${payload.durationMs}`,
                 'Evaluate the handwriting in the image.',
+                'Focus strongly on stroke count, stroke placement, stroke length, spacing, and whether the main structural strokes are correct.',
+                'The first sentence of feedback should address stroke accuracy directly.',
               ].join('\n'),
             },
             {
@@ -408,7 +858,7 @@ async function scoreWithOpenAI(payload: any) {
     });
 
     const content = completion.choices?.[0]?.message?.content || '{}';
-    return normalizeEvaluation(extractJsonObject(content), 'openai-vision');
+    return normalizeEvaluation(extractJsonObject(content), 'openai-vision', payload);
   } catch {
     return null;
   }
@@ -443,6 +893,8 @@ function mapAttempt(attempt: any) {
     feedback: meta.feedback || '',
     metrics: meta.metrics || null,
     suggestions: Array.isArray(meta.suggestions) ? meta.suggestions : [],
+    issues: Array.isArray(meta.issues) ? meta.issues : [],
+    geometry: meta.geometry || drawing.geometry || null,
     engine: meta.engine || 'stored',
     strokeCount: meta.actualStrokeCount ?? drawing.strokeCount ?? null,
     durationMs: meta.durationMs ?? drawing.durationMs ?? null,
@@ -453,6 +905,7 @@ function mapAttempt(attempt: any) {
 router.post('/submit', async (req: Request, res: Response) => {
   try {
     const userId = Number((req as any).user?.id || 0);
+
     if (!userId) {
       return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
@@ -483,6 +936,8 @@ router.post('/submit', async (req: Request, res: Response) => {
       actualStrokeCount: normalized.strokeCount,
       durationMs: normalized.durationMs,
       pointCount: normalized.pointCount,
+      geometry: normalized.geometry,
+      strokeGroups: normalized.drawingData.strokes,
     });
 
     const attempt = await prisma.handwritingAttempt.create({
@@ -496,6 +951,7 @@ router.post('/submit', async (req: Request, res: Response) => {
           actualStrokeCount: normalized.strokeCount,
           expectedStrokeCount: exercise.strokes,
           durationMs: normalized.durationMs,
+          geometry: normalized.geometry,
         }),
       },
     });
@@ -518,6 +974,7 @@ router.post('/submit', async (req: Request, res: Response) => {
         feedback: evaluation.feedback,
         metrics: evaluation.metrics,
         suggestions: evaluation.suggestions,
+        issues: evaluation.issues,
         engine: evaluation.engine,
         submittedAt: attempt.createdAt,
       },
@@ -535,6 +992,7 @@ router.post('/submit', async (req: Request, res: Response) => {
 router.get('/stats', async (req: Request, res: Response) => {
   try {
     const userId = Number((req as any).user?.id || 0);
+
     if (!userId) {
       return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
@@ -592,13 +1050,16 @@ router.get('/stats', async (req: Request, res: Response) => {
     };
 
     const characterMap = new Map<string, { character: string; attempts: number; totalScore: number }>();
+
     parsed.forEach((item) => {
       if (!item.character) return;
+
       const current = characterMap.get(item.character) || {
         character: item.character,
         attempts: 0,
         totalScore: 0,
       };
+
       current.attempts += 1;
       current.totalScore += item.score;
       characterMap.set(item.character, current);
@@ -647,6 +1108,7 @@ router.get('/stats', async (req: Request, res: Response) => {
 router.get('/history', async (req: Request, res: Response) => {
   try {
     const userId = Number((req as any).user?.id || 0);
+
     if (!userId) {
       return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
@@ -655,15 +1117,18 @@ router.get('/history', async (req: Request, res: Response) => {
     const limit = Math.min(50, Math.max(1, Number(req.query.limit || 10)));
 
     const where: any = { userId };
+    const exerciseFilter: any = {};
 
-    if (req.query.character || req.query.level) {
-      where.exercise = {};
-      if (req.query.character) {
-        where.exercise.hangulChar = String(req.query.character).trim();
-      }
-      if (req.query.level) {
-        where.exercise.level = String(req.query.level).toUpperCase();
-      }
+    if (req.query.character) {
+      exerciseFilter.hangulChar = String(req.query.character).trim();
+    }
+
+    if (req.query.level) {
+      exerciseFilter.level = String(req.query.level).toUpperCase();
+    }
+
+    if (Object.keys(exerciseFilter).length > 0) {
+      where.exercise = { is: exerciseFilter };
     }
 
     const [total, attempts] = await Promise.all([

@@ -65,74 +65,141 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12 sm:px-6">
-      <div className="pointer-events-none absolute left-[10%] top-[18%] hidden rotate-[-10deg] xl:block">
-        <MascotPortrait emoji="🦦" tone="peach" className="h-64 w-56" />
-      </div>
-      <div className="pointer-events-none absolute right-[14%] top-[14%] hidden rotate-[11deg] xl:block">
-        <MascotPortrait emoji="✨" tone="gold" className="h-60 w-52" />
-      </div>
-      <div className="pointer-events-none absolute bottom-[8%] left-[16%] hidden rotate-[6deg] xl:block">
-        <MascotPortrait emoji="📚" tone="sky" className="h-60 w-52" />
+    <div className="bg-hangul-pattern min-h-screen font-['Be_Vietnam_Pro'] text-[#1a1c19] flex items-center justify-center p-6 relative overflow-hidden" style={{ backgroundColor: '#fafaf5' }}>
+      {/* Decorative Mascots */}
+      {/* Hana - Top Left */}
+      <div className="absolute top-[15%] left-[5%] md:left-[15%] lg:left-[25%] -rotate-12 z-0" style={{ filter: 'drop-shadow(0 10px 20px rgba(43, 22, 15, 0.1))' }}>
+        <img
+          alt="Hana the Otter"
+          className="w-32 h-32 md:w-48 md:h-48 object-contain"
+          src="https://res.cloudinary.com/dds5jlp7e/image/upload/v1774702475/Screenshot_from_2026-03-28_19-52-57-removebg-preview_xvqdug.png"
+        />
       </div>
 
-      <HangulCard className="relative z-10 w-full max-w-[720px] p-7 sm:p-10">
-        <div className="rounded-[40px] bg-[linear-gradient(135deg,rgba(255,255,255,0.86),rgba(250,244,235,0.96))] p-6 shadow-[0_32px_70px_rgba(126,99,79,0.12)] sm:p-10">
-          <div className="text-center">
-            <h1 className="text-[3.6rem] font-black tracking-[-0.06em] text-[var(--hangul-ink)]">HANGUL</h1>
-            <p className="mt-3 text-xl text-[var(--hangul-soft-ink)]">Create your account and start the river journey.</p>
+      {/* Ji-woo - Bottom Right */}
+      <div className="absolute bottom-[10%] right-[5%] md:right-[15%] lg:right-[25%] rotate-12 z-0" style={{ filter: 'drop-shadow(0 10px 20px rgba(43, 22, 15, 0.1))' }}>
+        <img
+          alt="Ji-woo the Otter"
+          className="w-28 h-28 md:w-40 md:h-40 object-contain"
+          src="https://res.cloudinary.com/dds5jlp7e/image/upload/v1774702475/Screenshot_from_2026-03-28_19-52-57-removebg-preview_xvqdug.png"
+        />
+      </div>
+
+      {/* Top Right Mascot */}
+      <div className="absolute top-[20%] right-[10%] -rotate-6 z-0" style={{ filter: 'drop-shadow(0 10px 20px rgba(43, 22, 15, 0.1))' }}>
+        <img
+          alt="Mascot Icon"
+          className="w-24 h-24 md:w-36 md:h-36 object-contain"
+          src="https://res.cloudinary.com/dds5jlp7e/image/upload/v1774702475/Screenshot_from_2026-03-28_19-52-57-removebg-preview_xvqdug.png"
+        />
+      </div>
+
+      {/* Main Register Container */}
+      <div className="relative z-10 w-full max-w-md">
+        {/* Register Card */}
+        <div className="bg-[#fafaf5]/80 backdrop-blur-xl rounded-lg shadow-[0_20px_40px_rgba(43,22,15,0.06)] p-8 md:p-12 border border-[#d4c3be]/10">
+          {/* Brand Header */}
+          <div className="text-center mb-10">
+            <img
+              src="https://res.cloudinary.com/dds5jlp7e/image/upload/v1774702475/Screenshot_from_2026-03-28_19-52-57-removebg-preview_xvqdug.png"
+              alt="HANGUL Mascot"
+              className="w-20 h-20 mx-auto mb-4 object-contain"
+            />
+            <h1 className="font-['Plus_Jakarta_Sans'] font-black text-4xl tracking-tighter text-[#72564c] uppercase mb-2">
+              HANGUL
+            </h1>
+            <p className="text-[#504441] font-medium">Join our learning journey today.</p>
           </div>
 
-          <form className="mt-10 space-y-6" onSubmit={handleSubmit}>
-            <label className="block">
-              <span className="mb-3 block text-lg font-semibold text-[var(--hangul-ink)]">Name</span>
-              <div className="relative">
-                <UserRound className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--hangul-soft-ink)]" />
-                <input className="hangul-input pl-14" name="name" onChange={handleChange} placeholder="Sam the Student" type="text" value={formData.name} />
-              </div>
-            </label>
+          {/* Error Message */}
+          {error && (
+            <div className="bg-[#ffdad6] rounded-lg p-4 mb-6 border border-[#ffdad6]">
+              <p className="text-[#93000a] text-sm font-medium">{error}</p>
+            </div>
+          )}
 
-            <label className="block">
-              <span className="mb-3 block text-lg font-semibold text-[var(--hangul-ink)]">Email</span>
-              <div className="relative">
-                <Mail className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--hangul-soft-ink)]" />
-                <input className="hangul-input pl-14" name="email" onChange={handleChange} placeholder="hello@otter.edu" type="email" value={formData.email} />
-              </div>
-            </label>
-
-            <div className="grid gap-6 sm:grid-cols-2">
-              <label className="block">
-                <span className="mb-3 block text-lg font-semibold text-[var(--hangul-ink)]">Password</span>
-                <div className="relative">
-                  <LockKeyhole className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--hangul-soft-ink)]" />
-                  <input className="hangul-input pl-14" name="password" onChange={handleChange} placeholder="••••••••" type="password" value={formData.password} />
-                </div>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Name Field */}
+            <div className="space-y-2">
+              <label className="block font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#72564c] px-1">
+                Full Name
               </label>
-
-              <label className="block">
-                <span className="mb-3 block text-lg font-semibold text-[var(--hangul-ink)]">Confirm</span>
-                <div className="relative">
-                  <LockKeyhole className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--hangul-soft-ink)]" />
-                  <input className="hangul-input pl-14" name="confirmPassword" onChange={handleChange} placeholder="••••••••" type="password" value={formData.confirmPassword} />
-                </div>
-              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Nguyễn Văn A"
+                className="w-full px-4 py-4 bg-[#e8e8e3] rounded-lg border-none focus:ring-2 focus:ring-[#72564c]/20 focus:bg-white transition-all placeholder:text-[#827470]/50"
+              />
             </div>
 
-            {error ? <p className="rounded-3xl bg-[#ffe8e1] px-5 py-4 text-base text-[#944f42]">{error}</p> : null}
+            {/* Email Field */}
+            <div className="space-y-2">
+              <label className="block font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#72564c] px-1">
+                Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="hello@otter.edu"
+                className="w-full px-4 py-4 bg-[#e8e8e3] rounded-lg border-none focus:ring-2 focus:ring-[#72564c]/20 focus:bg-white transition-all placeholder:text-[#827470]/50"
+              />
+            </div>
 
-            <button className="hangul-button-primary w-full" disabled={loading} type="submit">
-              {loading ? 'Creating Account...' : 'Create Account'}
+            {/* Password Field */}
+            <div className="space-y-2">
+              <label className="block font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#72564c] px-1">
+                Password
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                className="w-full px-4 py-4 bg-[#e8e8e3] rounded-lg border-none focus:ring-2 focus:ring-[#72564c]/20 focus:bg-white transition-all placeholder:text-[#827470]/50"
+              />
+              <p className="text-xs text-[#504441] px-1">Minimum 6 characters</p>
+            </div>
+
+            {/* Confirm Password Field */}
+            <div className="space-y-2">
+              <label className="block font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#72564c] px-1">
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="••••••••"
+                className="w-full px-4 py-4 bg-[#e8e8e3] rounded-lg border-none focus:ring-2 focus:ring-[#72564c]/20 focus:bg-white transition-all placeholder:text-[#827470]/50"
+              />
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-4 bg-gradient-to-r from-[#72564c] to-[#8d6e63] text-white font-['Plus_Jakarta_Sans'] font-bold text-lg rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all disabled:opacity-50"
+            >
+              {loading ? 'Creating account...' : 'Create Account'}
             </button>
           </form>
 
-          <p className="mt-10 text-center text-lg text-[var(--hangul-soft-ink)]">
+          {/* Footer Link */}
+          <p className="mt-10 text-center text-[#504441] text-sm font-medium">
             Already have an account?{' '}
-            <Link className="font-bold text-[var(--hangul-ink)]" href="/login">
-              Sign in
+            <Link className="text-[#72564c] font-bold hover:underline" href="/login">
+              Sign In
             </Link>
           </p>
         </div>
-      </HangulCard>
-    </main>
+      </div>
+    </div>
   );
 }
