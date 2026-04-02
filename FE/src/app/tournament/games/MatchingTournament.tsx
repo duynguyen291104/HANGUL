@@ -100,22 +100,28 @@ export default function MatchingTournament({ onComplete, onExit }: MatchingTourn
   const koreanList = pairs.slice(4, 8).sort(() => Math.random() - 0.5);
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-6 bg-[#fafaf5] font-['Be_Vietnam_Pro']">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-white">🔗 Ghép Cặp</h1>
-          <button onClick={onExit} className="text-white hover:text-gray-300 text-2xl">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-4xl">🔗</span>
+              <h1 className="text-3xl font-bold text-[#72564c]">Ghép Cặp</h1>
+            </div>
+            <p className="text-[#8d6e63] text-sm">Ghép từ tiếng Việt với từ tiếng Hàn tương ứng</p>
+          </div>
+          <button onClick={onExit} className="text-[#72564c] hover:bg-[#f0e6e0] p-3 rounded-lg transition-all text-2xl">
             ✕
           </button>
         </div>
 
-        <div className="bg-white rounded-xl shadow-xl p-8 mb-6">
-          <p className="text-gray-600 mb-6">Ghép từ tiếng Việt với từ tiếng Hàn tương ứng</p>
-
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-6">
           <div className="grid grid-cols-2 gap-8">
             {/* Vietnamese Words */}
             <div>
-              <h3 className="font-bold text-lg mb-4 text-gray-800">🇻🇳 Tiếng Việt</h3>
+              <h3 className="font-bold text-lg mb-4 text-[#72564c] flex items-center gap-2">
+                <span>🇻🇳</span> Tiếng Việt
+              </h3>
               <div className="space-y-2">
                 {vietnameseList.map((pair) => (
                   <button
@@ -123,11 +129,75 @@ export default function MatchingTournament({ onComplete, onExit }: MatchingTourn
                     onClick={() => setSelected(matches[pair.id] ? null : pair.id)}
                     className={`w-full p-3 rounded-lg font-semibold text-left transition-all ${
                       matches[pair.id]
-                        ? 'bg-green-500 text-white'
+                        ? 'bg-green-100 text-green-700 border-2 border-green-500'
                         : selected === pair.id
-                        ? 'bg-blue-500 text-white ring-2 ring-blue-300'
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+                        ? 'bg-[#72564c] text-white ring-2 ring-[#8d6e63]'
+                        : 'bg-[#f0e6e0] hover:bg-[#e8dcd4] text-[#72564c] border-2 border-transparent'
                     }`}
+                  >
+                    {pair.vietnamese}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Korean Words */}
+            <div>
+              <h3 className="font-bold text-lg mb-4 text-[#72564c] flex items-center gap-2">
+                <span>🇰🇷</span> Tiếng Hàn
+              </h3>
+              <div className="space-y-2">
+                {koreanList.map((pair) => (
+                  <button
+                    key={pair.id}
+                    onClick={() => {
+                      if (selected) {
+                        handleMatch(selected, pair.id);
+                      }
+                    }}
+                    className={`w-full p-3 rounded-lg font-semibold text-left transition-all cursor-pointer ${
+                      Object.values(matches).includes(pair.id)
+                        ? 'bg-green-100 text-green-700 border-2 border-green-500'
+                        : 'bg-[#f0e6e0] hover:bg-[#e8dcd4] text-[#72564c] border-2 border-transparent hover:border-[#72564c]'
+                    }`}
+                  >
+                    {pair.korean}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {Object.keys(matches).length === vietnameseList.length && (
+            <div className="mt-8 p-4 bg-green-100 border-2 border-green-500 rounded-lg text-center">
+              <p className="text-green-700 font-bold text-lg">✓ Hoàn thành! Bạn ghép đúng {correctCount} cặp.</p>
+            </div>
+          )}
+
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-[#e8dcd4]">
+            <div className="text-center">
+              <p className="text-xs text-[#8d6e63] mb-1">Điểm</p>
+              <p className="text-2xl font-bold text-[#72564c]">{correctCount * 10}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-[#8d6e63] mb-1">Ghép Đúng</p>
+              <p className="text-2xl font-bold text-[#72564c]">{correctCount}/{vietnameseList.length}</p>
+            </div>
+            <div className="text-center">
+              <button
+                onClick={handleFinish}
+                disabled={Object.keys(matches).length < vietnameseList.length}
+                className="w-full px-4 py-2 bg-gradient-to-r from-[#72564c] to-[#8d6e63] text-white rounded-lg font-bold hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
+              >
+                Hoàn thành
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
                   >
                     {matches[pair.id] ? '✅' : ''} {pair.vietnamese}
                   </button>

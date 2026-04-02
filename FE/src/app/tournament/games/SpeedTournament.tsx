@@ -129,51 +129,97 @@ export default function SpeedTournament({ onComplete, onExit }: SpeedTournamentP
   const timeColor = timeLeft <= 10 ? 'text-red-400' : timeLeft <= 20 ? 'text-yellow-400' : 'text-green-400';
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-6 bg-[#fafaf5] font-['Be_Vietnam_Pro']">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-white">⚡ Tốc Độ</h1>
-            <p className="text-white/80">60 giây đếm ngược</p>
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-4xl">⚡</span>
+              <h1 className="text-3xl font-bold text-[#72564c]">Tốc Độ</h1>
+            </div>
+            <p className="text-[#8d6e63] text-sm">{String(timeLeft).padStart(2, '0')} giây đếm ngược</p>
           </div>
-          <button onClick={onExit} className="text-white hover:text-gray-300 text-2xl">
+          <button onClick={onExit} className="text-[#72564c] hover:bg-[#f0e6e0] p-3 rounded-lg transition-all text-2xl">
             ✕
           </button>
         </div>
 
-        {/* Timer */}
-        <div className="text-center mb-8">
-          <div className={`text-7xl font-bold ${timeColor} font-mono`}>
-            {String(timeLeft).padStart(2, '0')}
-          </div>
-          <div className="w-full bg-white/20 rounded-full h-2 mt-4">
-            <div
-              className={`h-2 rounded-full transition-all ${
-                timeLeft <= 10 ? 'bg-red-500' : timeLeft <= 20 ? 'bg-yellow-500' : 'bg-green-500'
-              }`}
-              style={{ width: `${(timeLeft / 60) * 100}%` }}
-            ></div>
-          </div>
-        </div>
-
         {/* Question Card */}
-        <div className="bg-white rounded-xl shadow-xl p-8 mb-6">
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-6">
           <div className="flex justify-between items-start mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800">{question.korean}</h2>
-              <p className="text-gray-600">{question.english}</p>
+            <div className="flex-1">
+              <p className="text-[#8d6e63] text-sm mb-2 font-medium">Đây là từ tiếng gì?</p>
+              <h2 className="text-4xl font-bold text-[#72564c] mb-2">{question.korean}</h2>
+              <p className="text-[#8d6e63]">{question.english}</p>
             </div>
-            <span className="bg-blue-100 text-blue-900 px-4 py-2 rounded-lg font-bold">
-              {currentQuestion + 1}/{questions.length}
-            </span>
+            <div className="bg-gradient-to-br from-[#72564c] to-[#8d6e63] text-white rounded-xl p-4 text-center">
+              <p className="text-xs opacity-75">Từ</p>
+              <p className="text-2xl font-bold">{currentQuestion + 1}/{questions.length}</p>
+            </div>
           </div>
 
-          <p className="text-gray-700 font-semibold mb-6">Đây là từ tiếng gì?</p>
+          {/* Timer Bar */}
+          <div className="mb-6">
+            <div className="w-full bg-[#e8dcd4] rounded-full h-3">
+              <div
+                className={`h-3 rounded-full transition-all ${
+                  timeLeft <= 10 ? 'bg-red-500' : timeLeft <= 20 ? 'bg-yellow-500' : 'bg-gradient-to-r from-[#72564c] to-[#8d6e63]'
+                }`}
+                style={{ width: `${(timeLeft / 60) * 100}%` }}
+              ></div>
+            </div>
+          </div>
 
           {/* Options */}
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3 mb-6">
             {question.options.map((option, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleAnswer(option)}
+                disabled={answered}
+                className={`p-4 rounded-lg font-bold transition-all ${
+                  answered && option === question.vietnamese
+                    ? 'bg-green-100 text-green-700 border-2 border-green-500'
+                    : answered && option !== question.vietnamese
+                    ? 'bg-red-100 text-red-700 border-2 border-red-500'
+                    : 'bg-[#f0e6e0] text-[#72564c] hover:bg-[#e8dcd4] border-2 border-transparent active:scale-95'
+                }`}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+
+          {showResult && (
+            <div className={`p-4 rounded-lg text-center font-bold mb-6 ${
+              answered && currentQuestion === questions[currentQuestion].vietnamese
+                ? 'bg-green-100 text-green-700 border-2 border-green-500'
+                : 'bg-red-100 text-red-700 border-2 border-red-500'
+            }`}>
+              {answered && currentQuestion === questions[currentQuestion].vietnamese ? '✓ Chính xác!' : '✗ Sai rồi!'}
+            </div>
+          )}
+
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center">
+              <p className="text-xs text-[#8d6e63] mb-1">Điểm</p>
+              <p className="text-3xl font-bold text-[#72564c]">{score}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-[#8d6e63] mb-1">Đúng</p>
+              <p className="text-3xl font-bold text-[#72564c]">{correctAnswers}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-[#8d6e63] mb-1">Tiến độ</p>
+              <p className="text-3xl font-bold text-[#72564c]">{Math.round(((currentQuestion + 1) / questions.length) * 100)}%</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
               <button
                 key={idx}
                 onClick={() => handleAnswer(option)}

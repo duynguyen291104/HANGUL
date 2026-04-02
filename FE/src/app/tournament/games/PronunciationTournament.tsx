@@ -218,12 +218,18 @@ export default function PronunciationTournament({ onComplete, onExit }: Pronunci
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-[#72564c]">Perfect Speaking</h1>
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-4xl">🎤</span>
+              <h1 className="text-3xl font-bold text-[#72564c]">Perfect Speaking</h1>
+            </div>
+            <p className="text-[#8d6e63] text-sm">Luyện phát âm hoàn hảo</p>
+          </div>
           <button
             onClick={onExit}
-            className="px-4 py-2 bg-[#e8e8e3] text-[#72564c] rounded-lg font-bold hover:bg-[#d4c3be] transition-all"
+            className="px-4 py-2 bg-[#f0e6e0] text-[#72564c] rounded-lg font-bold hover:bg-[#e8dcd4] transition-all"
           >
-            Exit
+            ✕
           </button>
         </div>
 
