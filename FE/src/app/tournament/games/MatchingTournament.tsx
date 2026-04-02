@@ -38,7 +38,13 @@ export default function MatchingTournament({ onComplete, onExit }: MatchingTourn
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      
+
+      if (!data || !Array.isArray(data.data)) {
+        console.error('Invalid API response:', data);
+        setLoading(false);
+        return;
+      }
+
       const newPairs: MatchPair[] = data.data.slice(0, 8).map((vocab: any, idx: number) => ({
         id: `pair-${idx}`,
         korean: vocab.korean,
@@ -81,6 +87,10 @@ export default function MatchingTournament({ onComplete, onExit }: MatchingTourn
 
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen text-white text-xl">Đang tải...</div>;
+  }
+
+  if (pairs.length === 0) {
+    return <div className="flex justify-center items-center min-h-screen text-white text-xl">Không có dữ liệu</div>;
   }
 
   const vietnameseList = pairs.slice(0, 4);

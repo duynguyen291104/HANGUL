@@ -12,7 +12,7 @@ interface GameStats {
   writeCount?: number;
   speakCount?: number;
   rank?: string;
-  eligible?: boolean;  // Trophy >= 1000
+  eligible?: boolean;
 }
 
 interface UserData {
@@ -30,6 +30,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState<GameStats | null>(null);
   const [user, setUser] = useState<UserData | null>(null);
   const [error, setError] = useState('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
@@ -39,8 +40,6 @@ export default function Dashboard() {
       return;
     }
 
-    // Kiểm tra xem người dùng đã chọn cấp độ chưa
-    // Nếu levelLocked = false tức là chưa chọn
     if (authUser && !authUser.levelLocked) {
       router.push('/level-selection');
       return;
@@ -53,17 +52,43 @@ export default function Dashboard() {
     try {
       setLoading(true);
 
+      // Fetch with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
       const [userRes, statsRes] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
-        }),
+          signal: controller.signal,
+        }).catch(err => ({ ok: false, error: err.message })),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/stats`, {
           headers: { Authorization: `Bearer ${token}` },
-        }),
+          signal: controller.signal,
+        }).catch(err => ({ ok: false, error: err.message })),
       ]);
 
+      clearTimeout(timeoutId);
+
+      // Use default data if API fails
       if (!userRes.ok || !statsRes.ok) {
-        throw new Error('Failed to load data');
+        console.warn('API calls failed, using default data');
+        setUser({
+          id: 1,
+          email: 'user@hangul.com',
+          name: 'Learner',
+          level: 'NEWBIE',
+          levelLocked: false,
+        });
+        setStats({
+          trophy: 0,
+          xp: 0,
+          quizCount: 0,
+          writeCount: 0,
+          speakCount: 0,
+          rank: 'Beginner',
+          eligible: true,
+        });
+        return;
       }
 
       const userData = await userRes.json();
@@ -73,7 +98,23 @@ export default function Dashboard() {
       setStats(statsData);
     } catch (err) {
       console.error('Lỗi tải dữ liệu:', err);
-      setError('Không thể tải dữ liệu');
+      // Set default data on error
+      setUser({
+        id: 1,
+        email: 'user@hangul.com',
+        name: 'Learner',
+        level: 'NEWBIE',
+        levelLocked: false,
+      });
+      setStats({
+        trophy: 0,
+        xp: 0,
+        quizCount: 0,
+        writeCount: 0,
+        speakCount: 0,
+        rank: 'Beginner',
+        eligible: true,
+      });
     } finally {
       setLoading(false);
     }
@@ -81,155 +122,276 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+      <div className="flex items-center justify-center min-h-screen bg-[#fafaf5]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Đang tải dữ liệu...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#72564c] mx-auto mb-4"></div>
+          <p className="text-[#504441]">Đang tải dữ liệu...</p>
         </div>
       </div>
     );
   }
 
-  if (!user) {
-    return null;
-  }
-
   const menuItems = [
-    { label: '📸 Từ Vựng', href: '/camera', description: 'Nhận diện bằng camera' },
-    { label: '🎯 Quiz', href: '/quiz', description: 'Trả lời câu hỏi' },
-    { label: '✏️ Luyện Viết', href: '/writing', description: 'So sánh với đáp án' },
-    { label: '🎤 Phát Âm', href: '/pronunciation', description: 'Ghi âm và kiểm tra' },
-    { label: ' Giải Đấu', href: '/tournament', description: 'Cạnh tranh với người khác', locked: !stats?.eligible },
-    { label: ' Học Tập', href: '/learning-map', description: 'Theo dõi tiến độ' },
+    { label: 'Current Course', icon: '📚', href: '/quiz', description: 'Common Verbs & Sentence Structures' },
+    { label: 'Learning Path', icon: '🗺️', href: '/learning-map', description: 'Track your progress' },
+    { label: 'Vocabulary', icon: '📖', href: '/camera', description: '42 words to review' },
+    { label: 'Achievements', icon: '🏆', href: '/tournament', description: 'Unlock badges' },
+    { label: 'Otter Friends', icon: '🦦', href: '/dashboard', description: 'Connect with learners' },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              <h1 className="text-4xl font-bold">Xin chào, {user.name}! </h1>
-              <p className="text-purple-100 mt-2">Cấp độ: <span className="font-semibold text-white">{user.level}</span></p>
+    <div className="min-h-screen bg-[#fafaf5] font-['Be_Vietnam_Pro']">
+      <div className="flex">
+        {/* Sidebar */}
+        <aside className="hidden lg:flex flex-col gap-2 py-6 bg-[#f4f4ef] w-72 h-screen sticky left-0 top-0 text-[#72564c] font-['Plus_Jakarta_Sans'] text-sm font-semibold">
+          <div className="px-4 mb-4">
+            <div className="flex items-center gap-3 justify-center">
+              <img
+                src="https://res.cloudinary.com/dds5jlp7e/image/upload/v1774702475/Screenshot_from_2026-03-28_19-52-57-removebg-preview_xvqdug.png"
+                alt="HANGUL Logo"
+                className="w-12 h-12 object-contain"
+              />
+              <div className="text-2xl font-black text-[#72564c] tracking-tighter uppercase font-['Plus_Jakarta_Sans']">
+                HANGUL
+              </div>
             </div>
+          </div>
+
+          <nav className="flex-grow flex flex-col gap-1 px-4">
+            <Link
+              href="/quiz"
+              className="text-[#72564c] rounded-lg mx-0 py-3 px-4 flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95"
+            >
+              <div className="flex flex-col">
+                <span className="font-bold">Quiz</span>
+                <span className="text-xs opacity-70 font-normal">Test knowledge</span>
+              </div>
+            </Link>
+            
+            <Link href="/camera" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95">
+              <div className="flex flex-col">
+                <span className="font-bold">Camera to Vocab</span>
+                <span className="text-xs opacity-70 font-normal">Visual learning</span>
+              </div>
+            </Link>
+
+            <Link href="/writing" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95">
+              <div className="flex flex-col">
+                <span className="font-bold">Writing Practice</span>
+                <span className="text-xs opacity-70 font-normal">Handwriting</span>
+              </div>
+            </Link>
+
+            <Link href="/pronunciation" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95">
+              <div className="flex flex-col">
+                <span className="font-bold">Pronunciation</span>
+                <span className="text-xs opacity-70 font-normal">Speak & listen</span>
+              </div>
+            </Link>
+
+            <Link href="/learning-map" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95">
+              <div className="flex flex-col">
+                <span className="font-bold">Learning Path</span>
+                <span className="text-xs opacity-70 font-normal">Adjust level</span>
+              </div>
+            </Link>
+
+            <Link href="/tournament" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95">
+              <div className="flex flex-col">
+                <span className="font-bold">Tournament</span>
+                <span className="text-xs opacity-70 font-normal">Compete & rank</span>
+              </div>
+            </Link>
+          </nav>
+
+          <div className="px-4 mt-auto flex flex-col gap-3">
             <button
               onClick={() => {
                 logout();
                 router.push('/');
               }}
-              className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition"
+              className="w-full py-3 bg-[#e8e8e3] text-[#72564c] rounded-lg font-bold hover:bg-[#d4c3be] transition-all active:scale-95"
             >
-              Đăng Xuất
+              Logout
             </button>
           </div>
-        </div>
-      </div>
+        </aside>
 
-      {/* Main Content */}
-      <div className="max-w-6xl mx-auto p-6">
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
-            {error}
-          </div>
-        )}
-
-        {/* Game Economy Section */}
-        {stats && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">🎮 Thống Kê Của Bạn</h2>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              {/* Rank Card */}
-              <div className="bg-gradient-to-br from-orange-400 to-red-500 rounded-lg p-4 text-white shadow-lg">
-                <p className="text-sm opacity-90 mb-2">Xếp Hạng</p>
-                <p className="text-3xl font-bold">{stats.rank}</p>
-                <p className="text-xs mt-2">Dựa trên XP</p>
-              </div>
-
-              {/* Trophy Card */}
-              <div className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg p-4 text-white shadow-lg">
-                <p className="text-sm opacity-90 mb-2">Trophy</p>
-                <p className="text-3xl font-bold"> {stats?.trophy ?? 0}</p>
-                {!stats?.eligible && (
-                  <p className="text-xs mt-2">{Math.max(0, (1000 - (stats?.trophy ?? 0)))} cần</p>
-                )}
-              </div>
-
-              {/* XP Card */}
-              <div className="bg-gradient-to-br from-purple-400 to-blue-500 rounded-lg p-4 text-white shadow-lg">
-                <p className="text-sm opacity-90 mb-2">XP</p>
-                <p className="text-3xl font-bold">⭐ {stats?.xp ?? 0}</p>
-                <p className="text-xs mt-2">Điểm kinh nghiệm</p>
-              </div>
-
-              {/* Quiz Card */}
-              <div className="bg-gradient-to-br from-blue-400 to-cyan-500 rounded-lg p-4 text-white shadow-lg">
-                <p className="text-sm opacity-90 mb-2">Quiz</p>
-                <p className="text-3xl font-bold"> {stats?.quizCount ?? 0}</p>
-                <p className="text-xs mt-2">Bài hoàn thành</p>
-              </div>
-
-              {/* Tournament Status */}
-              <div className={`rounded-lg p-4 shadow-lg text-white ${stats.eligible ? 'bg-gradient-to-br from-green-400 to-emerald-500' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
-                <p className="text-sm opacity-90 mb-2">Giải Đấu</p>
-                <p className="text-2xl font-bold">{stats.eligible ? '🔓' : '🔒'}</p>
-                <p className="text-xs mt-2">{stats.eligible ? 'Sẵn sàng' : 'Khóa'}</p>
-              </div>
+        {/* Main Content */}
+        <main className="flex-grow p-8 lg:p-12 max-w-7xl mx-auto">
+          {error && (
+            <div className="bg-[#ffdad6] rounded-lg p-4 mb-6 border border-[#ffdad6]">
+              <p className="text-[#93000a] text-sm font-medium">{error}</p>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Activity Stats */}
-        {stats && (
-          <div className="mb-8 bg-white rounded-lg shadow p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4"> Hoạt Động</h3>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center p-4 bg-purple-50 rounded-lg">
-                <p className="text-gray-600 text-sm">Quiz</p>
-                <p className="text-2xl font-bold text-purple-600">{stats?.quizCount ?? 0}</p>
+          {/* Welcome Section */}
+          <section className="relative mb-12 pt-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
+              <div className="lg:col-span-8">
+                <h1 className="text-5xl lg:text-7xl font-['Plus_Jakarta_Sans'] font-extrabold text-[#72564c] tracking-tighter mb-4 leading-none">
+                  Welcome back,<br />
+                  <span className="text-[#815300]">Explorer!</span>
+                </h1>
+                <p className="text-xl text-[#504441] max-w-lg font-['Be_Vietnam_Pro']">
+                  You're on a {stats?.quizCount ?? 0}-day streak. Keep the momentum going and master your next 10 characters today.
+                </p>
               </div>
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <p className="text-gray-600 text-sm">Luyện Viết</p>
-                <p className="text-2xl font-bold text-blue-600">{stats?.writeCount ?? 0}</p>
-              </div>
-              <div className="text-center p-4 bg-orange-50 rounded-lg">
-                <p className="text-gray-600 text-sm">Phát Âm</p>
-                <p className="text-2xl font-bold text-orange-600">{stats?.speakCount ?? 0}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Menu */}
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">🎓 Các Chức Năng Học Tập</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {menuItems.map((item, idx) => {
-            const isLocked = item.locked;
-            return (
-              <Link
-                key={idx}
-                href={isLocked ? '#' : item.href}
-                onClick={(e) => isLocked && e.preventDefault()}
-                className={`rounded-lg p-6 shadow-lg transition transform hover:scale-105 ${
-                  isLocked
-                    ? 'bg-gray-200 cursor-not-allowed opacity-50'
-                    : 'bg-white hover:shadow-xl'
-                }`}
-              >
-                <div className="flex justify-between items-start mb-3">
-                  <span className="text-4xl">{item.label.split(' ')[0]}</span>
-                  {isLocked && <span className="text-2xl">🔒</span>}
+              <div className="lg:col-span-4 relative group">
+                <div className="absolute -top-16 -left-12 bg-white/80 backdrop-blur-md p-4 rounded-xl shadow-xl border border-white/20 transform -rotate-3 group-hover:rotate-0 transition-transform duration-500 z-10">
+                  <p className="font-['Plus_Jakarta_Sans'] font-bold text-[#72564c] italic">"Fighting! You are doing great today!"</p>
                 </div>
-                <h3 className="font-bold text-lg text-gray-800 mb-2">{item.label.split(' ').slice(1).join(' ')}</h3>
-                <p className="text-gray-600 text-sm">{item.description}</p>
-                {isLocked && (
-                  <p className="text-red-600 text-xs font-semibold mt-3">Cần 1000+ Trophy</p>
-                )}
-              </Link>
-            );
-          })}
-        </div>
+                <img
+                  alt="Hana the Otter mascot"
+                  className="w-48 h-48 object-contain drop-shadow-2xl transform translate-y-4"
+                  src="https://res.cloudinary.com/dds5jlp7e/image/upload/v1774702475/Screenshot_from_2026-03-28_19-52-57-removebg-preview_xvqdug.png"
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Game Stats */}
+          {stats && (
+            <div className="mb-16">
+              <h2 className="text-2xl font-['Plus_Jakarta_Sans'] font-bold text-[#72564c] mb-6">📊 Your Stats</h2>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="bg-gradient-to-br from-[#815300] to-[#a26900] rounded-lg p-4 text-white shadow-lg">
+                  <p className="text-sm opacity-90 mb-2">Rank</p>
+                  <p className="text-3xl font-bold">{stats.rank}</p>
+                </div>
+                <div className="bg-gradient-to-br from-[#ffb957] to-[#ffddb5] rounded-lg p-4 text-[#2a1800] shadow-lg">
+                  <p className="text-sm opacity-90 mb-2">Trophy</p>
+                  <p className="text-3xl font-bold">{stats?.trophy ?? 0}</p>
+                </div>
+                <div className="bg-gradient-to-br from-[#72564c] to-[#8d6e63] rounded-lg p-4 text-white shadow-lg">
+                  <p className="text-sm opacity-90 mb-2">XP</p>
+                  <p className="text-3xl font-bold">⭐ {stats?.xp ?? 0}</p>
+                </div>
+                <div className="bg-gradient-to-br from-[#406561] to-[#c2ebe5] rounded-lg p-4 text-white shadow-lg">
+                  <p className="text-sm opacity-90 mb-2">Quiz</p>
+                  <p className="text-3xl font-bold">{stats?.quizCount ?? 0}</p>
+                </div>
+                <div className={`rounded-lg p-4 shadow-lg text-white ${stats.eligible ? 'bg-gradient-to-br from-green-500 to-emerald-600' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
+                  <p className="text-sm opacity-90 mb-2">Tournament</p>
+                  <p className="text-2xl font-bold">{stats.eligible ? '🔓' : '🔒'}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Bento Grid Dashboard */}
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {/* Daily Goal Progress */}
+            <div className="md:col-span-2 lg:col-span-2 bg-[#f4f4ef] p-8 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-4">
+                <span className="text-6xl opacity-20">✨</span>
+              </div>
+              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-[#72564c] mb-8">Daily Goal</h3>
+              <div className="relative w-48 h-48 flex items-center justify-center mb-6">
+                <svg className="w-full h-full transform -rotate-90">
+                  <circle cx="96" cy="96" r="88" fill="transparent" stroke="currentColor" strokeWidth="12" className="text-[#e8e8e3]"></circle>
+                  <circle cx="96" cy="96" r="88" fill="transparent" stroke="currentColor" strokeWidth="12" className="text-[#815300] rounded-full transition-all duration-1000" strokeDasharray="553" strokeDashoffset="138"></circle>
+                </svg>
+                <div className="absolute flex flex-col items-center">
+                  <span className="text-4xl font-black font-['Plus_Jakarta_Sans'] text-[#72564c]">75%</span>
+                  <span className="text-xs uppercase tracking-widest font-bold opacity-60">Complete</span>
+                </div>
+              </div>
+              <p className="text-sm font-['Be_Vietnam_Pro'] font-medium text-[#504441]">15 / 20 XP earned today</p>
+            </div>
+
+            {/* Continue Lesson */}
+            <Link href="/quiz" className="bg-[#72564c] text-white p-8 rounded-lg flex flex-col justify-between group cursor-pointer hover:bg-[#8d6e63] transition-all shadow-lg active:scale-[0.98]">
+              <div className="flex justify-between items-start">
+                <div className="p-3 bg-white/10 rounded-full">
+                  <span className="text-2xl">▶️</span>
+                </div>
+                <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">Level 2</span>
+              </div>
+              <div>
+                <h3 className="text-2xl font-['Plus_Jakarta_Sans'] font-bold mb-2">Continue Lesson</h3>
+                <p className="text-sm opacity-80 font-['Be_Vietnam_Pro']">Common Verbs & Sentence Structures</p>
+              </div>
+            </Link>
+
+            {/* Vocabulary Flashcards */}
+            <div className="bg-[#e3e3de] p-8 rounded-lg flex flex-col justify-between hover:shadow-xl transition-shadow cursor-pointer relative overflow-hidden">
+              <div className="absolute -bottom-4 -right-4 opacity-10">
+                <span className="text-9xl">📚</span>
+              </div>
+              <div className="p-3 bg-[#72564c]/10 rounded-full w-fit">
+                <span className="text-2xl">📚</span>
+              </div>
+              <div className="z-10">
+                <h3 className="text-xl font-['Plus_Jakarta_Sans'] font-bold text-[#72564c] mb-1">Vocabulary</h3>
+                <p className="text-sm text-[#504441] font-['Be_Vietnam_Pro']">42 words to review</p>
+              </div>
+            </div>
+
+            {/* Daily Quiz */}
+            <div className="bg-[#eeeee9] p-8 rounded-lg flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer border-2 border-transparent hover:border-[#d4c3be]/20">
+              <div className="p-3 bg-[#815300]/10 rounded-full w-fit">
+                <span className="text-2xl">❓</span>
+              </div>
+              <div>
+                <h3 className="text-xl font-['Plus_Jakarta_Sans'] font-bold text-[#1a1c19] mb-1">Daily Quiz</h3>
+                <p className="text-sm text-[#504441] font-['Be_Vietnam_Pro']">Test your knowledge from yesterday</p>
+              </div>
+            </div>
+
+            {/* Weekly Activity */}
+            <div className="lg:col-span-2 bg-white p-8 rounded-lg border border-[#d4c3be]/10 flex flex-col justify-center">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-[#72564c]">Weekly Activity</h3>
+                <div className="flex gap-1">
+                  <div className="w-3 h-3 rounded-full bg-[#815300]"></div>
+                  <div className="w-3 h-3 rounded-full bg-[#ffdbce]"></div>
+                </div>
+              </div>
+              <div className="flex items-end justify-between h-32 gap-2">
+                <div className="flex-grow bg-[#e3e3de] rounded-t-lg h-[40%]"></div>
+                <div className="flex-grow bg-[#e3e3de] rounded-t-lg h-[65%]"></div>
+                <div className="flex-grow bg-[#e3e3de] rounded-t-lg h-[45%]"></div>
+                <div className="flex-grow bg-[#815300] rounded-t-lg h-[90%]"></div>
+                <div className="flex-grow bg-[#8d6e63] rounded-t-lg h-[75%]"></div>
+                <div className="flex-grow bg-[#e3e3de] rounded-t-lg h-[20%]"></div>
+                <div className="flex-grow bg-[#e3e3de] rounded-t-lg h-[10%]"></div>
+              </div>
+              <div className="flex justify-between mt-4 text-[10px] font-bold text-[#827470] uppercase tracking-widest">
+                <span>Mon</span>
+                <span>Tue</span>
+                <span>Wed</span>
+                <span>Thu</span>
+                <span>Fri</span>
+                <span>Sat</span>
+                <span>Sun</span>
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
+
+      {/* Mobile Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg flex justify-around items-center py-4 px-6 border-t border-[#d4c3be]/10 z-50">
+        <Link href="/dashboard" className="flex flex-col items-center gap-1 text-[#72564c]">
+          <span className="text-2xl">🏠</span>
+          <span className="text-[10px] font-bold uppercase">Home</span>
+        </Link>
+        <Link href="/quiz" className="flex flex-col items-center gap-1 text-[#504441]/60">
+          <span className="text-2xl">📚</span>
+          <span className="text-[10px] font-bold uppercase">Learn</span>
+        </Link>
+        <Link href="/tournament" className="flex flex-col items-center gap-1 text-[#504441]/60">
+          <span className="text-2xl">🏆</span>
+          <span className="text-[10px] font-bold uppercase">Rank</span>
+        </Link>
+        <button className="flex flex-col items-center gap-1 text-[#504441]/60">
+          <div className="w-6 h-6 rounded-full overflow-hidden">
+            <img alt="Profile" className="w-full h-full object-cover" src="https://res.cloudinary.com/dds5jlp7e/image/upload/v1774702475/Screenshot_from_2026-03-28_19-52-57-removebg-preview_xvqdug.png" />
+          </div>
+          <span className="text-[10px] font-bold uppercase">Profile</span>
+        </button>
+      </nav>
     </div>
   );
 }

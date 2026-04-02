@@ -36,6 +36,13 @@ export default function WritingTournament({ onComplete, onExit }: WritingTournam
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
+
+      if (!data || !Array.isArray(data.data)) {
+        console.error('Invalid API response:', data);
+        setLoading(false);
+        return;
+      }
+
       setQuestions(data.data.slice(0, 10));
       setLoading(false);
     } catch (error) {
@@ -89,6 +96,10 @@ export default function WritingTournament({ onComplete, onExit }: WritingTournam
 
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen text-white text-xl">Đang tải...</div>;
+  }
+
+  if (questions.length === 0 || !questions[currentQuestion]) {
+    return <div className="flex justify-center items-center min-h-screen text-white text-xl">Không có dữ liệu</div>;
   }
 
   const question = questions[currentQuestion];

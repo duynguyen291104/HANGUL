@@ -52,6 +52,12 @@ export default function SpeedTournament({ onComplete, onExit }: SpeedTournamentP
       });
       const data = await res.json();
 
+      if (!data || !Array.isArray(data.data)) {
+        console.error('Invalid API response:', data);
+        setLoading(false);
+        return;
+      }
+
       const quizQuestions = data.data.slice(0, 20).map((vocab: any) => {
         const wrongAnswers = data.data
           .filter((v: any) => v.id !== vocab.id)

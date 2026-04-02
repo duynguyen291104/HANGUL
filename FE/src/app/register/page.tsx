@@ -54,7 +54,6 @@ export default function RegisterPage() {
 
     try {
       await register(formData.email, formData.name, formData.password);
-      // Redirect to login instead of auto-login
       router.push('/login?registered=true');
     } catch (err) {
       const error = err as Error;
@@ -65,35 +64,65 @@ export default function RegisterPage() {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{ background: 'linear-gradient(135deg, #2d5d4d 0%, #1f4439 100%)' }}
-    >
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-10">
-          <h1 className="text-5xl mb-2"></h1>
-          <h2 className="text-4xl font-bold text-white mb-2">HANGUL</h2>
-          <p className="text-[#a8d5ba]">Your Korean Herbarium</p>
-        </div>
+    <div className="bg-hangul-pattern min-h-screen font-['Be_Vietnam_Pro'] text-[#1a1c19] flex items-center justify-center p-6 relative overflow-hidden" style={{ backgroundColor: '#fafaf5' }}>
+      {/* Decorative Mascots */}
+      {/* Hana - Top Left */}
+      <div className="absolute top-[15%] left-[5%] md:left-[15%] lg:left-[25%] -rotate-12 z-0" style={{ filter: 'drop-shadow(0 10px 20px rgba(43, 22, 15, 0.1))' }}>
+        <img
+          alt="Hana the Otter"
+          className="w-32 h-32 md:w-48 md:h-48 object-contain"
+          src="https://res.cloudinary.com/dds5jlp7e/image/upload/v1774702475/Screenshot_from_2026-03-28_19-52-57-removebg-preview_xvqdug.png"
+        />
+      </div>
 
-        {/* Form Card */}
-        <div style={{ background: 'white', borderRadius: '20px' }} className="shadow-xl p-10 mb-6">
-          <h3 style={{ color: '#2d5d4d' }} className="text-2xl font-bold mb-8 text-center">
-            Tạo tài khoản
-          </h3>
+      {/* Ji-woo - Bottom Right */}
+      <div className="absolute bottom-[10%] right-[5%] md:right-[15%] lg:right-[25%] rotate-12 z-0" style={{ filter: 'drop-shadow(0 10px 20px rgba(43, 22, 15, 0.1))' }}>
+        <img
+          alt="Ji-woo the Otter"
+          className="w-28 h-28 md:w-40 md:h-40 object-contain"
+          src="https://res.cloudinary.com/dds5jlp7e/image/upload/v1774702475/Screenshot_from_2026-03-28_19-52-57-removebg-preview_xvqdug.png"
+        />
+      </div>
 
+      {/* Top Right Mascot */}
+      <div className="absolute top-[20%] right-[10%] -rotate-6 z-0" style={{ filter: 'drop-shadow(0 10px 20px rgba(43, 22, 15, 0.1))' }}>
+        <img
+          alt="Mascot Icon"
+          className="w-24 h-24 md:w-36 md:h-36 object-contain"
+          src="https://res.cloudinary.com/dds5jlp7e/image/upload/v1774702475/Screenshot_from_2026-03-28_19-52-57-removebg-preview_xvqdug.png"
+        />
+      </div>
+
+      {/* Main Register Container */}
+      <div className="relative z-10 w-full max-w-md">
+        {/* Register Card */}
+        <div className="bg-[#fafaf5]/80 backdrop-blur-xl rounded-lg shadow-[0_20px_40px_rgba(43,22,15,0.06)] p-8 md:p-12 border border-[#d4c3be]/10">
+          {/* Brand Header */}
+          <div className="text-center mb-10">
+            <img
+              src="https://res.cloudinary.com/dds5jlp7e/image/upload/v1774702475/Screenshot_from_2026-03-28_19-52-57-removebg-preview_xvqdug.png"
+              alt="HANGUL Mascot"
+              className="w-20 h-20 mx-auto mb-4 object-contain"
+            />
+            <h1 className="font-['Plus_Jakarta_Sans'] font-black text-4xl tracking-tighter text-[#72564c] uppercase mb-2">
+              HANGUL
+            </h1>
+            <p className="text-[#504441] font-medium">Join our learning journey today.</p>
+          </div>
+
+          {/* Error Message */}
           {error && (
-            <div style={{ background: '#ffe6e6', borderRadius: '12px' }} className="p-4 mb-6 border border-red-300">
-              <p className="text-red-600 text-sm">{error}</p>
+            <div className="bg-[#ffdad6] rounded-lg p-4 mb-6 border border-[#ffdad6]">
+              <p className="text-[#93000a] text-sm font-medium">{error}</p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit}>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name Field */}
-            <div className="mb-5">
-              <label className="block text-sm font-semibold text-[#2d3436] mb-2">
-                Tên của bạn
+            <div className="space-y-2">
+              <label className="block font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#72564c] px-1">
+                Full Name
               </label>
               <input
                 type="text"
@@ -101,13 +130,13 @@ export default function RegisterPage() {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Nguyễn Văn A"
-                className="w-full px-4 py-3 rounded-lg border-2 border-[#a8d5ba] focus:border-[#2d5d4d] focus:outline-none transition"
+                className="w-full px-4 py-4 bg-[#e8e8e3] rounded-lg border-none focus:ring-2 focus:ring-[#72564c]/20 focus:bg-white transition-all placeholder:text-[#827470]/50"
               />
             </div>
 
             {/* Email Field */}
-            <div className="mb-5">
-              <label className="block text-sm font-semibold text-[#2d3436] mb-2">
+            <div className="space-y-2">
+              <label className="block font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#72564c] px-1">
                 Email
               </label>
               <input
@@ -115,15 +144,15 @@ export default function RegisterPage() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="your@email.com"
-                className="w-full px-4 py-3 rounded-lg border-2 border-[#a8d5ba] focus:border-[#2d5d4d] focus:outline-none transition"
+                placeholder="hello@otter.edu"
+                className="w-full px-4 py-4 bg-[#e8e8e3] rounded-lg border-none focus:ring-2 focus:ring-[#72564c]/20 focus:bg-white transition-all placeholder:text-[#827470]/50"
               />
             </div>
 
             {/* Password Field */}
-            <div className="mb-5">
-              <label className="block text-sm font-semibold text-[#2d3436] mb-2">
-                Mật khẩu
+            <div className="space-y-2">
+              <label className="block font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#72564c] px-1">
+                Password
               </label>
               <input
                 type="password"
@@ -131,15 +160,15 @@ export default function RegisterPage() {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className="w-full px-4 py-3 rounded-lg border-2 border-[#a8d5ba] focus:border-[#2d5d4d] focus:outline-none transition"
+                className="w-full px-4 py-4 bg-[#e8e8e3] rounded-lg border-none focus:ring-2 focus:ring-[#72564c]/20 focus:bg-white transition-all placeholder:text-[#827470]/50"
               />
-              <p className="text-xs text-[#636e72] mt-1">Tối thiểu 6 ký tự</p>
+              <p className="text-xs text-[#504441] px-1">Minimum 6 characters</p>
             </div>
 
             {/* Confirm Password Field */}
-            <div className="mb-8">
-              <label className="block text-sm font-semibold text-[#2d3436] mb-2">
-                Xác nhận mật khẩu
+            <div className="space-y-2">
+              <label className="block font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#72564c] px-1">
+                Confirm Password
               </label>
               <input
                 type="password"
@@ -147,7 +176,7 @@ export default function RegisterPage() {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className="w-full px-4 py-3 rounded-lg border-2 border-[#a8d5ba] focus:border-[#2d5d4d] focus:outline-none transition"
+                className="w-full px-4 py-4 bg-[#e8e8e3] rounded-lg border-none focus:ring-2 focus:ring-[#72564c]/20 focus:bg-white transition-all placeholder:text-[#827470]/50"
               />
             </div>
 
@@ -155,48 +184,19 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-lg font-bold text-white transition disabled:opacity-50"
-              style={{ background: '#2d5d4d' }}
+              className="w-full py-4 bg-gradient-to-r from-[#72564c] to-[#8d6e63] text-white font-['Plus_Jakarta_Sans'] font-bold text-lg rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all disabled:opacity-50"
             >
-              {loading ? 'Đang tạo tài khoản...' : 'Tạo tài khoản'}
+              {loading ? 'Creating account...' : 'Create Account'}
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="flex items-center my-8">
-            <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }}></div>
-            <p className="px-4 text-sm text-[#636e72]">hoặc</p>
-            <div style={{ flex: 1, height: '1px', background: '#e0e0e0' }}></div>
-          </div>
-
-          {/* Demo Register */}
-          <button
-            type="button"
-            onClick={() => {
-              setFormData({
-                email: 'demo@example.com',
-                name: 'Người dùng Demo',
-                password: 'password123',
-                confirmPassword: 'password123',
-              });
-            }}
-            className="w-full py-3 rounded-lg font-semibold transition"
-            style={{ background: '#f5f1e8', color: '#2d5d4d', border: '2px solid #a8d5ba' }}
-          >
-            Demo tạo tài khoản
-          </button>
-        </div>
-
-        {/* Login Link */}
-        <div style={{ background: 'rgba(255, 255, 255, 0.1)', borderRadius: '20px' }} className="p-6 text-center">
-          <p className="text-white mb-3">Đã có tài khoản?</p>
-          <Link
-            href="/login"
-            className="inline-block px-8 py-2 rounded-lg font-semibold transition"
-            style={{ background: '#a8d5ba', color: '#2d3436' }}
-          >
-            Đăng nhập ngay
-          </Link>
+          {/* Footer Link */}
+          <p className="mt-10 text-center text-[#504441] text-sm font-medium">
+            Already have an account?{' '}
+            <Link className="text-[#72564c] font-bold hover:underline" href="/login">
+              Sign In
+            </Link>
+          </p>
         </div>
       </div>
     </div>

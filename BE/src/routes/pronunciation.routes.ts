@@ -122,62 +122,77 @@ router.get('/vocabulary/:level', async (req: Request, res: Response) => {
     // Validate level
     const validLevels = ['NEWBIE', 'BEGINNER', 'INTERMEDIATE', 'UPPER_INTERMEDIATE', 'ADVANCED'];
     if (!validLevels.includes(levelUpper)) {
+      console.warn(`⚠️ Invalid level requested: ${level}`);
       return res.status(400).json({ 
         error: 'Invalid level',
         validLevels 
       });
     }
 
-    console.log(` Fetching vocabulary from database for level: ${levelUpper}`);
+    console.log(`🎤 [Pronunciation API] Fetching vocabulary for level: ${levelUpper}, limit: ${limit}`);
 
-    // Query vocabulary from database
-    const vocabulary = await prisma.vocabulary.findMany({
-      where: {
-        level: levelUpper,
-        isActive: true,
-      },
-      include: {
-        examples: true,
-        topic: {
-          select: {
-            name: true,
+    try {
+      // Query vocabulary from database
+      const vocabulary = await prisma.vocabulary.findMany({
+        where: {
+          level: levelUpper,
+          isActive: true,
+        },
+        include: {
+          examples: true,
+          topic: {
+            select: {
+              name: true,
+            }
           }
+        },
+        take: parseInt(limit as string),
+        orderBy: {
+          createdAt: 'asc',
         }
-      },
-      take: parseInt(limit as string),
-      orderBy: {
-        createdAt: 'asc', // You can also use Math.random()-like approach in application layer
+      });
+
+      console.log(`✅ Found ${vocabulary.length} vocabulary words for ${levelUpper}`);
+
+      if (vocabulary.length === 0) {
+        console.warn(`⚠️ No vocabulary found for level: ${levelUpper}`);
       }
-    });
 
-    // Shuffle the results (simulating random selection)
-    const shuffled = vocabulary.sort(() => Math.random() - 0.5);
+      // Shuffle the results (simulating random selection)
+      const shuffled = vocabulary.sort(() => Math.random() - 0.5);
 
-    console.log(` Found ${shuffled.length} vocabulary words for ${levelUpper}`);
-
-    res.json({
-      success: true,
-      source: 'database',
-      level: levelUpper,
-      count: shuffled.length,
-      vocabulary: shuffled.map((item) => ({
-        id: item.id,
-        korean: item.korean,
-        english: item.english,
-        vietnamese: item.vietnamese,
-        romanization: item.romanization,
-        type: item.type,
-        topic: item.topic?.name,
-        difficulty: 1, // Default difficulty
-        examples: item.examples?.map(ex => ({
-          korean: ex.korean,
-          english: ex.english,
-          vietnamese: ex.vietnamese,
-        })) || []
-      }))
-    });
+      res.json({
+        success: true,
+        source: 'database',
+        level: levelUpper,
+        count: shuffled.length,
+        vocabulary: shuffled.map((item) => ({
+          id: item.id,
+          korean: item.korean,
+          english: item.english,
+          vietnamese: item.vietnamese,
+          romanization: item.romanization,
+          type: item.type,
+          topic: item.topic?.name,
+          difficulty: 1,
+          examples: item.examples?.map(ex => ({
+            korean: ex.korean,
+            english: ex.english,
+            vietnamese: ex.vietnamese,
+          })) || []
+        }))
+      });
+    } catch (dbError: any) {
+      console.error(`❌ Database error: ${dbError.message}`);
+      console.error(`Stack: ${dbError.stack}`);
+      res.status(500).json({ 
+        error: 'Database query failed',
+        message: dbError.message,
+        hint: 'Check if PostgreSQL is running and has vocabulary data'
+      });
+    }
   } catch (error: any) {
-    console.error(` Vocabulary error: ${error.message}`);
+    console.error(`❌ Pronunciation API error: ${error.message}`);
     res.status(500).json({ 
       error: 'Failed to fetch vocabulary from database',
       message: error.message 
