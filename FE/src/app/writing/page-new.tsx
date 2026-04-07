@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
+import { WritingStrokeGuidePanel } from './WritingStrokeGuide';
+
 interface ExercisePoint {
   x: number;
   y: number;
@@ -30,6 +32,10 @@ const CHARACTER_MEANINGS: Record<string, string> = {
   바: 'Ba - Biển / thanh âm ba',
 };
 
+const BLACK_CROSSHAIR_CURSOR = `url("data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none"><line x1="16" y1="4" x2="16" y2="28" stroke="#000" stroke-width="2"/><line x1="4" y1="16" x2="28" y2="16" stroke="#000" stroke-width="2"/></svg>'
+)}") 16 16, crosshair`;
+
 export default function WritingPage() {
   const { user, logout } = useAuthStore();
   const router = useRouter();
@@ -37,9 +43,10 @@ export default function WritingPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const strokeGroupsRef = useRef<ExercisePoint[][]>([]);
   const startedAtRef = useRef<number | null>(null);
+  const isDrawingRef = useRef(false);
+  const activePointerIdRef = useRef<number | null>(null);
 
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [isDrawing, setIsDrawing] = useState(false);
   const [currentChar, setCurrentChar] = useState(CHARACTERS[0]);
   const [feedback, setFeedback] = useState('');
   const [score, setScore] = useState<number | null>(null);
@@ -48,6 +55,9 @@ export default function WritingPage() {
   const [brushSize, setBrushSize] = useState(3);
   const [brushColor, setBrushColor] = useState(COLORS[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const brushRef = useRef({ color: brushColor, size: brushSize });
+  brushRef.current = { color: brushColor, size: brushSize };
 
   const setupCanvas = () => {
     const canvas = canvasRef.current;
@@ -68,7 +78,8 @@ export default function WritingPage() {
   const resetAttemptState = () => {
     strokeGroupsRef.current = [];
     startedAtRef.current = null;
-    setIsDrawing(false);
+    isDrawingRef.current = false;
+    activePointerIdRef.current = null;
     setFeedback('');
     setScore(null);
     setSuggestions([]);
@@ -90,9 +101,20 @@ export default function WritingPage() {
   useEffect(() => {
     setupCanvas();
     resetAttemptState();
+    canvasRef.current?.style.setProperty('cursor', BLACK_CROSSHAIR_CURSOR, 'important');
   }, [currentChar]);
 
-  const getCanvasPoint = (event: React.MouseEvent<HTMLCanvasElement>): ExercisePoint => {
+  useEffect(() => {
+    if (isCheckingAuth || !user) return;
+    const id = requestAnimationFrame(() => {
+      canvasRef.current?.style.setProperty('cursor', BLACK_CROSSHAIR_CURSOR, 'important');
+    });
+    return () => cancelAnimationFrame(id);
+  }, [isCheckingAuth, user]);
+
+  const getCanvasPoint = (
+    event: React.MouseEvent<HTMLCanvasElement> | React.PointerEvent<HTMLCanvasElement>
+  ): ExercisePoint => {
     const canvas = canvasRef.current!;
     const rect = canvas.getBoundingClientRect();
 
@@ -106,8 +128,15 @@ export default function WritingPage() {
     };
   };
 
-  const startDrawing = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!canvasRef.current) return;
+  const startDrawing = (event: React.PointerEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    if (activePointerIdRef.current !== null) return;
+
+    event.preventDefault();
+    activePointerIdRef.current = event.pointerId;
+    canvas.setPointerCapture(event.pointerId);
 
     const point = getCanvasPoint(event);
 
@@ -116,26 +145,39 @@ export default function WritingPage() {
     }
 
     strokeGroupsRef.current.push([point]);
-    setIsDrawing(true);
+    isDrawingRef.current = true;
 
-    const ctx = canvasRef.current.getContext('2d');
+    const ctx = canvas.getContext('2d');
     if (ctx) {
+      const { color, size } = brushRef.current;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = size;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
       ctx.beginPath();
       ctx.moveTo(point.x, point.y);
     }
   };
 
-  const draw = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing || !canvasRef.current) return;
+  const draw = (event: React.PointerEvent<HTMLCanvasElement>) => {
+    if (activePointerIdRef.current !== event.pointerId) return;
+    if (!isDrawingRef.current || !canvasRef.current) return;
+
+    event.preventDefault();
 
     const point = getCanvasPoint(event);
     const ctx = canvasRef.current.getContext('2d');
 
     if (ctx) {
-      ctx.strokeStyle = brushColor;
-      ctx.lineWidth = brushSize;
+      const { color, size } = brushRef.current;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = size;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
       ctx.lineTo(point.x, point.y);
       ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(point.x, point.y);
     }
 
     const groups = strokeGroupsRef.current;
@@ -147,12 +189,20 @@ export default function WritingPage() {
     groups[groups.length - 1].push(point);
   };
 
-  const stopDrawing = () => {
-    if (!isDrawing) return;
+  const stopDrawing = (event: React.PointerEvent<HTMLCanvasElement>) => {
+    if (activePointerIdRef.current !== event.pointerId) return;
+    if (!isDrawingRef.current) return;
 
-    const ctx = canvasRef.current?.getContext('2d');
-    ctx?.closePath();
-    setIsDrawing(false);
+    isDrawingRef.current = false;
+    activePointerIdRef.current = null;
+
+    const canvas = canvasRef.current;
+    if (canvas?.hasPointerCapture(event.pointerId)) {
+      try {
+        canvas.releasePointerCapture(event.pointerId);
+      } catch {
+      }
+    }
   };
 
   const clearCanvas = () => {
@@ -177,7 +227,7 @@ export default function WritingPage() {
     ctx.lineWidth = Math.max(4, brushSize + 1);
 
     strokeGroupsRef.current.forEach((stroke) => {
-      if (!stroke.length) return;
+      if (stroke.length < 2) return;
 
       ctx.beginPath();
       ctx.moveTo(stroke[0].x, stroke[0].y);
@@ -193,7 +243,7 @@ export default function WritingPage() {
   };
 
   const handleCheckWriting = async () => {
-    const strokeGroups = strokeGroupsRef.current.filter((stroke) => stroke.length > 0);
+    const strokeGroups = strokeGroupsRef.current.filter((stroke) => stroke.length >= 2);
 
     if (!strokeGroups.length) {
       setFeedback('Hãy viết ít nhất một nét trước khi chấm.');
@@ -244,15 +294,13 @@ export default function WritingPage() {
     setCurrentChar(CHARACTERS[nextIndex]);
   };
 
-  const handleModalAction = () => {
-    if (canAdvance) {
-      nextCharacter();
-      return;
-    }
+  const handleResultTryAgain = () => {
+    clearCanvas();
+  };
 
-    setScore(null);
-    setFeedback('');
-    setSuggestions([]);
+  const handleResultNext = () => {
+    if (!canAdvance) return;
+    nextCharacter();
   };
 
   if (isCheckingAuth || !user) {
@@ -342,9 +390,9 @@ export default function WritingPage() {
           </div>
         </aside>
 
-        <main className="flex-1 p-12 relative flex flex-col items-center justify-start overflow-auto">
+        <main className="relative flex flex-1 flex-col items-center justify-start overflow-auto p-12 lg:pr-[calc(14rem+1.5rem)]">
           <div
-            className="fixed bg-white rounded-xl shadow-[0_40px_100px_rgba(43,22,15,0.08)] p-8 text-left z-10"
+            className="fixed z-30 rounded-xl bg-white p-8 text-left shadow-[0_40px_100px_rgba(43,22,15,0.08)]"
             style={{ top: '100px', left: 'calc(18rem + 100px)' }}
           >
             <p className="text-xs uppercase tracking-widest text-[#72564c]/60 mb-3 font-bold">
@@ -354,8 +402,8 @@ export default function WritingPage() {
           </div>
 
           <div
-            className="bg-white rounded-xl shadow-[0_40px_100px_rgba(43,22,15,0.08)] relative overflow-hidden flex items-center justify-center group mb-10"
-            style={{ width: '650px', height: '600px' }}
+            className="group relative z-[25] mb-10 flex w-full max-w-[650px] items-center justify-center overflow-hidden rounded-xl bg-white shadow-[0_40px_100px_rgba(43,22,15,0.08)]"
+            style={{ height: '600px' }}
           >
             <div
               className="absolute inset-0 pointer-events-none opacity-70"
@@ -372,21 +420,22 @@ export default function WritingPage() {
 
             <canvas
               ref={canvasRef}
-              onMouseDown={startDrawing}
-              onMouseMove={draw}
-              onMouseUp={stopDrawing}
-              onMouseLeave={stopDrawing}
-              className="absolute inset-0 w-full h-full cursor-crosshair"
+              onPointerDown={startDrawing}
+              onPointerMove={draw}
+              onPointerUp={stopDrawing}
+              onPointerCancel={stopDrawing}
+              className="absolute inset-0 h-full w-full touch-none"
               style={{
                 width: '100%',
                 height: '100%',
                 display: 'block',
                 backgroundColor: 'transparent',
+                touchAction: 'none',
               }}
             />
           </div>
 
-          <div className="flex gap-6 mb-8" style={{ width: '650px' }}>
+          <div className="mb-8 flex w-full max-w-[650px] gap-6">
             <button
               onClick={clearCanvas}
               disabled={isSubmitting}
@@ -404,7 +453,7 @@ export default function WritingPage() {
             </button>
           </div>
 
-          <div className="flex gap-6 mb-8" style={{ width: '650px' }}>
+          <div className="mb-8 flex w-full max-w-[650px] gap-6">
             <div className="flex-1 bg-white rounded-lg p-6 shadow-md">
               <span className="text-xs uppercase tracking-widest text-[#72564c]/60 block mb-4 font-bold">
                 Brush Size
@@ -468,6 +517,8 @@ export default function WritingPage() {
             </div>
           </div>
 
+          <WritingStrokeGuidePanel currentChar={currentChar} />
+
           {score !== null && (
             <>
               <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
@@ -502,12 +553,23 @@ export default function WritingPage() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={handleModalAction}
-                    className="w-full bg-gradient-to-r from-[#72564c] to-[#8d6e63] text-white py-4 rounded-lg font-bold hover:scale-105 active:scale-95 transition-all shadow-lg"
-                  >
-                    {canAdvance ? 'Next Character' : 'Try Again'}
-                  </button>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={handleResultTryAgain}
+                      className="flex-1 rounded-xl bg-[#f0f0ed] py-4 text-center font-['Be_Vietnam_Pro'] text-base font-semibold text-[#5d4037] transition-colors hover:bg-[#e6e6e1] active:scale-[0.98]"
+                    >
+                      Thử lại
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleResultNext}
+                      disabled={!canAdvance}
+                      className="flex-1 rounded-xl bg-[#7b5246] py-4 text-center font-['Be_Vietnam_Pro'] text-base font-semibold text-white transition-colors hover:bg-[#6a463c] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-45"
+                    >
+                      Tiếp theo
+                    </button>
+                  </div>
                 </div>
               </div>
             </>
