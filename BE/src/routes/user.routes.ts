@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { PrismaClient } = require('@prisma/client');
-
+const { updateUserXP } = require('../services/userService');
 const userRouter = Router();
 const userPrisma = new PrismaClient();
 
@@ -158,5 +158,28 @@ userRouter.put('/update-level', async (req: any, res: any) => {
     res.status(500).json({ error: 'Failed to update level' });
   }
 });
+//Thêm cơ chế tăng điểm kinh nghiệm
+    userRouter.post('/xp', async (req: any, res: any) => {
+      try {
+        const userId = req.user.id;
+        const xpAmount = Number(req.body?.xpAmount ?? 0);
+
+        if (!Number.isFinite(xpAmount) || xpAmount <= 0) {
+          return res.status(400).json({ error: 'Valid xpAmount is required' });
+        }
+
+        const updatedUser = await updateUserXP(userId, xpAmount);
+
+        return res.json({
+          message: 'XP updated',
+          xpAwarded: xpAmount,
+          user: updatedUser,
+        });
+      } catch (error) {
+        console.error('XP update error:', error);
+        return res.status(500).json({ error: 'Failed to update XP' });
+      }
+    });
 
 module.exports = userRouter;
+export {};

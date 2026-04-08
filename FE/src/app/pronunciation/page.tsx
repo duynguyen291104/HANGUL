@@ -1,6 +1,6 @@
-﻿'use client';
+'use client';
 
-import { pronunciationService } from '@/services/api';
+import { pronunciationService, userService } from '@/services/api';
 import { useAuthStore } from '@/store/authStore';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -31,6 +31,18 @@ const FALLBACK_VOCABULARY: WordData[] = [
 ];
 
 const INITIAL_SOUNDWAVE = Array(20).fill(8);
+const XP_PER_WORD = 20;
+type SpeechSpeed = 'slow' | 'normal' | 'fast';
+
+const SPEECH_SPEED_CONFIG: Record<
+  SpeechSpeed,
+  { label: string; rate: number }
+> = {
+  slow: { label: 'Chậm', rate: 0.5,  },
+  normal: { label: '1.0x', rate: 1.0,  },
+  fast: { label: 'Nhanh', rate: 1.5, },
+};
+
 
 const blobToDataUrl = (blob: Blob) =>
   new Promise<string>((resolve, reject) => {
@@ -53,7 +65,7 @@ const getMediaRecorderOptions = (): MediaRecorderOptions | undefined => {
 
 export default function PronunciationPage() {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user, logout, setUser } = useAuthStore();
 
   const [isRecording, setIsRecording] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -77,8 +89,43 @@ export default function PronunciationPage() {
   const dataArrayRef = useRef<Uint8Array | null>(null);
   const animationRef = useRef<number | null>(null);
   const isRecordingRef = useRef(false);
+  const rewardedWordsRef = useRef<Set<string>>(new Set());
 
-  const useFallbackVocabulary = () => {
+  const rewardCurrentWordXP = async (word: WordData) => {
+    const rewardKey = String(word.id ?? word.korean);
+
+    if (!user || rewardedWordsRef.current.has(rewardKey)) {
+      return false;
+    }
+
+    const response = await userService.addXP(XP_PER_WORD);
+    rewardedWordsRef.current.add(rewardKey);
+
+    if (response?.user) {
+      const nextUser = {
+        ...user,
+        totalXP: response.user.totalXP,
+        level: response.user.level ?? user.level,
+      };
+
+      setUser(nextUser);
+      localStorage.setItem('user', JSON.stringify(nextUser));
+    }
+
+    return true;
+  };
+  const [speechSpeed, setSpeechSpeed] = useState<SpeechSpeed>('normal');
+
+  const cycleSpeechSpeed = () => {
+    setSpeechSpeed((current) => {
+      if (current === 'slow') return 'normal';
+      if (current === 'normal') return 'fast';
+      return 'slow';
+    });
+  };
+
+
+  const applyFallbackVocabulary = () => {
     setVocabularyList(FALLBACK_VOCABULARY);
     setCurrentWord(FALLBACK_VOCABULARY[0]);
     setCurrentWordIndex(0);
@@ -142,9 +189,9 @@ export default function PronunciationPage() {
         return;
       }
 
-      useFallbackVocabulary();
+      applyFallbackVocabulary();
     } catch {
-      useFallbackVocabulary();
+      applyFallbackVocabulary();
     }
   };
 
@@ -175,7 +222,7 @@ export default function PronunciationPage() {
 
   const updateSoundwave = () => {
     if (analyzerRef.current && dataArrayRef.current) {
-      analyzerRef.current.getByteFrequencyData(dataArrayRef.current);
+      analyzerRef.current.getByteFrequencyData(dataArrayRef.current as any);
 
       const nextHeights: number[] = [];
       const barWidth = dataArrayRef.current.length / 20;
@@ -261,9 +308,24 @@ export default function PronunciationPage() {
           const audioDataUrl = await blobToDataUrl(audioBlob);
           const result = await pronunciationService.transcribe(audioDataUrl, currentWord.korean);
 
-          setPronunciationScore(Number(result.score ?? 0));
-          setFeedbackMessage(result.feedback_vi || 'Chưa có phản hồi từ hệ thống.');
+          const score = Number(result.score ?? 0);
+          const baseFeedback = result.feedback_vi || 'Chưa có phản hồi từ hệ thống.';
+
+          setPronunciationScore(score);
           setTranscribedText(String(result.transcribed_text || ''));
+
+          let finalFeedback = baseFeedback;
+
+          try {
+            const rewarded = await rewardCurrentWordXP(currentWord);
+            if (rewarded) {
+              finalFeedback = `${baseFeedback} (+${XP_PER_WORD} XP)`;
+            }
+          } catch (xpError) {
+            console.error('Không thể cộng XP sau lượt phát âm:', xpError);
+          }
+
+          setFeedbackMessage(finalFeedback);
         } catch (error: any) {
           setPronunciationScore(0);
           setFeedbackMessage(error.message || 'Không thể chấm phát âm lúc này.');
@@ -294,32 +356,53 @@ export default function PronunciationPage() {
   };
 
   const playNativeAudio = async () => {
-    if (isPlayingAudio) {
-      return;
-    }
+  if (isPlayingAudio) {
+    return;
+  }
 
-    try {
-      setIsPlayingAudio(true);
+  try {
+    setIsPlayingAudio(true);
 
-      const result = await pronunciationService.tts(currentWord.korean);
-      const player = nativeAudioRef.current ?? new Audio();
-      nativeAudioRef.current = player;
+    const result = await pronunciationService.tts(currentWord.korean);
+    const player = nativeAudioRef.current ?? new Audio();
+    nativeAudioRef.current = player;
 
-      player.pause();
-      player.currentTime = 0;
-      player.src = result.audio;
+    player.pause();
+    player.currentTime = 0;
+    player.src = result.audio;
 
-      player.onended = () => setIsPlayingAudio(false);
-      player.onerror = () => setIsPlayingAudio(false);
+    const currentRate = SPEECH_SPEED_CONFIG[speechSpeed].rate;
+    player.playbackRate = currentRate;
+    player.defaultPlaybackRate = currentRate;
 
-      await player.play();
-    } catch (error: any) {
-      setPronunciationScore(0);
-      setFeedbackMessage(error.message || 'Không thể phát audio mẫu.');
-      setShowFeedback(true);
-      setIsPlayingAudio(false);
-    }
-  };
+    const pitchAudio = player as HTMLAudioElement & {
+      preservesPitch?: boolean;
+      mozPreservesPitch?: boolean;
+      webkitPreservesPitch?: boolean;
+    };
+    pitchAudio.preservesPitch = true;
+    pitchAudio.mozPreservesPitch = true;
+    pitchAudio.webkitPreservesPitch = true;
+
+    player.onended = () => setIsPlayingAudio(false);
+    player.onerror = () => setIsPlayingAudio(false);
+
+    await player.play();
+  } catch (error: any) {
+    setPronunciationScore(0);
+    setFeedbackMessage(error.message || 'Không thể phát audio mẫu.');
+    setShowFeedback(true);
+    setIsPlayingAudio(false);
+  }
+};
+  useEffect(() => {
+  if (nativeAudioRef.current) {
+    const currentRate = SPEECH_SPEED_CONFIG[speechSpeed].rate;
+    nativeAudioRef.current.playbackRate = currentRate;
+    nativeAudioRef.current.defaultPlaybackRate = currentRate;
+  }
+}, [speechSpeed]);
+
 
   const nextPhrase = () => {
     if (!vocabularyList.length) {
@@ -435,10 +518,23 @@ export default function PronunciationPage() {
                     />
                   </button>
 
+                  <button
+                    onClick={cycleSpeechSpeed}
+                    disabled={isSubmitting}
+                    className="min-w-[74px] h-10 px-3 rounded-full border border-[#d4c3be] bg-white text-[#72564c] hover:bg-[#f8f5f2] disabled:opacity-40 transition-all active:scale-95 flex items-center justify-center gap-2"
+                    title={`Tốc độ hiện tại: ${SPEECH_SPEED_CONFIG[speechSpeed].label} (${SPEECH_SPEED_CONFIG[speechSpeed].rate}x)`}
+                  >
+                    
+                    <span className="text-xs font-bold">
+                      {SPEECH_SPEED_CONFIG[speechSpeed].rate}x
+                    </span>
+                  </button>
+
                   <p className="text-2xl font-['Be_Vietnam_Pro'] text-[#8d6e63] font-medium tracking-widest uppercase">
                     {currentWord.romanization}
                   </p>
                 </div>
+
 
                 <div className="mt-6 flex items-center justify-center gap-1 h-16" style={{ width: '300px', margin: '0 auto' }}>
                   <style>{`
@@ -522,12 +618,20 @@ export default function PronunciationPage() {
                         <p className="text-lg font-bold text-[#8d6e63]">{currentWord.vietnamese}</p>
                       </div>
 
-                      <button
-                        onClick={nextPhrase}
-                        className="mt-4 px-8 py-3 bg-[#72564c] text-white rounded-lg font-bold hover:bg-[#8d6e63] transition-all active:scale-95 w-full"
-                      >
-                        Next Phrase
-                      </button>
+                      <div className="flex gap-4 w-full mt-4">
+                        <button
+                          onClick={resetFeedback}
+                          className="flex-1 px-4 py-3 bg-[#e8e8e3] text-[#72564c] rounded-lg font-bold hover:bg-[#d4c3be] transition-all active:scale-95"
+                        >
+                          Thử lại
+                        </button>
+                        <button
+                          onClick={nextPhrase}
+                          className="flex-1 px-4 py-3 bg-[#72564c] text-white rounded-lg font-bold hover:bg-[#8d6e63] transition-all active:scale-95"
+                        >
+                          Tiếp theo
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
