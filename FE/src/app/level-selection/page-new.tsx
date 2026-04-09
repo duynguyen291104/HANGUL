@@ -84,15 +84,12 @@ export default function LevelSelectionPage() {
       <main className="flex-grow flex flex-col items-center justify-center px-6 py-12">
         {/* Header Section */}
         <header className="text-center mb-12">
-          <div className="mb-8 flex justify-center">
-            <div className="relative">
-              <div className="absolute inset-0 bg-[#8d6e63]/10 rounded-full blur-2xl"></div>
-              <img
-                alt="HANGUL Otter Mascot"
-                className="w-40 h-40 object-contain relative z-10"
-                src="https://lh3.googleusercontent.com/aida/ADBb0ujUkfeHGDkM8hsUIwcKfY0SAHeANi7gFN3ymIzmLhHiB5G1lq9iwfduBIJrMJCCwfYPLTzFdx-SYypRiKN05LPJBPb8ylxAafSIkRaZfWJLz1WXPvorbaXqQwF05c1ofBBl_n3ayZxrrzj2tbbHR8edq2BigMNjm6p-fJVIY-bhrco5xQgVEj2kXzJ4rUu08V031PPkQ8oqx5ivcRnLqL4QWaOoqlB3BYW-S8ggiTMKxX1cXzLnH0kZQEwW4XSZrSPdpv8oE9zK8nM"
-              />
-            </div>
+          <div className="mb-8 flex justify-center items-center gap-2">
+            <img
+              alt="Otter Mascot"
+              className="w-[200px] h-[200px] object-contain"
+              src="/otter-mascot.png"
+            />
           </div>
           <h1 className="font-['Plus_Jakarta_Sans'] text-6xl font-black tracking-tighter mb-4 uppercase text-[#72564c]">
             HANGUL

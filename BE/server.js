@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 const { PrismaClient } = require('@prisma/client');
 
@@ -23,6 +24,7 @@ setWritingPrisma(prisma);
 // Middleware
 const allowedOrigins = [
   'http://localhost:3000',
+  'http://localhost:3001',
 ];
 
 app.use(cors({
@@ -87,10 +89,13 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ error: 'Email already registered' });
     }
     
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
     // Create new user
     const user = await userService.createUser({
       email,
-      password,
+      password: hashedPassword,
       fullName: fullName || email.split('@')[0],
     });
     
@@ -120,8 +125,9 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
     
-    // Verify password (simple check for demo)
-    if (user.password !== password) {
+    // Verify password using bcrypt
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
     
@@ -196,6 +202,40 @@ app.post('/api/auth/update-level', authenticate, async (req, res) => {
   } catch (error) {
     console.error('Update level error:', error);
     res.status(500).json({ error: error.message || 'Failed to update level' });
+  }
+});
+
+// Set user level (alias for update-level)
+app.post('/api/user/set-level', authenticate, async (req, res) => {
+  try {
+    const { level } = req.body;
+    
+    if (!level) {
+      return res.status(400).json({ error: 'Level is required' });
+    }
+    
+    const validLevels = ['NEWBIE', 'BEGINNER', 'INTERMEDIATE', 'UPPER', 'ADVANCED'];
+    if (!validLevels.includes(level)) {
+      return res.status(400).json({ error: 'Invalid level' });
+    }
+    
+    // Update user level
+    const user = await userService.updateUserLevel(req.userId, level);
+    
+    res.json({
+      message: 'Level updated successfully',
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.fullName,
+        role: 'USER',
+        level: user.level,
+        totalXP: user.xp,
+      },
+    });
+  } catch (error) {
+    console.error('Set level error:', error);
+    res.status(500).json({ error: error.message || 'Failed to set level' });
   }
 });
 
