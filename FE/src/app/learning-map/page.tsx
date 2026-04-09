@@ -69,16 +69,6 @@ const learningPath: LearningNode[] = [
   },
   {
     id: 6,
-    title: 'Luyện Nghe',
-    description: 'Cải thiện khả năng nghe hiểu tiếng Hàn',
-    level: 'INTERMEDIATE',
-    completed: false,
-    progress: 0,
-    tasks: 18,
-    link: '/listening',
-  },
-  {
-    id: 7,
     title: 'Nhận Diện Hình Ảnh',
     description: 'Học từ vựng thông qua nhận diện hình ảnh',
     level: 'INTERMEDIATE',
@@ -88,7 +78,7 @@ const learningPath: LearningNode[] = [
     link: '/camera',
   },
   {
-    id: 8,
+    id: 7,
     title: 'Giải Đấu Tiếng Hàn',
     description: 'Cạnh tranh với những người học khác',
     level: 'ADVANCED',

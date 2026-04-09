@@ -229,7 +229,6 @@ export default function CameraPage() {
           <p className="text-gray-600 mb-4">Phát hiện vật dụng từ webcam sử dụng YOLO AI</p>
           <div className="flex gap-4 justify-center">
             <Link href="/" className="text-blue-600 hover:text-blue-800 underline">← Quay lại trang chính</Link>
-            <Link href="/analytics" className="text-blue-600 hover:text-blue-800 underline font-semibold">📊 Xem Phân Tích</Link>
           </div>
         </div>
 
