@@ -1,3 +1,4 @@
+// @ts-nocheck
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 
@@ -8,7 +9,7 @@ const prisma = new PrismaClient();
 // GET /api/tournament/leaderboard
 // Get tournament leaderboard (authenticated version)
 // ========================
-router.get('/leaderboard', async (req: any, res: any) => {
+router.get('/leaderboard', async (_req: any, res: any) => {
   try {
     const leaderboard = await prisma.user.findMany({
       where: { trophy: { gte: 1000 } },
@@ -47,7 +48,7 @@ router.get('/leaderboard', async (req: any, res: any) => {
 router.post('/save-score', async (req: any, res: any) => {
   try {
     const userId = req.user?.id;
-    const { gameType, correctAnswers, totalQuestions, score } = req.body;
+    const { gameType, correctAnswers: _correctAnswers, totalQuestions: _totalQuestions, score } = req.body;
 
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });

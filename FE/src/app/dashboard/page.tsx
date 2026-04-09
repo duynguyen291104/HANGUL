@@ -17,7 +17,7 @@ interface GameStats {
 
 export default function Dashboard() {
   const router = useRouter();
-  const { user: authUser, logout } = useAuthStore();
+  const { user: authUser } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<GameStats | null>(null);
 
@@ -175,12 +175,11 @@ export default function Dashboard() {
           <div className="px-4 mt-auto flex flex-col gap-3">
             <button
               onClick={() => {
-                logout();
-                router.push('/');
+                router.push('/profile');
               }}
               className="w-full py-3 bg-[#e8e8e3] text-[#72564c] rounded-lg font-bold hover:bg-[#d4c3be] transition-all active:scale-95"
             >
-              Logout
+              User Profile
             </button>
           </div>
         </aside>

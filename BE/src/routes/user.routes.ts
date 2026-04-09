@@ -88,6 +88,102 @@ userRouter.get('/profile', async (req: any, res: any) => {
 });
 
 // ========================
+// UPDATE USER PROFILE
+// ========================
+userRouter.put('/profile', async (req: any, res: any) => {
+  try {
+    const userId = req.user.id;
+    const { name, email } = req.body;
+
+    if (!name || !email) {
+      return res.status(400).json({ error: 'Name and email are required' });
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+
+    const updatedUser = await userPrisma.user.update({
+      where: { id: userId },
+      data: { name, email },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        avatar: true,
+        role: true,
+        level: true,
+        levelLocked: true,
+        totalXP: true,
+        trophy: true,
+        currentStreak: true,
+        lastCheckinDate: true,
+      },
+    });
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error(' UPDATE PROFILE ERROR:', error);
+    res.status(500).json({ error: 'Failed to update user profile' });
+  }
+});
+
+// ========================
+// CHANGE PASSWORD
+// ========================
+userRouter.put('/change-password', async (req: any, res: any) => {
+  try {
+    const userId = req.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password are required' });
+    }
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+    }
+
+    // Get current user to verify password
+    const user = await userPrisma.user.findUnique({
+      where: { id: userId },
+      select: { password: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Verify current password
+    const bcrypt = require('bcrypt');
+    const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!isValidPassword) {
+      return res.status(400).json({ error: 'Current password is incorrect' });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    await userPrisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    console.error(' CHANGE PASSWORD ERROR:', error);
+    res.status(500).json({ error: 'Failed to change password' });
+  }
+});
+
+// ========================
 // SET LEVEL (First time selection)
 // ========================
 userRouter.post('/set-level', async (req: any, res: any) => {

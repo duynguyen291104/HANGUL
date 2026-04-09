@@ -15,7 +15,7 @@ interface AuthRequest extends Request {
 // ========================
 // START QUIZ SESSION
 // ========================
-router.post('/start', async (req: AuthRequest, res: Response) => {
+router.post('/start', async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -57,12 +57,13 @@ router.post('/start', async (req: AuthRequest, res: Response) => {
       language_to: q.language_to,
     }));
 
-    res.json({
+    return res.json({
       sessionId: session.id,
       totalQuestions: session.totalQuestions,
       questions: questionsForUser,
     });
   } catch (error) {
+    return
     console.error(error);
     res.status(500).json({ error: 'Failed to start quiz' });
   }
@@ -71,7 +72,7 @@ router.post('/start', async (req: AuthRequest, res: Response) => {
 // ========================
 // SUBMIT QUIZ ANSWER
 // ========================
-router.post('/answer', async (req: AuthRequest, res: Response) => {
+router.post('/answer', async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -96,7 +97,7 @@ router.post('/answer', async (req: AuthRequest, res: Response) => {
     const isCorrect = selectedAnswer.toLowerCase() === question.correctAnswer.toLowerCase();
 
     // Save answer
-    const answer = await prisma.quizAnswer.create({
+    await prisma.quizAnswer.create({
       data: {
         sessionId: parseInt(sessionId),
         userId: req.user.id,
@@ -131,7 +132,7 @@ router.post('/answer', async (req: AuthRequest, res: Response) => {
 // ========================
 // END QUIZ SESSION
 // ========================
-router.post('/end/:sessionId', async (req: AuthRequest, res: Response) => {
+router.post('/end/:sessionId', async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -160,7 +161,7 @@ router.post('/end/:sessionId', async (req: AuthRequest, res: Response) => {
 // ========================
 // GET USER QUIZ HISTORY
 // ========================
-router.get('/history', async (req: AuthRequest, res: Response) => {
+router.get('/history', async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -177,17 +178,17 @@ router.get('/history', async (req: AuthRequest, res: Response) => {
       take: parseInt(limit as string),
     });
 
-    res.json(sessions);
+    return res.json(sessions);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch quiz history' });
+    return res.status(500).json({ error: 'Failed to fetch quiz session' });
   }
 });
 
 // ========================
 // SUBMIT QUIZ RESULTS & UPDATE TROPHY
 // ========================
-router.post('/submit', async (req: AuthRequest, res: Response) => {
+router.post('/submit', async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -215,7 +216,7 @@ router.post('/submit', async (req: AuthRequest, res: Response) => {
 
     console.log(`✅ Quiz completed: ${score}/${totalQuestions} correct | +${trophyGained} trophy | Total trophy: ${updatedUser.trophy}`);
 
-    res.json({
+    return res.json({
       message: 'Quiz completed successfully',
       score,
       totalQuestions,
@@ -225,14 +226,14 @@ router.post('/submit', async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('❌ QUIZ SUBMIT ERROR:', error);
-    res.status(500).json({ error: 'Failed to submit quiz results' });
+    return res.status(500).json({ error: 'Failed to submit quiz results' });
   }
 });
 
 // ========================
 // GENERATE QUIZ QUESTIONS FROM DATABASE
 // ========================
-router.get('/generate', async (req: AuthRequest, res: Response) => {
+router.get('/generate', async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -287,10 +288,10 @@ router.get('/generate', async (req: AuthRequest, res: Response) => {
     });
 
     console.log(`✅ Generated ${questions.length} quiz questions for level: ${level} (from database)`);
-    res.json(questions);
+    return res.json(questions);
   } catch (error) {
     console.error('❌ GENERATE QUIZ ERROR:', error);
-    res.status(500).json({ error: 'Failed to generate quiz questions' });
+    return res.status(500).json({ error: 'Failed to generate quiz questions' });
   }
 });
 

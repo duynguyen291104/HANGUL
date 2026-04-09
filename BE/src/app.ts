@@ -56,7 +56,7 @@ io.on('connection', (socket: any) => {
 
   // When player scores updated
   socket.on('tournament:score-update', async (data: any) => {
-    const { userId } = data;
+    const { userId: _userId } = data;
     try {
       const updatedLeaderboard = await prisma.user.findMany({
         where: { trophy: { gte: 1000 } },
@@ -105,12 +105,20 @@ module.exports.io = io;
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:3000',
   'http://localhost:3000',
+  'http://localhost:3001',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
 ];
 
 app.use(cors({
   origin: function (origin: string | undefined, callback: any) {
     // Allow requests with no origin (like mobile apps or Postman)
     if (!origin) return callback(null, true);
+    
+    // Allow all localhost/127.0.0.1 in development
+    if (process.env.NODE_ENV === 'development' && origin && origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      return callback(null, true);
+    }
     
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
@@ -132,7 +140,7 @@ app.use('/api/auth', authRouter);
 
 // Public tournament leaderboard (read-only)
 const tournamentLeaderboardRouter = express.Router();
-tournamentLeaderboardRouter.get('/', async (req: any, res: any) => {
+tournamentLeaderboardRouter.get('/', async (_req: any, res: any) => {
   try {
     const leaderboard = await prisma.user.findMany({
       where: { trophy: { gte: 1000 } },

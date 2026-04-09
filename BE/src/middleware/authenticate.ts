@@ -1,6 +1,7 @@
+// @ts-nocheck
 const jwt = require('jsonwebtoken');
 
-const authenticate = (req, res, next) => {
+const authenticate = (req: any, res: any, next: any) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
 

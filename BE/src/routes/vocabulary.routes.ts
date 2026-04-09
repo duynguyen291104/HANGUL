@@ -15,7 +15,7 @@ interface AuthRequest extends Request {
 // ========================
 // GET VOCABULARY BY USER LEVEL (for tournaments/games)
 // ========================
-router.get('/by-level/tournament', async (req: AuthRequest, res: Response) => {
+router.get('/by-level/tournament', async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -45,21 +45,21 @@ router.get('/by-level/tournament', async (req: AuthRequest, res: Response) => {
       },
     });
 
-    res.json({
+    return res.json({
       userLevel: user.level,
       count: vocabulary.length,
       data: vocabulary,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch vocabulary by level' });
+    return res.status(500).json({ error: 'Failed to fetch vocabulary by level' });
   }
 });
 
 // ========================
 // GET ALL VOCABULARY
 // ========================
-router.get('/', async (req: AuthRequest, res: Response) => {
+router.get('/', async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     const { level, topic, limit = 50 } = req.query;
 
@@ -75,17 +75,17 @@ router.get('/', async (req: AuthRequest, res: Response) => {
       },
     });
 
-    res.json(vocabulary);
+    return res.json(vocabulary);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch vocabulary' });
+    return res.status(500).json({ error: 'Failed to fetch vocabulary' });
   }
 });
 
 // ========================
 // GET VOCABULARY BY ID
 // ========================
-router.get('/:id', async (req: AuthRequest, res: Response) => {
+router.get('/:id', async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
@@ -100,17 +100,17 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Vocabulary not found' });
     }
 
-    res.json(vocabulary);
+    return res.json(vocabulary);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch vocabulary' });
+    return res.status(500).json({ error: 'Failed to fetch vocabulary' });
   }
 });
 
 // ========================
 // ADD VOCABULARY TO USER (LEARNING)
 // ========================
-router.post('/:id/learn', async (req: AuthRequest, res: Response) => {
+router.post('/:id/learn', async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -141,7 +141,7 @@ router.post('/:id/learn', async (req: AuthRequest, res: Response) => {
       },
     });
 
-    res.json({
+    return res.json({
       message: 'Vocabulary added to learning list',
       vocabulary: updatedVocab,
     });
@@ -151,49 +151,52 @@ router.post('/:id/learn', async (req: AuthRequest, res: Response) => {
     if (error.code === 'P2025') {
       return res.status(400).json({ error: 'Vocabulary already in learning list' });
     }
-    res.status(500).json({ error: 'Failed to add vocabulary' });
+    return res.status(500).json({ error: 'Failed to add vocabulary' });
   }
 });
 
 // ========================
 // ADMIN: CREATE VOCABULARY
 // ========================
-router.post('/', async (req: AuthRequest, res: Response) => {
+router.post('/', async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     if (!req.user || req.user.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Only admins can create vocabulary' });
     }
 
-    const { korean, english, romanization, audioUrl, imageUrl, level, topicId } =
+    const { korean, english, vietnamese, romanization, audioUrl, imageUrl, level, topicId } =
       req.body;
 
-    if (!korean || !english || !topicId) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    if (!korean || !english || !vietnamese || !topicId) {
+      return res.status(400).json({ error: 'Missing required fields: korean, english, vietnamese, topicId' });
     }
 
     const vocabulary = await prisma.vocabulary.create({
       data: {
         korean,
         english,
+        vietnamese,
         romanization: romanization || '',
         audioUrl,
         imageUrl,
-        level,
-        topicId,
+        level: level || 'NEWBIE',
+        topic: {
+          connect: { id: parseInt(topicId) }
+        },
       },
     });
 
-    res.status(201).json(vocabulary);
+    return res.status(201).json(vocabulary);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to create vocabulary' });
+    return res.status(500).json({ error: 'Failed to create vocabulary' });
   }
 });
 
 // ========================
 // ADMIN: BULK CREATE VOCABULARY
 // ========================
-router.post('/bulk/create', async (req: AuthRequest, res: Response) => {
+router.post('/bulk/create', async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     if (!req.user || req.user.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Only admins can create vocabulary' });
@@ -209,20 +212,20 @@ router.post('/bulk/create', async (req: AuthRequest, res: Response) => {
       data: vocabularies,
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: `Created ${created.count} vocabulary items`,
       count: created.count,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to create vocabulary' });
+    return res.status(500).json({ error: 'Failed to create vocabulary' });
   }
 });
 
 // ========================
 // ADMIN: UPDATE VOCABULARY
 // ========================
-router.put('/:id', async (req: AuthRequest, res: Response) => {
+router.put('/:id', async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     if (!req.user || req.user.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Only admins can update vocabulary' });
@@ -244,17 +247,17 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
       },
     });
 
-    res.json(vocabulary);
+    return res.json(vocabulary);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to update vocabulary' });
+    return res.status(500).json({ error: 'Failed to update vocabulary' });
   }
 });
 
 // ========================
 // ADMIN: SOFT DELETE VOCABULARY
 // ========================
-router.delete('/:id', async (req: AuthRequest, res: Response) => {
+router.delete('/:id', async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     if (!req.user || req.user.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Only admins can delete vocabulary' });
@@ -267,13 +270,13 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
       data: { isActive: false },
     });
 
-    res.json({
+    return res.json({
       message: 'Vocabulary soft deleted',
       vocabulary,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to delete vocabulary' });
+    return res.status(500).json({ error: 'Failed to delete vocabulary' });
   }
 });
 

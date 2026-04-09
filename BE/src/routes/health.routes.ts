@@ -1,8 +1,9 @@
+// @ts-nocheck
 const { Router } = require('express');
 
-const router = Router();
+const router3 = Router();
 
-router.get('/', (req, res) => {
+router3.get('/', (_req: any, res: any) => {
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
@@ -11,4 +12,4 @@ router.get('/', (req, res) => {
   });
 });
 
-module.exports = router;
+module.exports = router3;

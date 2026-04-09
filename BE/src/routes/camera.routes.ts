@@ -7,7 +7,7 @@ const router = Router();
 const AI_BACKEND_URL = process.env.AI_BACKEND_URL || 'http://localhost:5001';
 
 // Camera detection route - processes image and sends to Flask AI
-router.post('/detect', async (req: Request, res: Response) => {
+router.post('/detect', async (req: Request, res: Response): Promise<any> => {
   try {
     const { image } = req.body; // base64 image data
 
@@ -42,12 +42,12 @@ router.post('/detect', async (req: Request, res: Response) => {
         count: detectedObjects.length,
       };
 
-      res.json(response);
+      return res.json(response);
     } catch (aiError: any) {
       console.error(` AI Backend error: ${aiError.message}`);
       
       // Return error response
-      res.status(502).json({
+      return res.status(502).json({
         success: false,
         message: 'AI backend unavailable',
         error: aiError.message,

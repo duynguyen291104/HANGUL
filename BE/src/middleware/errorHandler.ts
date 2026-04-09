@@ -6,9 +6,9 @@ interface ErrorWithStatus extends Error {
 
 const errorHandler = (
   error: ErrorWithStatus,
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
   const statusCode = error.statusCode || 500;
   const message = error.message || 'Internal Server Error';

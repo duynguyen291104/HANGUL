@@ -126,6 +126,12 @@ export const userService = {
       body: JSON.stringify(data),
     }),
 
+  changePassword: (data: { currentPassword: string; newPassword: string }) =>
+    apiCall('/user/change-password', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
   addXP: (xpAmount: number) =>
     apiCall('/user/xp', {
       method: 'POST',

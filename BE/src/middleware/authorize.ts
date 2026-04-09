@@ -18,7 +18,7 @@ export const authorize = (...allowedRoles: string[]) => {
       return res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
     }
 
-    next();
+    return next();
   };
 };
 
