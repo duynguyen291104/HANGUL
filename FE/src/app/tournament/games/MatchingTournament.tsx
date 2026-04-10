@@ -2,22 +2,16 @@
 
 import { useEffect, useState } from 'react';
 
-interface Vocabulary {
-  id: number;
-  korean: string;
-  vietnamese: string;
-}
-
-interface MatchingTournamentProps {
-  onComplete: (score: number, correctAnswers: number) => void;
-  onExit: () => void;
-}
-
 interface MatchPair {
   id: string;
   korean: string;
   vietnamese: string;
   romanization: string;
+}
+
+interface MatchingTournamentProps {
+  onComplete: (score: number, correctAnswers: number) => void;
+  onExit: () => void;
 }
 
 export default function MatchingTournament({ onComplete, onExit }: MatchingTournamentProps) {

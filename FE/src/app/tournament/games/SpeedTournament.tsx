@@ -133,7 +133,6 @@ export default function SpeedTournament({ onComplete, onExit }: SpeedTournamentP
   }
 
   const question = questions[currentQuestion];
-  const timeColor = timeLeft <= 10 ? 'text-red-400' : timeLeft <= 20 ? 'text-yellow-400' : 'text-green-400';
 
   return (
     <div className="min-h-screen p-6 bg-[#fafaf5] font-['Be_Vietnam_Pro']">

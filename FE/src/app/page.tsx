@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import Link from 'next/link';
@@ -18,13 +18,13 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#fafaf5] font-['Be_Vietnam_Pro'] text-[#1a1c19]">
-      {/* Top Navigation */}
-      <header className="bg-[#fafaf5]/80 backdrop-blur-xl flex justify-between items-center w-full pl-[400px] pr-[400px] py-4 sticky top-0 z-50 shadow-[0_20px_40px_rgba(43,22,15,0.06)] h-20 relative">
+      {/* Header for Landing Page */}
+      <header className="bg-[#fafaf5]/80 backdrop-blur-xl flex justify-between items-center w-full px-10 py-4 sticky top-0 z-50 shadow-[0_20px_40px_rgba(43,22,15,0.06)] h-20">
         <div className="flex items-center gap-2">
           <img 
             src="https://res.cloudinary.com/dds5jlp7e/image/upload/v1774702475/Screenshot_from_2026-03-28_19-52-57-removebg-preview_xvqdug.png" 
             alt="Mascot Icon" 
-            className="w-[80px] h-[80px] object-contain -mt-0.5"
+            className="w-12 h-12 object-contain"
           />
           <div className="text-2xl font-black text-[#72564c] tracking-tighter uppercase font-['Plus_Jakarta_Sans']">
             HANGUL

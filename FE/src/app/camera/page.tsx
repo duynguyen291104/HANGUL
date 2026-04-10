@@ -24,7 +24,6 @@ export default function CameraPage() {
   const [error, setError] = useState<string | null>(null);
   const [serverStatus, setServerStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
   const [frameCount, setFrameCount] = useState(0);
-  const [cameraStatus, setCameraStatus] = useState<'active' | 'inactive'>('inactive');
 
   // Check server health on mount
   useEffect(() => {
@@ -68,13 +67,11 @@ export default function CameraPage() {
       });
       if (response.ok) {
         setIsStreamActive(true);
-        setCameraStatus('active');
       } else {
         throw new Error('Failed to start detection');
       }
     } catch (err) {
       setError('❌ Không thể khởi động phát hiện: ' + (err as Error).message);
-      setCameraStatus('inactive');
     } finally {
       setLoading(false);
     }
@@ -87,7 +84,6 @@ export default function CameraPage() {
       });
       setIsStreamActive(false);
       setDetections([]);
-      setCameraStatus('inactive');
     } catch (err) {
       setError('❌ Lỗi dừng phát hiện');
     }

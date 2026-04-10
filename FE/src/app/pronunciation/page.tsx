@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
+import Header from '@/components/Header';
 import Link from 'next/link';
 
 interface WordData {
@@ -18,7 +19,6 @@ export default function PronunciationPage() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const [isRecording, setIsRecording] = useState(false);
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [pronunciationScore, setPronunciationScore] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState('');
@@ -32,11 +32,9 @@ export default function PronunciationPage() {
     vietnamese: '"Xin chào"'
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [isFetchingVocab, setIsFetchingVocab] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const nativeAudioRef = useRef<HTMLAudioElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyzerRef = useRef<AnalyserNode | null>(null);
   const dataArrayRef = useRef<Uint8Array | null>(null);
@@ -46,7 +44,6 @@ export default function PronunciationPage() {
   // Fetch vocabulary from database based on user level
   const fetchVocabulary = async (level: string) => {
     try {
-      setIsFetchingVocab(true);
       console.log(`🎤 [Pronunciation] Fetching vocabulary for level: ${level}`);
       
       const response = await fetch(`/api/pronunciation/vocabulary/${level}?limit=20`);
@@ -82,8 +79,6 @@ export default function PronunciationPage() {
       console.error('❌ Error fetching vocabulary:', error.message);
       console.log('📌 Using fallback hardcoded vocabulary...');
       useFallbackVocabulary();
-    } finally {
-      setIsFetchingVocab(false);
     }
   };
 
@@ -237,11 +232,8 @@ export default function PronunciationPage() {
 
   // Play native audio
   const playNativeAudio = () => {
-    // Simulate audio playback - in real app, fetch actual audio
-    setIsPlayingAudio(true);
-    setTimeout(() => {
-      setIsPlayingAudio(false);
-    }, 2000);
+    // Audio playback - trigger recording simulation
+    // In real app, fetch and play actual audio
   };
 
   // Simulate switching to next phrase
@@ -266,6 +258,7 @@ export default function PronunciationPage() {
 
   return (
     <div className="min-h-screen bg-[#fafaf5] font-['Be_Vietnam_Pro']" suppressHydrationWarning>
+      <Header />
       <div className="flex">
         {/* Sidebar */}
         <aside className="hidden lg:flex flex-col gap-2 py-6 bg-[#f4f4ef] w-72 h-screen sticky left-0 top-0 text-[#72564c] font-['Plus_Jakarta_Sans'] text-sm font-semibold">

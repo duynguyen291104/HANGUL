@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
+import Header from '@/components/Header';
 import { userService, achievementService } from '@/services/api';
 
 interface Achievement {
@@ -94,8 +95,9 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-100 p-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-white">
+      <Header />
+      <div className="max-w-4xl mx-auto p-4">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800">👤 Hồ sơ cá nhân</h1>

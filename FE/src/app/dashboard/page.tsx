@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
+import Header from '@/components/Header';
 import Link from 'next/link';
 
 interface GameStats {
@@ -109,6 +110,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#fafaf5] font-['Be_Vietnam_Pro']">
+      <Header />
       <div className="flex">
         {/* Sidebar */}
         <aside className="hidden lg:flex flex-col gap-2 py-6 bg-[#f4f4ef] w-72 h-screen sticky left-0 top-0 text-[#72564c] font-['Plus_Jakarta_Sans'] text-sm font-semibold">

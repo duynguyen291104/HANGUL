@@ -133,7 +133,7 @@ export const useAuthStore = create<AuthStore>((set) => {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/update-level`,
         {
-          method: 'POST',
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
@@ -149,12 +149,19 @@ export const useAuthStore = create<AuthStore>((set) => {
 
       const data = await response.json();
       set((state) => {
-        const updatedUser = state.user ? { ...state.user, level: data.user.level, levelLocked: true } : null;
+        if (!state.user) {
+          console.error('❌ User not found in state');
+          throw new Error('User not authenticated');
+        }
+
+        const updatedUser = {
+          ...state.user,
+          level: data.level,
+          levelLocked: data.levelLocked,
+        };
         
         // 🔥 LƯU LEVEL MỚI VÀO LOCALSTORAGE
-        if (updatedUser) {
-          localStorage.setItem('user', JSON.stringify(updatedUser));
-        }
+        localStorage.setItem('user', JSON.stringify(updatedUser));
         
         return {
           user: updatedUser,

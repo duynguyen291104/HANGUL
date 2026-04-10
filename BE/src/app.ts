@@ -8,21 +8,21 @@ require('dotenv').config();
 // Initialize Prisma
 const prisma = new PrismaClient();
 
-// Import routes
-const healthRouter = require('./routes/health.routes');
-const authRouter = require('./routes/auth.routes');
-const userRouter = require('./routes/user.routes');
-const vocabularyRouter = require('./routes/vocabulary.routes');
-const quizRouter = require('./routes/quiz.routes');
-const listeningRouter = require('./routes/listening.routes');
-const pronunciationRouter = require('./routes/pronunciation.routes');
-const cameraRouter = require('./routes/camera.routes');
-const yoloRouter = require('./routes/yolo.routes.js');
-const tournamentRouter = require('./routes/tournament.routes');
+// Import module routes (new modular structure)
+// Note: Using .default because modules export as ES6 but app.ts uses CommonJS require()
+const authRouter = require('./modules/auth/auth.routes').default;
+const userRouter = require('./modules/user/index').default;
+const vocabularyRouter = require('./modules/vocabulary/index').default;
+const quizRouter = require('./modules/quiz/index').default;
+const pronunciationRouter = require('./modules/pronunciation/index').default;
+const cameraRouter = require('./modules/camera/index').default;
+const tournamentRouter = require('./modules/tournament/index').default;
+const topicRouter = require('./modules/topic/index').default;
+const writingRouter = require('./modules/writing/index').default;
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
-const authenticate = require('./middleware/authenticate');
+const { authenticate } = require('./middleware/authenticate');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -128,54 +128,19 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // ========================
 // ROUTES
 // ========================
-app.use('/api/health', healthRouter);
 app.use('/api/auth', authRouter);
-
-// Public tournament leaderboard (read-only)
-const tournamentLeaderboardRouter = express.Router();
-tournamentLeaderboardRouter.get('/', async (req: any, res: any) => {
-  try {
-    const leaderboard = await prisma.user.findMany({
-      where: { trophy: { gte: 1000 } },
-      select: {
-        id: true,
-        name: true,
-        avatar: true,
-        trophy: true,
-        level: true,
-        totalXP: true,
-      },
-      orderBy: [{ trophy: 'desc' }, { totalXP: 'desc' }],
-      take: 100,
-    });
-    const formatted = leaderboard.map((user: any, idx: number) => ({
-      rank: idx + 1,
-      userId: user.id,
-      name: user.name,
-      avatar: user.avatar,
-      trophy: user.trophy,
-      level: user.level,
-      xp: user.totalXP,
-    }));
-    res.json(formatted);
-  } catch (error) {
-    console.error('Leaderboard error:', error);
-    res.status(500).json([]);
-  }
-});
-app.use('/api/tournament/leaderboard', tournamentLeaderboardRouter);
 
 // Protected routes (require authentication)
 app.use('/api/user', authenticate, userRouter);
 app.use('/api/vocabulary', authenticate, vocabularyRouter);
 app.use('/api/quiz', authenticate, quizRouter);
-app.use('/api/listening', authenticate, listeningRouter);
+app.use('/api/writing', authenticate, writingRouter);
 app.use('/api/tournament', authenticate, tournamentRouter);
+app.use('/api/topic', authenticate, topicRouter);
 
 // Pronunciation and Camera detection routes (public for testing)
 app.use('/api/pronunciation', pronunciationRouter);
 app.use('/api/camera', cameraRouter);
-app.use('/api/yolo', authenticate, yoloRouter);
 
 // ========================
 // 404 HANDLER
