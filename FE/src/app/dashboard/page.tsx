@@ -1,10 +1,9 @@
 ﻿'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
-import Link from 'next/link';
-
 interface GameStats {
   trophy?: number;
   xp?: number;
@@ -108,84 +107,8 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafaf5] font-['Be_Vietnam_Pro']">
-      <div className="flex">
-        {/* Sidebar */}
-        <aside className="hidden lg:flex flex-col gap-2 py-6 bg-[#f4f4ef] w-72 h-screen sticky left-0 top-0 text-[#72564c] font-['Plus_Jakarta_Sans'] text-sm font-semibold">
-          <div className="px-4 mb-4">
-            <div className="flex items-center gap-3 justify-center">
-              <img
-                src="https://res.cloudinary.com/dds5jlp7e/image/upload/v1774702475/Screenshot_from_2026-03-28_19-52-57-removebg-preview_xvqdug.png"
-                alt="HANGUL Logo"
-                className="w-12 h-12 object-contain"
-              />
-              <div className="text-2xl font-black text-[#72564c] tracking-tighter uppercase font-['Plus_Jakarta_Sans']">
-                HANGUL
-              </div>
-            </div>
-          </div>
-
-          <nav className="flex-grow flex flex-col gap-1 px-4">
-            <Link
-              href="/quiz"
-              className="text-[#72564c] rounded-lg mx-0 py-3 px-4 flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95"
-            >
-              <div className="flex flex-col">
-                <span className="font-bold">Quiz</span>
-                <span className="text-xs opacity-70 font-normal">Test knowledge</span>
-              </div>
-            </Link>
-            
-            <Link href="/camera" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95">
-              <div className="flex flex-col">
-                <span className="font-bold">Camera to Vocab</span>
-                <span className="text-xs opacity-70 font-normal">Visual learning</span>
-              </div>
-            </Link>
-
-            <Link href="/writing" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95">
-              <div className="flex flex-col">
-                <span className="font-bold">Writing Practice</span>
-                <span className="text-xs opacity-70 font-normal">Handwriting</span>
-              </div>
-            </Link>
-
-            <Link href="/pronunciation" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95">
-              <div className="flex flex-col">
-                <span className="font-bold">Pronunciation</span>
-                <span className="text-xs opacity-70 font-normal">Speak & listen</span>
-              </div>
-            </Link>
-
-            <Link href="/learning-map" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95">
-              <div className="flex flex-col">
-                <span className="font-bold">Learning Path</span>
-                <span className="text-xs opacity-70 font-normal">Adjust level</span>
-              </div>
-            </Link>
-
-            <Link href="/tournament" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95">
-              <div className="flex flex-col">
-                <span className="font-bold">Tournament</span>
-                <span className="text-xs opacity-70 font-normal">Compete & rank</span>
-              </div>
-            </Link>
-          </nav>
-
-          <div className="px-4 mt-auto flex flex-col gap-3">
-            <button
-              onClick={() => {
-                router.push('/profile');
-              }}
-              className="w-full py-3 bg-[#e8e8e3] text-[#72564c] rounded-lg font-bold hover:bg-[#d4c3be] transition-all active:scale-95"
-            >
-              User Profile
-            </button>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-grow p-8 lg:p-12 max-w-7xl mx-auto">
+    <div>
+      <main>
 
           {/* Welcome Section */}
           <section className="relative mb-12 pt-8">
@@ -330,30 +253,7 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-        </main>
-      </div>
-
-      {/* Mobile Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg flex justify-around items-center py-4 px-6 border-t border-[#d4c3be]/10 z-50">
-        <Link href="/dashboard" className="flex flex-col items-center gap-1 text-[#72564c]">
-          <span className="text-2xl">🏠</span>
-          <span className="text-[10px] font-bold uppercase">Home</span>
-        </Link>
-        <Link href="/quiz" className="flex flex-col items-center gap-1 text-[#504441]/60">
-          <span className="text-2xl">📚</span>
-          <span className="text-[10px] font-bold uppercase">Learn</span>
-        </Link>
-        <Link href="/tournament" className="flex flex-col items-center gap-1 text-[#504441]/60">
-          <span className="text-2xl">🏆</span>
-          <span className="text-[10px] font-bold uppercase">Rank</span>
-        </Link>
-        <button className="flex flex-col items-center gap-1 text-[#504441]/60">
-          <div className="w-6 h-6 rounded-full overflow-hidden">
-            <img alt="Profile" className="w-full h-full object-cover" src="https://res.cloudinary.com/dds5jlp7e/image/upload/v1774702475/Screenshot_from_2026-03-28_19-52-57-removebg-preview_xvqdug.png" />
-          </div>
-          <span className="text-[10px] font-bold uppercase">Profile</span>
-        </button>
-      </nav>
+      </main>
     </div>
   );
 }
