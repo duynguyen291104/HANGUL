@@ -168,20 +168,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <HangulPageFrame
-      activeNav="Library"
-      sidebar={
-        <HangulSidebar
-          items={getSidebarItems('friends')}
-          profile={{
-            title: `${levelMeta.step}: ${levelMeta.label}`,
-            subtitle: `Next: ${levelMeta.next}`,
-            emoji: '🦦',
-            tone: 'paper',
-          }}
-        />
-      }
-    >
+    <HangulPageFrame activeNav="Library" >
       <div className="space-y-6">
         <div className="grid gap-6 xl:grid-cols-[1.15fr_0.5fr]">
           <HangulCard className="p-8 sm:p-10 bg-gradient-to-br from-white to-[#fef7f0] shadow-xl border-0">

@@ -7,13 +7,11 @@ import { Check, Cloud, Lock, Sun, UtensilsCrossed, Users, Hash } from 'lucide-re
 import {
   HangulCard,
   HangulPageFrame,
-  HangulSidebar,
   MascotPortrait,
   Pill,
   ProgressBar,
   SectionLabel,
   getLevelMeta,
-  getSidebarItems,
 } from '@/components/hangul/ui';
 import { getTopicsByLevel } from '@/mocks/topics';
 import { useAuthStore } from '@/store/authStore';
@@ -37,20 +35,7 @@ export default function LearningMapPage() {
   const totalProgress = Math.min(100, Math.max(20, Math.round((2 / Math.max(visibleTopics.length, 1)) * 100)));
 
   return (
-    <HangulPageFrame
-      activeNav="Practice"
-      sidebar={
-        <HangulSidebar
-          items={getSidebarItems('path')}
-          profile={{
-            title: `${levelMeta.step}: ${levelMeta.label}`,
-            subtitle: `Next: ${levelMeta.next}`,
-            emoji: '🦦',
-            tone: 'paper',
-          }}
-        />
-      }
-    >
+    <HangulPageFrame activeNav="Practice">
       <div className="space-y-6">
         <HangulCard className="px-7 py-8 sm:px-10 sm:py-10">
           <SectionLabel>Learning Path</SectionLabel>
