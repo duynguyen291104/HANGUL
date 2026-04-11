@@ -182,3 +182,4 @@ export const cameraService = {
       body: JSON.stringify({ image: imageBase64 }),
     }),
 };
+

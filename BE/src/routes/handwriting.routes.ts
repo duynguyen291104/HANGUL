@@ -6,6 +6,15 @@ import { PrismaClient } from '@prisma/client';
 const router = Router();
 const prisma = new PrismaClient();
 
+const {
+  buildCharacterGuide,
+  buildWordGuide,
+  buildGuidesFromWords,
+  getExpectedStrokeCount,
+  scoreStrokeOrder,
+} = require('../lib/hangulStrokeGuides');
+
+
 const HANDWRITING_AI_URL = (process.env.HANDWRITING_AI_URL || '').replace(/\/+$/, '');
 const OPENAI_MODEL = process.env.HANDWRITING_OPENAI_MODEL || 'gpt-4o-mini';
 const openai = process.env.OPENAI_API_KEY
@@ -20,6 +29,7 @@ type HandwritingMetrics = {
   strokeBalance: number;
   neatness: number;
   completion: number;
+  strokeOrder: number;
 };
 
 type DrawingGeometry = {
@@ -204,27 +214,18 @@ function calculateStrictScore(
       : 0;
 
   let score = Math.round(
-    metrics.accuracy * 0.62 +
-      metrics.strokeBalance * 0.23 +
+    metrics.accuracy * 0.44 +
+      metrics.strokeBalance * 0.18 +
       metrics.neatness * 0.1 +
-      metrics.completion * 0.05
+      metrics.completion * 0.08 +
+      metrics.strokeOrder * 0.2
   );
 
-  if (strokeDiff > 0) {
-    score -= 8 + strokeDiff * 7;
-  }
-
-  if (metrics.accuracy < 85) {
-    score -= Math.round((85 - metrics.accuracy) * 0.35);
-  }
-
-  if (metrics.strokeBalance < 80) {
-    score -= Math.round((80 - metrics.strokeBalance) * 0.25);
-  }
-
-  if (metrics.completion < 60) {
-    score -= Math.round((60 - metrics.completion) * 0.15);
-  }
+  if (strokeDiff > 0) score -= 8 + strokeDiff * 7;
+  if (metrics.accuracy < 85) score -= Math.round((85 - metrics.accuracy) * 0.35);
+  if (metrics.strokeBalance < 80) score -= Math.round((80 - metrics.strokeBalance) * 0.25);
+  if (metrics.completion < 60) score -= Math.round((60 - metrics.completion) * 0.15);
+  if (metrics.strokeOrder < 75) score -= Math.round((75 - metrics.strokeOrder) * 0.28);
 
   if (strokeDiff >= 3) score = Math.min(score, 52);
   else if (strokeDiff === 2) score = Math.min(score, 64);
@@ -233,6 +234,8 @@ function calculateStrictScore(
   if (metrics.accuracy < 75) score = Math.min(score, 69);
   if (metrics.accuracy < 60) score = Math.min(score, 54);
   if (metrics.strokeBalance < 60) score = Math.min(score, 58);
+  if (metrics.strokeOrder < 60) score = Math.min(score, 68);
+  if (metrics.strokeOrder < 40) score = Math.min(score, 52);
 
   return clamp(score);
 }
@@ -413,7 +416,13 @@ async function resolveExercise(body: any, level: string) {
     exercise = await prisma.handwritingExercise.create({
       data: {
         hangulChar: character,
-        strokes: clamp(body?.expectedStrokes || expectedStrokesForChar(character), 1, 20),
+        strokes: clamp(
+          body?.expectedStrokes ||
+            getExpectedStrokeCount(character) ||
+            expectedStrokesForChar(character),
+          1,
+          20
+        ),
         level,
         topicId: topic.id,
       },
@@ -553,6 +562,16 @@ function analyzeHandwritingIssues(payload: any, metrics: HandwritingMetrics) {
     });
   }
 
+  const strokeOrderScore = Number(payload?.strokeOrderScore || 0);
+  if (strokeOrderScore > 0 && strokeOrderScore < 60) {
+    issues.push({
+      id: 'wrong_stroke_order',
+      severity: 92,
+      detail: 'Bạn đã viết ra gần đúng hình chữ, nhưng thứ tự nét hoặc hướng đi bút chưa đúng với mẫu chuẩn.',
+      suggestion: 'Xem lại card hướng dẫn và viết lại từng nét theo đúng số thứ tự hiển thị.',
+    });
+  }
+
   if (metrics.accuracy < 70 && !issues.length) {
     issues.push({
       id: 'generic_accuracy',
@@ -623,6 +642,12 @@ function buildSuggestionsFromIssues(issues: DiagnosticIssue[], metrics: Handwrit
 
 function normalizeEvaluation(raw: any, engine: string, payload: any) {
   const metrics = raw?.metrics ?? {};
+  const strokeOrderResult = scoreStrokeOrder(
+    payload?.character,
+    payload?.strokeGroups,
+    payload?.geometry?.canvasWidth,
+    payload?.geometry?.canvasHeight
+  );
 
   const strictMetrics: HandwritingMetrics = {
     accuracy: clamp(metrics.accuracy ?? raw?.accuracy ?? raw?.score ?? 0),
@@ -638,6 +663,7 @@ function normalizeEvaluation(raw: any, engine: string, payload: any) {
     ),
     neatness: clamp(metrics.neatness ?? metrics.shape ?? raw?.neatness ?? raw?.shape ?? raw?.score ?? 0),
     completion: clamp(metrics.completion ?? raw?.completion ?? raw?.score ?? 0),
+    strokeOrder: strokeOrderResult.score,
   };
 
   const score = calculateStrictScore(
@@ -646,9 +672,18 @@ function normalizeEvaluation(raw: any, engine: string, payload: any) {
     Number(payload?.actualStrokeCount || 0)
   );
 
-  const issues = analyzeHandwritingIssues(payload, strictMetrics);
-  const feedback = buildFeedbackFromIssues(issues, strictMetrics, score);
+  const issues = [
+    ...strokeOrderResult.issues,
+    ...analyzeHandwritingIssues(
+      {
+        ...payload,
+        strokeOrderScore: strokeOrderResult.score,
+      },
+      strictMetrics
+    ),
+  ].sort((left, right) => right.severity - left.severity);
 
+  const feedback = buildFeedbackFromIssues(issues, strictMetrics, score);
   const modelSuggestions = normalizeSuggestions(
     raw?.suggestions ?? raw?.tips ?? raw?.recommendations,
     []
@@ -666,6 +701,7 @@ function normalizeEvaluation(raw: any, engine: string, payload: any) {
     metrics: strictMetrics,
     suggestions,
     issues,
+    guideData: strokeOrderResult.guideData || null,
     engine,
   };
 }
@@ -678,15 +714,33 @@ function buildRuleBasedEvaluation(payload: any) {
   const geometry: Partial<DrawingGeometry> = payload.geometry || {};
   const profile = CHAR_PROFILES[payload.character] || DEFAULT_CHAR_PROFILE;
 
+  const strokeOrderResult = scoreStrokeOrder(
+    payload?.character,
+    payload?.strokeGroups,
+    payload?.geometry?.canvasWidth,
+    payload?.geometry?.canvasHeight
+  );
+
   if (pointCount < 8) {
     const strictMetrics: HandwritingMetrics = {
       accuracy: 12,
       strokeBalance: 10,
       neatness: 18,
       completion: 10,
+      strokeOrder: strokeOrderResult.score,
     };
 
-    const issues = analyzeHandwritingIssues(payload, strictMetrics);
+    const issues = [
+      ...strokeOrderResult.issues,
+      ...analyzeHandwritingIssues(
+        {
+          ...payload,
+          strokeOrderScore: strokeOrderResult.score,
+        },
+        strictMetrics
+      ),
+    ].sort((left, right) => right.severity - left.severity);
+
     const score = calculateStrictScore(strictMetrics, expectedStrokes, actualStrokeCount);
 
     return {
@@ -697,6 +751,7 @@ function buildRuleBasedEvaluation(payload: any) {
       metrics: strictMetrics,
       suggestions: buildSuggestionsFromIssues(issues, strictMetrics),
       issues,
+      guideData: strokeOrderResult.guideData || null,
       engine: 'rule-based-fallback',
     };
   }
@@ -748,9 +803,20 @@ function buildRuleBasedEvaluation(payload: any) {
           strokeDiff * 6
       )
     ),
+    strokeOrder: strokeOrderResult.score,
   };
 
-  const issues = analyzeHandwritingIssues(payload, strictMetrics);
+  const issues = [
+    ...strokeOrderResult.issues,
+    ...analyzeHandwritingIssues(
+      {
+        ...payload,
+        strokeOrderScore: strokeOrderResult.score,
+      },
+      strictMetrics
+    ),
+  ].sort((left, right) => right.severity - left.severity);
+
   const score = calculateStrictScore(strictMetrics, expectedStrokes, actualStrokeCount);
 
   return {
@@ -760,6 +826,7 @@ function buildRuleBasedEvaluation(payload: any) {
     metrics: strictMetrics,
     suggestions: buildSuggestionsFromIssues(issues, strictMetrics),
     issues,
+    guideData: strokeOrderResult.guideData || null,
     engine: 'rule-based-fallback',
   };
 }
@@ -895,12 +962,47 @@ function mapAttempt(attempt: any) {
     suggestions: Array.isArray(meta.suggestions) ? meta.suggestions : [],
     issues: Array.isArray(meta.issues) ? meta.issues : [],
     geometry: meta.geometry || drawing.geometry || null,
+    guideData: meta.guideData || null,
     engine: meta.engine || 'stored',
     strokeCount: meta.actualStrokeCount ?? drawing.strokeCount ?? null,
     durationMs: meta.durationMs ?? drawing.durationMs ?? null,
     createdAt: attempt.createdAt,
   };
 }
+
+router.get('/guides', async (req: Request, res: Response) => {
+  try {
+    const level = String(req.query.level || DEFAULT_LEVEL).toUpperCase();
+
+    const vocabularies = await prisma.vocabulary.findMany({
+      where: {
+        isActive: true,
+        level,
+      },
+      select: {
+        korean: true,
+      },
+    });
+
+    const guides = buildGuidesFromWords(vocabularies.map((item: any) => item.korean));
+
+    return res.json({
+      success: true,
+      data: {
+        level,
+        characters: Object.keys(guides),
+        guides,
+      },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to load handwriting guides',
+      message: error?.message || 'Unknown error',
+    });
+  }
+});
 
 router.post('/submit', async (req: Request, res: Response) => {
   try {
@@ -927,12 +1029,16 @@ router.post('/submit', async (req: Request, res: Response) => {
     const level = String(req.body?.level || DEFAULT_LEVEL).toUpperCase();
     const exercise = await resolveExercise(req.body, level);
     const normalized = normalizeDrawingPayload(req.body);
+    const guideData = buildWordGuide(exercise.hangulChar) || buildCharacterGuide(exercise.hangulChar);
+
+
+    const expectedStrokeCount = guideData?.strokes?.length || exercise.strokes;
 
     const evaluation = await evaluateHandwriting({
       imageBase64: req.body?.imageBase64 || '',
       character: exercise.hangulChar,
       level: exercise.level,
-      expectedStrokes: exercise.strokes,
+      expectedStrokes: expectedStrokeCount,
       actualStrokeCount: normalized.strokeCount,
       durationMs: normalized.durationMs,
       pointCount: normalized.pointCount,
@@ -949,9 +1055,10 @@ router.post('/submit', async (req: Request, res: Response) => {
         feedback: JSON.stringify({
           ...evaluation,
           actualStrokeCount: normalized.strokeCount,
-          expectedStrokeCount: exercise.strokes,
+          expectedStrokeCount,
           durationMs: normalized.durationMs,
           geometry: normalized.geometry,
+          guideData: evaluation.guideData || guideData || null,
         }),
       },
     });
@@ -975,6 +1082,7 @@ router.post('/submit', async (req: Request, res: Response) => {
         metrics: evaluation.metrics,
         suggestions: evaluation.suggestions,
         issues: evaluation.issues,
+        guideData: evaluation.guideData || guideData || null,
         engine: evaluation.engine,
         submittedAt: attempt.createdAt,
       },
@@ -1024,6 +1132,7 @@ router.get('/stats', async (req: Request, res: Response) => {
             strokeBalance: 0,
             neatness: 0,
             completion: 0,
+            strokeOrder: 0,
           },
           scoreBuckets: {
             excellent: 0,
@@ -1090,6 +1199,7 @@ router.get('/stats', async (req: Request, res: Response) => {
           strokeBalance: average(parsed.map((item) => Number(item.metrics?.strokeBalance || 0))),
           neatness: average(parsed.map((item) => Number(item.metrics?.neatness || 0))),
           completion: average(parsed.map((item) => Number(item.metrics?.completion || 0))),
+          strokeOrder: average(parsed.map((item) => Number(item.metrics?.strokeOrder || 0))),
         },
         scoreBuckets,
         topCharacters,
