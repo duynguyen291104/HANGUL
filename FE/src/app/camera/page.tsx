@@ -149,20 +149,7 @@ export default function CameraPage() {
   const levelMeta = getLevelMeta(user?.level ?? 'BEGINNER');
 
   return (
-    <HangulPageFrame
-      activeNav="Arena"
-      sidebar={
-        <HangulSidebar
-          items={getSidebarItems('vocabulary')}
-          profile={{
-            title: `${levelMeta.step}: ${levelMeta.label}`,
-            subtitle: `Next: ${levelMeta.next}`,
-            emoji: '🦦',
-            tone: 'mint',
-          }}
-        />
-      }
-    >
+    <HangulPageFrame activeNav="Arena">
       <div className="space-y-6">
         {error ? <div className="rounded-[28px] bg-[#ffe8e1] px-5 py-4 text-base text-[#944f42]">{error}</div> : null}
 
