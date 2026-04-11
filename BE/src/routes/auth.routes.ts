@@ -145,7 +145,7 @@ router2.get('/me', async (req: any, res: any) => {
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma2.user.findUnique({
       where: { id: decoded.id },
       select: {
         id: true,
@@ -230,7 +230,7 @@ router2.post('/seed-test-user', async (_req: any, res: any) => {
     console.log('🌱 Seeding test user...');
 
     // Check if test user exists
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma2.user.findUnique({
       where: { email: 'test@example.com' },
     });
 
@@ -258,7 +258,7 @@ router2.post('/seed-test-user', async (_req: any, res: any) => {
     });
 
     // Create user stats
-    await prisma.userStats.create({
+    await prisma2.userStats.create({
       data: {
         userId: user.id,
         trophy: 0,
