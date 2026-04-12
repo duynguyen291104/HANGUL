@@ -22,10 +22,13 @@ model User {
   
   // Profile
   avatar    String?
-  level     String  @default("NEWBIE")
+  level     String  @default("CỰC_CƠ_BẢN")
+  levelUnlockedAt DateTime?
   levelLocked Boolean @default(false)
+  
+  // XP & Trophy
   totalXP   Int     @default(0)
-  trophy    Int     @default(0)        // For tournament feature (>= 1000 to join)
+  totalTrophy Int   @default(0)
   currentStreak Int @default(0)
   lastCheckinDate DateTime?
   
@@ -42,6 +45,11 @@ model User {
   detectionStats DetectionStats? @relation("detectionStats")
   batchJobs BatchJob[] @relation("batchJobs")
   
+  // NEW: Progress tracking
+  userProgress UserProgress[]
+  levelTestProgress LevelTestProgress[]
+  userAnswerHistory UserAnswerHistory[]
+  
   // Game System
   stats         UserStats?
   rank          UserRank?
@@ -49,6 +57,12 @@ model User {
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  // Database Indexes for Performance
+  @@index([email])
+  @@index([level])
+  @@index([totalXP])
+  @@index([totalTrophy])
 }
 
 enum Role {
@@ -64,7 +78,7 @@ model Topic {
   id      Int     @id @default(autoincrement())
   name    String
   description String?
-  level   String  // NEWBIE, BEGINNER, INTERMEDIATE, UPPER_INTERMEDIATE, ADVANCED
+  level   String  // CỰC_CƠ_BẢN, CƠ_BẢN, TRUNG_CẤP, NÂNG_CAO, LÃO_LUYỆN
   order   Int     @default(0)
   
   // Relations
@@ -74,6 +88,9 @@ model Topic {
   handwritingExercises HandwritingExercise[]
   pronunciationWords PronunciationWord[]
   learningNodes LearningNode[]
+  quizSessions QuizSession[]
+  userProgress UserProgress[]
+  userAnswerHistory UserAnswerHistory[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -105,6 +122,11 @@ model Vocabulary {
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  // Database Indexes for Performance
+  @@index([topicId])
+  @@index([level])
+  @@index([isActive])
 }
 
 // ========================
@@ -175,12 +197,18 @@ model Question {
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  
+  // Database Indexes for Performance
+  @@index([topicId])
+  @@index([isActive])
 }
 
 model QuizSession {
   id                Int     @id @default(autoincrement())
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId            Int
+  topic             Topic?  @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  topicId           Int?
   score             Int     @default(0)
   totalQuestions    Int
   correctAnswers    Int     @default(0)
@@ -190,6 +218,10 @@ model QuizSession {
   
   createdAt         DateTime @default(now())
   endedAt           DateTime?
+  
+  // Database Indexes for Performance
+  @@index([userId])
+  @@index([topicId])
 }
 
 model QuizAnswer {
@@ -204,6 +236,11 @@ model QuizAnswer {
   isCorrect         Boolean
   
   createdAt         DateTime @default(now())
+  
+  // Database Indexes for Performance
+  @@index([userId])
+  @@index([sessionId])
+  @@index([questionId])
 }
 
 // ========================
@@ -223,6 +260,10 @@ model WritingPractice {
   feedback    String? // JSON feedback from AI
   
   createdAt   DateTime @default(now())
+  
+  // Database Indexes for Performance
+  @@index([userId])
+  @@index([topicId])
 }
 
 // ========================
@@ -255,6 +296,10 @@ model HandwritingAttempt {
   feedback    String?
   
   createdAt   DateTime @default(now())
+  
+  // Database Indexes for Performance
+  @@index([userId])
+  @@index([exerciseId])
 }
 
 // ========================
@@ -291,6 +336,10 @@ model PronunciationAttempt {
   phoneticErrors String? // JSON array of phoneme errors
   
   createdAt   DateTime @default(now())
+  
+  // Database Indexes for Performance
+  @@index([userId])
+  @@index([wordId])
 }
 
 // ========================
@@ -537,4 +586,87 @@ model BatchJob {
   
   @@index([userId])
   @@index([status])
+}
+
+// ========================
+// LEARNING PATH PROGRESS (NEW)
+// ========================
+model UserProgress {
+  id        String @id @default(cuid())
+  
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  
+  topic     Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId   Int
+  
+  skillType String // "QUIZ" | "WRITING" | "PRONUNCIATION"
+  
+  completed Boolean @default(false)
+  score     Int?    // 0-100
+  attempts  Int @default(0)
+  
+  completedAt DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, topicId, skillType])
+  @@index([userId])
+  @@index([topicId])
+}
+
+model LevelTestProgress {
+  id        String @id @default(cuid())
+  
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  
+  targetLevel String // "CỰC_CƠ_BẢN" | "CƠ_BẢN" | "TRUNG_CẤP" | "NÂNG_CAO" | "LÃO_LUYỆN"
+  
+  // Điều kiện (lưu trữ để tra cứu)
+  requiredXP    Int
+  requiredTrophy Int
+  
+  // Status
+  isTestUnlocked Boolean @default(false)
+  testStartedAt  DateTime?
+  testPassed     Boolean? // null = chưa làm, true = pass, false = fail
+  passedAt       DateTime?
+  
+  score         Int? // Score của test (0-100)
+  attempts      Int @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, targetLevel])
+  @@index([userId])
+}
+
+// ========================
+// USER ANSWER HISTORY (LEARNING PATH HISTORY)
+// ========================
+model UserAnswerHistory {
+  id        String @id @default(cuid())
+  
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  
+  topic     Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId   Int
+  
+  skillType String // "QUIZ" | "WRITING" | "PRONUNCIATION"
+  
+  question  String
+  correctAnswer String
+  userAnswer String
+  isCorrect Boolean
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([topicId])
+  @@index([skillType])
+  @@index([createdAt])
 }

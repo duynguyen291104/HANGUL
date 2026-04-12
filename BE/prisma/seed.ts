@@ -4,6 +4,9 @@
  * This is the SINGLE SOURCE OF TRUTH for database seeding.
  * Run: npx prisma db seed
  * 
+ * IMPORTANT: This script creates ONE PrismaClient instance and properly disconnects it.
+ * This ensures no connection pool exhaustion or multiple instances.
+ * 
  * Includes:
  * - Users (test accounts)
  * - Ranks (Bronze, Silver, Gold, etc.)
@@ -17,7 +20,10 @@ import * as bcrypt from 'bcrypt';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const prisma = new PrismaClient();
+// Create single instance for entire seed process
+const prisma = new PrismaClient({
+  log: ['error', 'warn'],
+});
 
 // ============================================
 // UTILITY: Load JSON files

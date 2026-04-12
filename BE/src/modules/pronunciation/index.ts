@@ -1,9 +1,17 @@
 import { Router, Request, Response } from 'express';
 import axios from 'axios';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../../lib/prisma';
+import { saveUserProgress, addUserXP, checkLevelTestUnlock } from '../../utils/progressHelper';
 
 const router = Router();
-const prisma = new PrismaClient();
+
+interface AuthRequest extends Request {
+  user?: {
+    id: number;
+    email: string;
+    role: string;
+  };
+}
 
 // AI Backend URL - Flask running on port 5001
 const AI_BACKEND_URL = process.env.AI_BACKEND_URL || 'http://localhost:5001';
@@ -197,6 +205,67 @@ router.get('/vocabulary/:level', async (req: Request, res: Response) => {
       error: 'Failed to fetch vocabulary from database',
       message: error.message 
     });
+  }
+});
+
+// Submit pronunciation attempt and save score (authenticated)
+router.post('/submit-score', async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { topicId, wordId, score } = req.body;
+    const userId = (req.user as any).id;
+
+    if (!topicId || score === undefined) {
+      return res.status(400).json({ error: 'topicId and score required' });
+    }
+
+    const calculatedScore = Math.round(score);
+    const isPassed = calculatedScore >= 70;
+
+    // Save pronunciation attempt
+    await prisma.pronunciationAttempt.create({
+      data: {
+        userId,
+        wordId: wordId ? parseInt(wordId) : 1,
+        overallScore: calculatedScore,
+        audioUrl: '',
+      },
+    }).catch(() => {
+      // If table doesn't exist, just log it
+      console.log('Note: pronunciationAttempt table may not exist yet');
+    });
+
+    // Save progress
+    await saveUserProgress(userId, parseInt(topicId), 'PRONUNCIATION', calculatedScore, isPassed);
+
+    // Award XP based on score
+    const xpGained = await addUserXP(userId, 'PRONUNCIATION', calculatedScore);
+
+    // Check if user unlocked next level test
+    await checkLevelTestUnlock(userId);
+
+    // Get updated user
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { totalXP: true, totalTrophy: true, level: true },
+    });
+
+    res.json({
+      success: true,
+      score: calculatedScore,
+      isPassed,
+      xpGained,
+      totalXP: updatedUser?.totalXP,
+      totalTrophy: updatedUser?.totalTrophy,
+      level: updatedUser?.level,
+      message: isPassed ? 'Great pronunciation!' : 'Keep practicing!',
+    });
+  } catch (error) {
+    console.error('Error submitting pronunciation score:', error);
+    res.status(500).json({ error: 'Failed to submit pronunciation score' });
   }
 });
 

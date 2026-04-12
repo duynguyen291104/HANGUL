@@ -46,7 +46,7 @@ export default function PronunciationPage() {
     try {
       console.log(`🎤 [Pronunciation] Fetching vocabulary for level: ${level}`);
       
-      const response = await fetch(`/api/pronunciation/vocabulary/${level}?limit=20`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pronunciation/vocabulary/${level}?limit=20`);
       
       console.log(`Response status: ${response.status}`);
       
@@ -260,81 +260,6 @@ export default function PronunciationPage() {
     <div className="min-h-screen bg-[#fafaf5] font-['Be_Vietnam_Pro']" suppressHydrationWarning>
       <Header />
       <div className="flex">
-        {/* Sidebar */}
-        <aside className="hidden lg:flex flex-col gap-2 py-6 bg-[#f4f4ef] w-72 h-screen sticky left-0 top-0 text-[#72564c] font-['Plus_Jakarta_Sans'] text-sm font-semibold">
-          <div className="px-4 mb-4">
-            <Link href="/dashboard" className="flex items-center gap-3 justify-center hover:opacity-70 transition-opacity cursor-pointer">
-              <img
-                src="https://res.cloudinary.com/dds5jlp7e/image/upload/v1774702475/Screenshot_from_2026-03-28_19-52-57-removebg-preview_xvqdug.png"
-                alt="HANGUL Logo"
-                className="w-12 h-12 object-contain"
-              />
-              <div className="text-2xl font-black text-[#72564c] tracking-tighter uppercase font-['Plus_Jakarta_Sans']">
-                HANGUL
-              </div>
-            </Link>
-          </div>
-
-          <nav className="flex-grow flex flex-col gap-1 px-4">
-            <Link
-              href="/quiz"
-              className="text-[#72564c] rounded-lg mx-0 py-3 px-4 flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95"
-            >
-              <div className="flex flex-col">
-                <span className="font-bold">Quiz</span>
-                <span className="text-xs opacity-70 font-normal">Test knowledge</span>
-              </div>
-            </Link>
-
-            <Link href="/camera" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95">
-              <div className="flex flex-col">
-                <span className="font-bold">Camera to Vocab</span>
-                <span className="text-xs opacity-70 font-normal">Visual learning</span>
-              </div>
-            </Link>
-
-            <Link href="/writing" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95">
-              <div className="flex flex-col">
-                <span className="font-bold">Writing Practice</span>
-                <span className="text-xs opacity-70 font-normal">Handwriting</span>
-              </div>
-            </Link>
-
-            <Link href="/pronunciation" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95">
-              <div className="flex flex-col">
-                <span className="font-bold">Pronunciation</span>
-                <span className="text-xs opacity-70 font-normal">Speak & listen</span>
-              </div>
-            </Link>
-
-            <Link href="/learning-map" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95">
-              <div className="flex flex-col">
-                <span className="font-bold">Learning Path</span>
-                <span className="text-xs opacity-70 font-normal">Adjust level</span>
-              </div>
-            </Link>
-
-            <Link href="/tournament" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95">
-              <div className="flex flex-col">
-                <span className="font-bold">Tournament</span>
-                <span className="text-xs opacity-70 font-normal">Compete & rank</span>
-              </div>
-            </Link>
-          </nav>
-
-          <div className="px-4 mt-auto flex flex-col gap-3">
-            <button
-              onClick={() => {
-                logout();
-                router.push('/');
-              }}
-              className="w-full py-3 bg-[#e8e8e3] text-[#72564c] rounded-lg font-bold hover:bg-[#d4c3be] transition-all active:scale-95"
-            >
-              Logout
-            </button>
-          </div>
-        </aside>
-
         {/* Main Content */}
         <main className="flex-grow p-8 lg:p-12">
           <section className="flex flex-col gap-6 max-w-6xl mx-auto">

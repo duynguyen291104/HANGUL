@@ -41,24 +41,15 @@ CORS(app)
 
 # PostgreSQL Configuration
 DB_CONFIG = {
-    'host': os.getenv('DB_HOST', 'localhost'),
-    'port': os.getenv('DB_PORT', '5432'),
+    'host': os.getenv('DB_HOST', 'postgres'),  # Use 'postgres' as default (Docker service name)
+    'port': int(os.getenv('DB_PORT', '5432')),
     'database': os.getenv('DB_NAME', 'hangul'),
     'user': os.getenv('DB_USER', 'hangul'),
     'password': os.getenv('DB_PASSWORD', 'hangul123'),
 }
 
-def get_db_connection():
-    """Get PostgreSQL connection"""
-    try:
-        conn = psycopg2.connect(**DB_CONFIG)
-        return conn
-    except Exception as e:
-        print(f"❌ Database connection error: {e}")
-        return None
-
 # Backend API Configuration
-BACKEND_URL = os.getenv('BACKEND_URL', 'http://localhost:5000')
+BACKEND_URL = os.getenv('BACKEND_URL', 'http://backend:5000')  # Use 'backend' as default (Docker service name)
 BACKEND_API_KEY = os.getenv('BACKEND_API_KEY', '')
 
 # Load fonts
@@ -509,4 +500,4 @@ if __name__ == '__main__':
     print(f"🚀 Starting YOLO Flask Server")
     print(f"📡 Database: {DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['database']}")
     print(f"🔗 Backend: {BACKEND_URL}")
-    app.run(host='0.0.0.0', port=5002, debug=False)
+    app.run(host='0.0.0.0', port=5001, debug=False)

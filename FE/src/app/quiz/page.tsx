@@ -1,426 +1,424 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuthStore } from '@/store/authStore';
 import Header from '@/components/Header';
-import Link from 'next/link';
+import { Check, X } from 'lucide-react';
 
-interface QuizQuestion {
+interface Question {
   id: number;
   type: string;
   question: string;
-  romanization?: string;
-  correctAnswer: string;
+  korean: string;
+  english: string;
   options: string[];
   difficulty: string;
+  level: string;
 }
 
-interface AnswerOption {
-  text: string;
-  romanization: string;
-  label: string;
+interface QuizState {
+  sessionId: number | null;
+  questions: Question[];
+  currentIndex: number;
+  score: number;
+  completed: boolean;
+  loading: boolean;
+  selectedAnswer: string | null;
+  showResult: boolean;
+  percentage: number | null;
+  isPassed: boolean | null;
+  unlockedMessage: string | null;
 }
+
+const tips = [
+  "Remember! Formal greetings in Korea often end with '-yo' or '-nida'. Look for the most common one!",
+  "Listen carefully to the pronunciation patterns in Korean.",
+  "Context matters! Think about when and where you'd use this phrase.",
+  "Mnemonics can help! Create a story to remember new words.",
+];
 
 export default function QuizPage() {
   const router = useRouter();
-  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [score, setScore] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  const [showResult, setShowResult] = useState(false);
-  const [quizComplete, setQuizComplete] = useState(false);
+  const searchParams = useSearchParams();
+  const { token } = useAuthStore();
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const [quiz, setQuiz] = useState<QuizState>({
+    sessionId: null,
+    questions: [],
+    currentIndex: 0,
+    score: 0,
+    completed: false,
+    loading: true,
+    selectedAnswer: null,
+    showResult: false,
+    percentage: null,
+    isPassed: null,
+    unlockedMessage: null,
+  });
 
-  // Sample questions for demo
-  const sampleQuestions: QuizQuestion[] = [
-    {
-      id: 1,
-      type: 'multiple-choice',
-      question: 'How do you say "Hello" in Korean?',
-      options: ['안녕하세요', '감사합니다', '사랑해요', '죄송합니다'],
-      correctAnswer: '안녕하세요',
-      difficulty: 'beginner',
-    },
-    {
-      id: 2,
-      type: 'multiple-choice',
-      question: 'What does "감사합니다" mean?',
-      options: ['Hello', 'Thank you', 'Love', 'Sorry'],
-      correctAnswer: 'Thank you',
-      difficulty: 'beginner',
-    },
-    {
-      id: 3,
-      type: 'multiple-choice',
-      question: 'How do you say "Goodbye" in Korean?',
-      options: ['안녕히 가세요', '좋은 아침', '좋은 밤', '반가워요'],
-      correctAnswer: '안녕히 가세요',
-      difficulty: 'beginner',
-    },
-    {
-      id: 4,
-      type: 'multiple-choice',
-      question: 'What does "사랑해요" mean?',
-      options: ['Thank you', 'I love you', 'Good morning', 'Goodbye'],
-      correctAnswer: 'I love you',
-      difficulty: 'beginner',
-    },
-    {
-      id: 5,
-      type: 'multiple-choice',
-      question: 'How do you say "Good morning" in Korean?',
-      options: ['좋은 밤', '안녕하세요', '좋은 아침', '반가워요'],
-      correctAnswer: '좋은 아침',
-      difficulty: 'beginner',
-    },
-    {
-      id: 6,
-      type: 'multiple-choice',
-      question: 'What does "죄송합니다" mean?',
-      options: ['Thank you', 'Goodbye', 'I am sorry', 'Good night'],
-      correctAnswer: 'I am sorry',
-      difficulty: 'beginner',
-    },
-    {
-      id: 7,
-      type: 'multiple-choice',
-      question: 'How do you say "Good night" in Korean?',
-      options: ['좋은 아침', '좋은 밤', '반가워요', '안녕하세요'],
-      correctAnswer: '좋은 밤',
-      difficulty: 'beginner',
-    },
-    {
-      id: 8,
-      type: 'multiple-choice',
-      question: 'What does "반가워요" mean?',
-      options: ['Good night', 'Nice to meet you', 'Thank you', 'Goodbye'],
-      correctAnswer: 'Nice to meet you',
-      difficulty: 'beginner',
-    },
-    {
-      id: 9,
-      type: 'multiple-choice',
-      question: 'How do you say "Water" in Korean?',
-      options: ['물', '밥', '음식', '음료'],
-      correctAnswer: '물',
-      difficulty: 'beginner',
-    },
-    {
-      id: 10,
-      type: 'multiple-choice',
-      question: 'What does "밥" mean in Korean?',
-      options: ['Water', 'Rice/Food', 'Drink', 'Eat'],
-      correctAnswer: 'Rice/Food',
-      difficulty: 'beginner',
-    },
-  ];
+  const [currentTip, setCurrentTip] = useState(0);
 
-  // Answer options mapping
-  const answerOptionsMap: { [key: string]: AnswerOption } = {
-    '안녕하세요': { text: '안녕하세요', romanization: 'An-nyeong-ha-se-yo', label: 'A' },
-    '감사합니다': { text: '감사합니다', romanization: 'Gam-sa-ham-ni-da', label: 'B' },
-    '사랑해요': { text: '사랑해요', romanization: 'Sa-rang-hae-yo', label: 'C' },
-    '죄송합니다': { text: '죄송합니다', romanization: 'Joe-song-ham-ni-da', label: 'D' },
-    'Hello': { text: 'Hello', romanization: '', label: 'A' },
-    'Thank you': { text: 'Thank you', romanization: '', label: 'B' },
-    'Love': { text: 'Love', romanization: '', label: 'C' },
-    'Sorry': { text: 'Sorry', romanization: '', label: 'D' },
-    'I love you': { text: 'I love you', romanization: '', label: 'B' },
-    'Good morning': { text: 'Good morning', romanization: '', label: 'C' },
-    '좋은 아침': { text: '좋은 아침', romanization: 'Jo-eun a-chim', label: 'B' },
-    '좋은 밤': { text: '좋은 밤', romanization: 'Jo-eun bam', label: 'C' },
-    '반가워요': { text: '반가워요', romanization: 'Ban-ga-woe-yo', label: 'D' },
-    '안녕히 가세요': { text: '안녕히 가세요', romanization: 'An-nyeong-hi ga-se-yo', label: 'A' },
-    'Goodbye': { text: 'Goodbye', romanization: '', label: 'D' },
-    'I am sorry': { text: 'I am sorry', romanization: '', label: 'C' },
-    'Good night': { text: 'Good night', romanization: '', label: 'D' },
-    'Nice to meet you': { text: 'Nice to meet you', romanization: '', label: 'B' },
-    '물': { text: '물', romanization: 'Mul', label: 'A' },
-    '밥': { text: '밥', romanization: 'Bap', label: 'B' },
-    '음식': { text: '음식', romanization: 'Eum-sik', label: 'C' },
-    '음료': { text: '음료', romanization: 'Eum-ryo', label: 'D' },
-    'Water': { text: 'Water', romanization: '', label: 'A' },
-    'Rice/Food': { text: 'Rice/Food', romanization: '', label: 'B' },
-    'Drink': { text: 'Drink', romanization: '', label: 'C' },
-    'Eat': { text: 'Eat', romanization: '', label: 'D' },
-  };
-
-  // Answer meaning mapping (Vietnamese translations)
-  const answerMeaningMap: { [key: string]: string } = {
-    '안녕하세요': 'Xin chào',
-    '감사합니다': 'Cảm ơn',
-    '사랑해요': 'Anh/em yêu em/anh',
-    '죄송합니다': 'Xin lỗi',
-    'Hello': 'Xin chào',
-    'Thank you': 'Cảm ơn',
-    'Love': 'Yêu',
-    'Sorry': 'Xin lỗi',
-    'I love you': 'Tôi yêu bạn',
-    'Good morning': 'Chào buổi sáng',
-    '안녕히 가세요': 'Tạm biệt',
-    '좋은 아침': 'Chào buổi sáng',
-    '좋은 밤': 'Chào buổi tối',
-    '반가워요': 'Vui lòng gặp lại bạn',
-    'Goodbye': 'Tạm biệt',
-    'I am sorry': 'Tôi xin lỗi',
-    'Good night': 'Chào buổi tối',
-    'Nice to meet you': 'Rất vui được gặp bạn',
-    '물': 'Nước',
-    '밥': 'Cơm/Thức ăn',
-    '음식': 'Thức ăn',
-    '음료': 'Đồ uống',
-    'Water': 'Nước',
-    'Rice/Food': 'Cơm/Thức ăn',
-    'Drink': 'Đồ uống',
-    'Eat': 'Ăn',
-  };
+  const topicId = searchParams.get('topicId');
 
   useEffect(() => {
-    if (!token) {
-      router.push('/login');
+    if (!topicId) {
       return;
     }
+
+    const loadQuiz = async () => {
+      try {
+        setQuiz((prev) => ({ ...prev, loading: true }));
+        console.log('🎬 Fetching quiz for topicId:', topicId);
+        
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/quiz/questions?topicId=${topicId}&limit=10`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch quiz: ${response.status}`);
+        }
+
+        const questions = await response.json();
+        console.log('✅ Quiz loaded:', questions.length);
+
+        if (questions.length === 0) {
+          throw new Error('No questions available');
+        }
+
+        setQuiz((prev) => ({
+          ...prev,
+          questions,
+          loading: false,
+        }));
+
+        setCurrentTip(Math.floor(Math.random() * tips.length));
+      } catch (error) {
+        console.error('❌ Quiz load error:', error);
+        alert('Failed to load quiz. Please try again.');
+        router.back();
+      }
+    };
+
     loadQuiz();
-  }, [token]);
+  }, [topicId, router]);
 
-  const loadQuiz = async () => {
+  const handleAnswerSelect = async (answer: string) => {
+    if (quiz.showResult) return;
+
+    setQuiz((prev) => ({ ...prev, selectedAnswer: answer, showResult: true }));
+
     try {
-      setLoading(false);
-      setQuestions(sampleQuestions);
-      setCurrentIndex(0);
-      setScore(0);
-      setShowResult(false);
-      setQuizComplete(false);
-      setSelectedAnswer(null);
+      const currentQuestion = quiz.questions[quiz.currentIndex];
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/submit-answer`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          questionId: currentQuestion.id,
+          userAnswer: answer,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit answer');
+      }
+
+      const data = await response.json();
+      console.log('📝 Answer result:', { isCorrect: data.isCorrect, correctAnswer: data.correctAnswer });
+
+      if (data.isCorrect) {
+        setQuiz((prev) => ({ ...prev, score: prev.score + 1 }));
+      }
     } catch (error) {
-      console.error('Error loading quiz:', error);
+      console.error('❌ Answer error:', error);
     }
-  };
-
-  const handleSelectAnswer = (answer: string) => {
-    if (showResult) return;
-    setSelectedAnswer(answer);
-  };
-
-  const handleCheckAnswer = () => {
-    if (!selectedAnswer) return;
-
-    const currentQuestion = questions[currentIndex];
-    const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
-
-    if (isCorrect) {
-      setScore(score + 1);
-    }
-
-    setShowResult(true);
   };
 
   const handleNextQuestion = () => {
-    if (currentIndex < questions.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      setSelectedAnswer(null);
-      setShowResult(false);
+    if (quiz.currentIndex < quiz.questions.length - 1) {
+      setQuiz((prev) => ({
+        ...prev,
+        currentIndex: prev.currentIndex + 1,
+        selectedAnswer: null,
+        showResult: false,
+      }));
+      setCurrentTip(Math.floor(Math.random() * tips.length));
     } else {
-      setQuizComplete(true);
+      endQuiz();
     }
   };
 
-  const handleSkip = () => {
-    if (currentIndex < questions.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      setSelectedAnswer(null);
-      setShowResult(false);
-    } else {
-      setQuizComplete(true);
+  const handleSkipQuestion = () => {
+    handleNextQuestion();
+  };
+
+  const endQuiz = async () => {
+    if (!quiz.sessionId) return;
+
+    try {
+      console.log('🏁 Ending quiz...');
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/end/${quiz.sessionId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      const percentage = Math.round(data.percentage);
+      const isPassed = percentage >= 70;
+      
+      console.log('✅ Quiz ended:', { percentage, isPassed });
+
+      setQuiz((prev) => ({ 
+        ...prev, 
+        completed: true,
+        percentage,
+        isPassed,
+      }));
+
+      if (isPassed) {
+        try {
+          console.log('🔓 Unlocking next topic...');
+          const topicId = searchParams.get('topicId');
+          
+          const completeResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/progress/complete-topic`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ topicId: parseInt(topicId!) }),
+          });
+
+          const completeData = await completeResponse.json();
+          console.log('✅ Topic marked complete:', completeData);
+
+          if (completeData.nextTopicUnlocked) {
+            setQuiz((prev) => ({
+              ...prev,
+              unlockedMessage: `🎉 Chủ đề tiếp theo "${completeData.nextTopicName}" đã được mở khóa!`,
+            }));
+          }
+        } catch (error) {
+          console.error('⚠️ Error completing topic:', error);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Quiz end error:', error);
     }
   };
 
-  if (loading) {
+  if (quiz.loading) {
     return (
-      <div className="min-h-screen bg-[#fafaf5] flex items-center justify-center">
-        <p className="text-[#72564c] font-bold text-lg">Đang tải bài quiz...</p>
-      </div>
-    );
-  }
-
-  if (quizComplete) {
-    return (
-      <div className="min-h-screen bg-[#fafaf5] flex items-center justify-center flex-col gap-8">
-        <div className="text-center">
-          <h1 className="text-5xl font-black text-[#72564c] mb-4">Hoàn thành bài quiz!</h1>
-          <p className="text-2xl font-bold text-[#8d6e63] mb-8">
-            Điểm của bạn: {score} / {questions.length}
-          </p>
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="px-12 py-4 bg-gradient-to-r from-[#72564c] to-[#8d6e63] text-white font-bold rounded-full hover:scale-105 transition-all active:scale-95 shadow-lg"
-          >
-            Quay lại Bảng điều khiển
-          </button>
+      <div className="min-h-screen bg-[#fafaf5] font-['Be_Vietnam_Pro']">
+        <Header />
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#72564c] mx-auto mb-4"></div>
+            <p className="text-[#504441]">Loading your quiz...</p>
+          </div>
         </div>
       </div>
     );
   }
 
-  if (questions.length === 0) {
+  if (quiz.completed) {
+    const percentage = quiz.percentage || 0;
+    const passed = quiz.isPassed || false;
+
     return (
-      <div className="min-h-screen bg-[#fafaf5] flex items-center justify-center">
-            <p className="text-[#72564c] font-bold text-lg">Không có câu hỏi nào</p>
+      <div className="min-h-screen bg-[#fafaf5] font-['Be_Vietnam_Pro']">
+        <Header />
+
+        <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-12 flex flex-col items-center">
+          <div className={`max-w-2xl w-full p-16 rounded-2xl text-center relative overflow-hidden shadow-2xl ${
+            passed 
+              ? 'bg-gradient-to-br from-[#c2ebe5] via-[#a6cec9] to-[#406561]' 
+              : 'bg-gradient-to-br from-[#ffdad6] to-[#ba1a1a]'
+          }`}>
+            <div className="absolute -bottom-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+            
+            <div className="text-6xl mb-6 animate-bounce">{passed ? '🎉' : '😊'}</div>
+            
+            <h1 className={`font-['Plus_Jakarta_Sans'] text-4xl font-black mb-4 ${
+              passed ? 'text-[#2a4d4a]' : 'text-white'
+            }`}>
+              {passed ? 'Xuất sắc!' : 'Cố gắng lại nhé!'}
+            </h1>
+            
+            <div className="mb-8">
+              <div className={`text-6xl font-['Plus_Jakarta_Sans'] font-black ${
+                passed ? 'text-[#406561]' : 'text-white'
+              }`}>
+                {percentage}%
+              </div>
+              <div className={`text-lg mt-2 ${
+                passed ? 'text-[#2a4d4a]' : 'text-white/90'
+              }`}>
+                {quiz.score}/{quiz.questions.length} câu đúng
+              </div>
+            </div>
+
+            <p className={`text-lg font-semibold mb-8 ${
+              passed ? 'text-[#2a4d4a]' : 'text-white/90'
+            }`}>
+              {passed 
+                ? `Bạn đã vượt qua mục tiêu 70% 🏆` 
+                : `Bạn cần ${70 - percentage}% nữa để đạt mục tiêu`}
+            </p>
+
+            {quiz.unlockedMessage && (
+              <div className="mb-8 p-4 bg-[#ffddb5] text-[#2a1800] rounded-lg animate-pulse font-semibold font-['Plus_Jakarta_Sans']">
+                {quiz.unlockedMessage}
+              </div>
+            )}
+
+            <div className="flex gap-4 justify-center flex-col sm:flex-row z-10 relative">
+              <button
+                onClick={() => router.push('/learning-map')}
+                className={`px-8 py-4 rounded-full font-['Plus_Jakarta_Sans'] font-bold text-lg transition-all hover:scale-105 ${
+                  passed 
+                    ? 'bg-white text-[#406561] hover:bg-[#fafaf5]' 
+                    : 'bg-white text-[#ba1a1a] hover:bg-[#fafaf5]'
+                }`}
+              >
+                ← Quay lại học tập
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className={`px-8 py-4 rounded-full font-['Plus_Jakarta_Sans'] font-bold text-lg transition-all hover:scale-105 ${
+                  passed 
+                    ? 'bg-[#406561] text-white hover:bg-[#2a4d4a]' 
+                    : 'bg-[#ba1a1a] text-white hover:bg-[#93000a]'
+                }`}
+              >
+                🔄 Làm lại
+              </button>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
 
-  const currentQuestion = questions[currentIndex];
-  const progress = ((currentIndex + 1) / questions.length) * 100;
+  if (quiz.questions.length === 0) {
+    return (
+      <div className="min-h-screen bg-[#fafaf5] font-['Be_Vietnam_Pro']">
+        <Header />
+        <div className="flex items-center justify-center h-screen">
+          <p className="text-[#504441]">No questions available</p>
+        </div>
+      </div>
+    );
+  }
+
+  const currentQuestion = quiz.questions[quiz.currentIndex];
+  const isAnswered = quiz.selectedAnswer !== null;
+  const isCorrect = quiz.selectedAnswer === currentQuestion.options[0];
+  const answerOptions = currentQuestion.options || [];
 
   return (
     <div className="min-h-screen bg-[#fafaf5] font-['Be_Vietnam_Pro']">
       <Header />
-      <div className="flex h-screen overflow-hidden">
-        {/* Sidebar */}
-        <aside className="hidden lg:flex flex-col gap-2 py-6 bg-[#f4f4ef] w-72 h-screen sticky left-0 top-0 text-[#72564c] font-['Plus_Jakarta_Sans'] overflow-y-auto">
-          <div className="px-4 mb-4">
-            <Link href="/dashboard" className="flex items-center gap-3 justify-center hover:opacity-70 transition-opacity cursor-pointer">
-              <img
-                src="https://res.cloudinary.com/dds5jlp7e/image/upload/v1774702475/Screenshot_from_2026-03-28_19-52-57-removebg-preview_xvqdug.png"
-                alt="HANGUL Logo"
-                className="w-12 h-12 object-contain"
-              />
-              <div className="text-2xl font-black text-[#72564c] tracking-tighter uppercase font-['Plus_Jakarta_Sans']">
-                HANGUL
-              </div>
-            </Link>
-          </div>
 
-          <nav className="flex-grow flex flex-col gap-1 px-4 text-sm">
-            <Link
-              href="/quiz"
-              className="text-[#72564c] rounded-lg mx-0 py-3 px-4 flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95 font-semibold"
-            >
-              <div className="flex flex-col">
-                <span className="font-bold">Quiz</span>
-                <span className="text-xs opacity-70 font-normal">Test knowledge</span>
-              </div>
-            </Link>
-
-            <Link href="/camera" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95 font-semibold">
-              <div className="flex flex-col">
-                <span className="font-bold">Camera to Vocab</span>
-                <span className="text-xs opacity-70 font-normal">Visual learning</span>
-              </div>
-            </Link>
-
-            <Link href="/writing" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95 font-semibold">
-              <div className="flex flex-col">
-                <span className="font-bold">Writing Practice</span>
-                <span className="text-xs opacity-70 font-normal">Handwriting</span>
-              </div>
-            </Link>
-
-            <Link href="/pronunciation" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95 font-semibold">
-              <div className="flex flex-col">
-                <span className="font-bold">Pronunciation</span>
-                <span className="text-xs opacity-70 font-normal">Speak & listen</span>
-              </div>
-            </Link>
-
-            <Link href="/learning-map" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95 font-semibold">
-              <div className="flex flex-col">
-                <span className="font-bold">Learning Path</span>
-                <span className="text-xs opacity-70 font-normal">Adjust level</span>
-              </div>
-            </Link>
-
-            <Link href="/tournament" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95 font-semibold">
-              <div className="flex flex-col">
-                <span className="font-bold">Tournament</span>
-                <span className="text-xs opacity-70 font-normal">Compete & rank</span>
-              </div>
-            </Link>
-          </nav>
-
-          <div className="px-4 mt-4 flex flex-col gap-3">
-            <button
-              onClick={() => router.push('/')}
-              className="w-full py-3 bg-[#e8e8e3] text-[#72564c] rounded-lg font-bold hover:bg-[#d4c3be] transition-all active:scale-95 text-sm"
-            >
-              Đăng xuất
-            </button>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-auto">
-          <div className="max-w-5xl mx-auto w-full px-6 py-12 flex flex-col items-center">
-        {/* Progress Bar */}
-        <section className="w-full mb-16">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-12 flex flex-col items-center">
+        {/* Progress Section */}
+        <section className="w-full mb-12">
           <div className="flex items-center justify-between mb-4">
             <span className="font-['Plus_Jakarta_Sans'] font-bold text-[#72564c] tracking-tight">
-              Bài {currentIndex + 1}: {currentQuestion.question.split(' ')[0]}
+              Lesson {quiz.currentIndex + 1}: Learning
             </span>
             <span className="font-['Plus_Jakarta_Sans'] font-bold text-[#72564c]/60">
-              {currentIndex + 1} / {questions.length}
+              {quiz.score} / {quiz.questions.length}
             </span>
           </div>
-          <div className="w-full h-4 bg-[#eeeee9] rounded-full overflow-hidden">
+          <div className="w-full h-4 bg-[#e8e8e3] rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-[#72564c] to-[#8d6e63] rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
+              className="h-full w-4/5 bg-gradient-to-r from-[#72564c] to-[#8d6e63] rounded-full"
+              style={{ width: `${((quiz.currentIndex + 1) / quiz.questions.length) * 100}%` }}
             ></div>
           </div>
         </section>
 
-        {/* Question */}
+        {/* Question Section */}
         <section className="w-full text-center mb-12">
           <h1 className="font-['Plus_Jakarta_Sans'] text-4xl md:text-5xl font-extrabold text-[#504441] tracking-tight mb-4">
             {currentQuestion.question}
           </h1>
-          <p className="text-[#504441]/70 text-lg">Chọn câu trả lời đúng để tiếp tục cuộc thi của bạn.</p>
+          <p className="text-[#504441]/70 text-lg font-['Be_Vietnam_Pro']">
+            Select the correct phrase to continue your streak.
+          </p>
         </section>
 
-        {/* Answer Options */}
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {currentQuestion.options.map((option, index) => {
-            const answerOption = answerOptionsMap[option];
-            const isSelected = selectedAnswer === option;
-            const isCorrect = option === currentQuestion.correctAnswer;
-            const isWrong = isSelected && !isCorrect && showResult;
-
-            let buttonClass = 'border-transparent';
-            if (showResult) {
-              if (isCorrect) {
-                buttonClass = 'border-[#4caf50] bg-[#f1f8e9]';
-              } else if (isWrong) {
-                buttonClass = 'border-[#f44336] bg-[#ffebee]';
-              }
-            } else if (isSelected) {
-              buttonClass = 'border-[#72564c] bg-[#f5f5f5]';
-            }
+        {/* Options Grid */}
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-16 max-w-2xl mx-auto">
+          {answerOptions.map((option, idx) => {
+            const isSelected = quiz.selectedAnswer === option;
+            const isCorrectOption = option === currentQuestion.options[0];
+            const showCorrectness = isAnswered;
 
             return (
               <button
-                key={index}
-                onClick={() => handleSelectAnswer(option)}
-                disabled={showResult}
-                className={`group relative flex items-center justify-between p-8 bg-[#f4f4ef] hover:bg-white border-2 ${buttonClass} rounded-xl transition-all duration-300 active:scale-[0.98] disabled:cursor-not-allowed`}
+                key={idx}
+                onClick={() => handleAnswerSelect(option)}
+                disabled={isAnswered}
+                className={`group relative flex items-center justify-between p-8 rounded-xl transition-all duration-300 active:scale-[0.98] border-2 ${
+                  showCorrectness
+                    ? isCorrectOption
+                      ? 'bg-[#c2ebe5] border-[#406561] text-[#406561]'
+                      : isSelected
+                      ? 'bg-[#ffdad6] border-[#ba1a1a] text-[#ba1a1a]'
+                      : 'bg-[#f4f4ef] border-transparent text-[#504441]/40'
+                    : isSelected
+                    ? 'bg-[#72564c] border-[#72564c] text-white shadow-lg shadow-[#72564c]/20'
+                    : 'bg-[#f4f4ef] border-transparent hover:bg-white text-[#504441]'
+                } ${isAnswered ? 'cursor-not-allowed' : 'cursor-pointer'}`}
               >
-                <div className="flex flex-col items-start">
-                  <span className="font-['Plus_Jakarta_Sans'] text-3xl font-bold text-[#72564c] mb-1">
-                    {answerOption.text}
+                <div className="flex flex-col items-start text-left">
+                  <span className="font-['Plus_Jakarta_Sans'] text-3xl font-bold mb-1">
+                    {option}
                   </span>
-                  {answerOption.romanization && (
-                    <span className="text-[#504441]/60 font-medium italic">{answerOption.romanization}</span>
-                  )}
+                  <span className={`text-[#504441]/60 font-medium italic text-sm ${
+                    showCorrectness || isSelected ? 'opacity-70' : ''
+                  }`}>
+                    {currentQuestion.korean}
+                  </span>
                 </div>
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-                  isSelected ? 'bg-[#72564c]' : 'bg-[#eeeee9] group-hover:bg-[#72564c]/10'
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center group-hover:bg-[#72564c]/10 transition-colors flex-shrink-0 ${
+                  showCorrectness
+                    ? isCorrectOption
+                      ? 'bg-[#406561]'
+                      : isSelected
+                      ? 'bg-[#ba1a1a]'
+                      : 'bg-[#e8e8e3]'
+                    : isSelected
+                    ? 'bg-white'
+                    : 'bg-[#e8e8e3]'
                 }`}>
                   <span className={`font-['Plus_Jakarta_Sans'] font-black ${
-                    isSelected ? 'text-white' : 'text-[#72564c]/40 group-hover:text-[#72564c]'
+                    showCorrectness
+                      ? isCorrectOption
+                        ? 'text-white'
+                        : isSelected
+                        ? 'text-white'
+                        : 'text-[#504441]/40'
+                      : isSelected
+                      ? 'text-[#72564c]'
+                      : 'text-[#504441]/40'
                   }`}>
-                    {answerOption.label}
+                    {String.fromCharCode(65 + idx)}
                   </span>
                 </div>
               </button>
@@ -428,50 +426,49 @@ export default function QuizPage() {
           })}
         </div>
 
-        {/* Result Feedback Message */}
-        {showResult && (
-          <div className="w-full mb-8 p-6 rounded-xl border-2 text-center animate-in fade-in duration-300">
-            <div className={`${selectedAnswer === currentQuestion.correctAnswer ? 'bg-[#f1f8e9] border-[#4caf50]' : 'bg-[#ffebee] border-[#f44336]'} border-2 p-6 rounded-lg`}>
-              <p className={`text-lg font-bold mb-2 ${selectedAnswer === currentQuestion.correctAnswer ? 'text-[#4caf50]' : 'text-[#f44336]'}`}>
-                {selectedAnswer === currentQuestion.correctAnswer ? '✓ Chính xác!' : '✗ Không chính xác!'}
-              </p>
-              <p className={`text-base font-semibold ${selectedAnswer === currentQuestion.correctAnswer ? 'text-[#4caf50]' : 'text-[#f44336]'}`}>
-                Đáp án đúng là: <span className="font-bold text-lg">{currentQuestion.correctAnswer}</span>
-              </p>
-              <p className={`text-sm font-medium mt-2 ${selectedAnswer === currentQuestion.correctAnswer ? 'text-[#4caf50]' : 'text-[#f44336]'}`}>
-                Nghĩa: <span className="font-semibold">{answerMeaningMap[currentQuestion.correctAnswer]}</span>
-              </p>
-              <p className="text-[#504441] text-sm mt-3">
-                Số điểm hiện tại: {score} / {questions.length}
+        {/* Bottom Section with Mascot & Controls */}
+        <section className="w-full flex items-end justify-between gap-8 max-w-5xl mx-auto">
+          {/* Tip Section */}
+          <div className="relative flex items-end gap-6 max-w-lg hidden md:flex">
+            <div className="w-48 h-48 flex-shrink-0 relative overflow-visible z-10">
+              <div className="w-full h-full object-contain filter drop-shadow-xl text-5xl flex items-center justify-center">
+                🦦
+              </div>
+            </div>
+            <div className="bg-white/80 backdrop-blur-md p-6 rounded-t-3xl rounded-br-3xl border border-[#72564c]/10 shadow-lg relative mb-4">
+              <div className="absolute -left-3 bottom-0 w-6 h-6 bg-white/80 border-l border-b border-[#72564c]/10 rotate-45"></div>
+              <p className="text-[#72564c] font-semibold font-['Plus_Jakarta_Sans'] text-lg leading-snug">
+                "{tips[currentTip]}"
               </p>
             </div>
           </div>
-        )}
 
-        {/* Bottom Section with Buttons */}
-        <section className="w-full flex items-center justify-center">
-          {/* Action Buttons */}
-          <div className="flex gap-4">
+          {/* Controls */}
+          <div className="flex gap-4 w-full md:w-auto justify-center md:justify-end">
+            {!isAnswered ? (
+              <button
+                onClick={handleSkipQuestion}
+                className="px-8 py-4 rounded-full bg-[#e8e8e3] text-[#72564c] font-bold font-['Plus_Jakarta_Sans'] hover:bg-[#ddd] transition-all active:scale-95"
+              >
+                Skip
+              </button>
+            ) : null}
             <button
-              onClick={handleSkip}
-              className="px-8 py-4 rounded-full bg-[#e8e8e3] text-[#72564c] font-bold font-['Plus_Jakarta_Sans'] hover:bg-[#e0e0db] transition-all active:scale-95"
+              onClick={() => isAnswered ? handleNextQuestion() : null}
+              disabled={!isAnswered}
+              className={`px-12 py-4 rounded-full font-bold font-['Plus_Jakarta_Sans'] shadow-lg transition-all active:scale-95 ${
+                isAnswered
+                  ? isCorrect
+                    ? 'bg-gradient-to-r from-[#406561] to-[#72564c] text-white hover:scale-105 shadow-[#406561]/20'
+                    : 'bg-gradient-to-r from-[#ba1a1a] to-[#93000a] text-white hover:scale-105 shadow-[#ba1a1a]/20'
+                  : 'bg-[#e8e8e3] text-[#504441]/40 cursor-not-allowed'
+              }`}
             >
-              Bỏ qua
-            </button>
-            <button
-              onClick={showResult ? handleNextQuestion : handleCheckAnswer}
-              disabled={!selectedAnswer && !showResult}
-              className="px-12 py-4 rounded-full bg-gradient-to-r from-[#72564c] to-[#8d6e63] text-white font-bold font-['Plus_Jakarta_Sans'] shadow-lg shadow-[#72564c]/20 hover:scale-105 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-            >
-              {showResult ? 'Tiếp theo' : 'Kiểm tra'}
+              {!isAnswered ? 'Check Answer' : isCorrect ? '✅ Correct!' : '❌ Try Again'}
             </button>
           </div>
         </section>
-        </div>
-        </main>
-      </div>
-
-
+      </main>
     </div>
   );
 }

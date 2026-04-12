@@ -1,9 +1,9 @@
 import { Router, Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../../lib/prisma';
 import { PointSystem } from '../../utils/pointSystem';
+import { saveUserProgress, addUserXP, checkLevelTestUnlock } from '../../utils/progressHelper';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 interface AuthRequest extends Request {
   user?: {
@@ -176,7 +176,11 @@ router.post('/practice', async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Topic not found' });
     }
 
-    // Create writing practice record
+    // Calculate score passed status
+    const calculatedScore = score || 0;
+    const isPassed = calculatedScore >= 70;
+
+    // Create practice record
     const practice = await prisma.writingPractice.create({
       data: {
         userId: req.user.id,
@@ -184,22 +188,23 @@ router.post('/practice', async (req: AuthRequest, res: Response) => {
         level,
         userText,
         corrected: targetText || null,
-        score: score || 0,
+        score: calculatedScore,
       },
     });
 
-    // Calculate XP if score is passing (>= 70)
-    const isCorrect = (score || 0) >= 70;
-    const xpGained = PointSystem.calculateXP(isCorrect);
+    // Save progress
+    await saveUserProgress(req.user.id, parseInt(topicId), 'WRITING', calculatedScore, isPassed);
 
-    // Update user stats
-    const updatedUser = await prisma.user.update({
+    // Award XP based on score
+    const xpGained = await addUserXP(req.user.id, 'WRITING', calculatedScore);
+
+    // Check if user unlocked next level test
+    await checkLevelTestUnlock(req.user.id);
+
+    // Get updated user
+    const updatedUser = await prisma.user.findUnique({
       where: { id: req.user.id },
-      data: {
-        totalXP: {
-          increment: xpGained,
-        },
-      },
+      select: { totalXP: true, totalTrophy: true, level: true },
     });
 
     res.json({
@@ -207,8 +212,10 @@ router.post('/practice', async (req: AuthRequest, res: Response) => {
       practiceId: practice.id,
       score: practice.score,
       xpGained,
-      totalXP: updatedUser.totalXP,
-      message: isCorrect ? 'Excellent!' : 'Good effort, keep going!',
+      totalXP: updatedUser?.totalXP,
+      totalTrophy: updatedUser?.totalTrophy,
+      level: updatedUser?.level,
+      message: isPassed ? 'Excellent!' : 'Good effort, keep going!',
     });
   } catch (error) {
     console.error('Error submitting writing practice:', error);

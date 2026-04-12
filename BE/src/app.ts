@@ -2,11 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('./lib/prisma');
 require('dotenv').config();
-
-// Initialize Prisma
-const prisma = new PrismaClient();
 
 // Import module routes (new modular structure)
 // Note: Using .default because modules export as ES6 but app.ts uses CommonJS require()
@@ -16,9 +13,11 @@ const vocabularyRouter = require('./modules/vocabulary/index').default;
 const quizRouter = require('./modules/quiz/index').default;
 const pronunciationRouter = require('./modules/pronunciation/index').default;
 const cameraRouter = require('./modules/camera/index').default;
-const tournamentRouter = require('./modules/tournament/index').default;
 const topicRouter = require('./modules/topic/index').default;
 const writingRouter = require('./modules/writing/index').default;
+const leaderboardRouter = require('./modules/leaderboard/index').default;
+const achievementsRouter = require('./modules/achievements/index').default;
+const learningPathRouter = require('./modules/learning-path/controller').default;
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -59,16 +58,16 @@ io.on('connection', (socket: any) => {
     const { userId } = data;
     try {
       const updatedLeaderboard = await prisma.user.findMany({
-        where: { trophy: { gte: 1000 } },
+        where: { totalTrophy: { gte: 1000 } },
         select: {
           id: true,
           name: true,
           avatar: true,
-          trophy: true,
+          totalTrophy: true,
           level: true,
           totalXP: true,
         },
-        orderBy: [{ trophy: 'desc' }, { totalXP: 'desc' }],
+        orderBy: [{ totalTrophy: 'desc' }, { totalXP: 'desc' }],
         take: 100,
       });
       const formatted = updatedLeaderboard.map((user: any, idx: number) => ({
@@ -76,7 +75,7 @@ io.on('connection', (socket: any) => {
         userId: user.id,
         name: user.name,
         avatar: user.avatar,
-        trophy: user.trophy,
+        trophy: user.totalTrophy,
         level: user.level,
         xp: user.totalXP,
       }));
@@ -131,16 +130,23 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/api/auth', authRouter);
 
 // Protected routes (require authentication)
+app.use('/api/user', authenticate, learningPathRouter);
+app.use('/api/learning-path', authenticate, learningPathRouter);  // Add this for history endpoint
 app.use('/api/user', authenticate, userRouter);
 app.use('/api/vocabulary', authenticate, vocabularyRouter);
-app.use('/api/quiz', authenticate, quizRouter);
+app.use('/api/quiz', quizRouter);  // Allow public access to GET /questions
 app.use('/api/writing', authenticate, writingRouter);
-app.use('/api/tournament', authenticate, tournamentRouter);
 app.use('/api/topic', authenticate, topicRouter);
 
-// Pronunciation and Camera detection routes (public for testing)
+// Semi-public routes (some endpoints public, some protected)
+app.use('/api/leaderboard', leaderboardRouter);
+app.use('/api/achievements', achievementsRouter);
+
+// Camera detection route (requires authentication for saving)
+app.use('/api/camera', authenticate, cameraRouter);
+
+// Pronunciation route (public for testing)
 app.use('/api/pronunciation', pronunciationRouter);
-app.use('/api/camera', cameraRouter);
 
 // ========================
 // 404 HANDLER

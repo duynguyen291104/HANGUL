@@ -1,8 +1,7 @@
 import { Router, Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../../lib/prisma';
 
 const userRouter = Router();
-const userPrisma = new PrismaClient();
 
 // ========================
 // GET USER STATS
@@ -11,14 +10,14 @@ userRouter.get('/stats', async (req: any, res: Response) => {
   try {
     const userId = req.user.id;
 
-    const user = await userPrisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
         name: true,
         email: true,
         totalXP: true,
-        trophy: true,
+        totalTrophy: true,
         currentStreak: true,
         level: true,
         lastCheckinDate: true,
@@ -29,7 +28,7 @@ userRouter.get('/stats', async (req: any, res: Response) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const trophyValue = user.trophy || 0;
+    const trophyValue = user.totalTrophy || 0;
     const isEligible = trophyValue >= 1000;
 
     console.log(`✅ User ${user.email}: Trophy=${trophyValue}, Eligible=${isEligible}`);
@@ -59,7 +58,7 @@ userRouter.get('/profile', async (req: any, res: any) => {
   try {
     const userId = req.user.id;
 
-    const user = await userPrisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -70,7 +69,7 @@ userRouter.get('/profile', async (req: any, res: any) => {
         level: true,
         levelLocked: true,
         totalXP: true,
-        trophy: true,
+        totalTrophy: true,
         currentStreak: true,
         lastCheckinDate: true,
       },
@@ -104,7 +103,7 @@ userRouter.post('/set-level', async (req: any, res: any) => {
       return res.status(400).json({ error: 'Invalid level' });
     }
 
-    const user = await userPrisma.user.update({
+    const user = await prisma.user.update({
       where: { id: userId },
       data: {
         level,
@@ -142,7 +141,7 @@ userRouter.put('/update-level', async (req: any, res: any) => {
       return res.status(400).json({ error: 'Invalid level' });
     }
 
-    const user = await userPrisma.user.update({
+    const user = await prisma.user.update({
       where: { id: userId },
       data: { level },
       select: {

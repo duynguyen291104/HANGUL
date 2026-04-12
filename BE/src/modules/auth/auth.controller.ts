@@ -6,9 +6,7 @@
 import { Request, Response } from 'express';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '../../lib/prisma';
 
 const generateToken = (userId: string | number, email: string, role: string) => {
   const secret = (process.env.JWT_SECRET || 'secret') as jwt.Secret;
@@ -125,7 +123,7 @@ export class AuthController {
         levelLocked: user.levelLocked || false,
         role: user.role,
         xp: user.totalXP || 0,
-        trophy: user.trophy || 0,
+        trophy: user.totalTrophy || 0,
         token,
       });
     } catch (error) {
@@ -160,7 +158,7 @@ export class AuthController {
           name: user.name,
           level: user.level,
           xp: user.totalXP,
-          trophy: user.trophy,
+          trophy: user.totalTrophy,
         },
       });
     } catch (error) {

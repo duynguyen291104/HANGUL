@@ -13,7 +13,7 @@ interface Detection {
   age: number;
 }
 
-const YOLO_SERVER = 'http://localhost:5002';
+const YOLO_SERVER = process.env.NEXT_PUBLIC_FLASK_API_URL || 'http://localhost:5001';
 
 export default function CameraPage() {
   const { token } = useAuthStore();
