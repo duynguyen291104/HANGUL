@@ -30,6 +30,8 @@ interface QuizState {
   percentage: number | null;
   isPassed: boolean | null;
   unlockedMessage: string | null;
+  correctAnswerText?: string;
+  isAnswerCorrect?: boolean;
 }
 
 // Fallback questions khi API fail
@@ -174,6 +176,8 @@ export default function QuizDetailPage() {
     percentage: null,
     isPassed: null,
     unlockedMessage: null,
+    correctAnswerText: undefined,
+    isAnswerCorrect: undefined,
   });
 
   const [startTime, setStartTime] = useState<number>(0);
@@ -278,7 +282,7 @@ export default function QuizDetailPage() {
     try {
       const currentQuestion = quiz.questions[quiz.currentIndex];
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/submit-answer`, {
+      const response = await fetch(`http://localhost:5000/api/quiz/submit-answer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -297,6 +301,13 @@ export default function QuizDetailPage() {
       const responseData = await response.json();
       console.log('📝 Answer result:', { isCorrect: responseData.isCorrect, correctAnswer: responseData.correctAnswer });
 
+      // Store the correct answer info for display
+      setQuiz((prev) => ({
+        ...prev,
+        correctAnswerText: responseData.correctAnswer,
+        isAnswerCorrect: responseData.isCorrect,
+      }));
+
       if (responseData.isCorrect) {
         setQuiz((prev) => ({ ...prev, score: prev.score + 1 }));
       }
@@ -312,6 +323,8 @@ export default function QuizDetailPage() {
         currentIndex: prev.currentIndex + 1,
         selectedAnswer: null,
         showResult: false,
+        correctAnswerText: undefined,
+        isAnswerCorrect: undefined,
       }));
     } else {
       endQuiz();
@@ -504,7 +517,6 @@ export default function QuizDetailPage() {
   }
 
   const currentQuestion = quiz.questions[quiz.currentIndex];
-  const isCorrect = quiz.showResult && quiz.selectedAnswer === currentQuestion.english;
   const answerLabels = ['A', 'B', 'C', 'D'];
 
   return (
@@ -544,17 +556,19 @@ export default function QuizDetailPage() {
         <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
           {currentQuestion.options.map((option, idx) => {
             const isSelected = quiz.selectedAnswer === option;
-            const isCorrectOption = option === currentQuestion.english;
+            const isCorrectOption = option === quiz.correctAnswerText; // Compare with correct answer from API
             let buttonClass =
               'group relative flex items-center justify-between p-8 bg-[#f4f4ef] hover:bg-white border-2 border-transparent hover:border-[#8d6e63]/30 rounded-xl transition-all duration-300 active:scale-[0.98]';
 
             if (quiz.showResult) {
               if (isCorrectOption) {
+                // Green for correct answer
                 buttonClass =
-                  'group relative flex items-center justify-between p-8 bg-[#ffdbce] border-2 border-[#72564c] rounded-xl transition-all duration-300 active:scale-[0.98]';
-              } else if (isSelected && !isCorrect) {
+                  'group relative flex items-center justify-between p-8 bg-[#e8f5e9] border-2 border-[#4caf50] rounded-xl transition-all duration-300 active:scale-[0.98]';
+              } else if (isSelected && !quiz.isAnswerCorrect) {
+                // Red for wrong answer selected
                 buttonClass =
-                  'group relative flex items-center justify-between p-8 bg-[#ffdad6] border-2 border-[#ba1a1a] rounded-xl transition-all duration-300 active:scale-[0.98]';
+                  'group relative flex items-center justify-between p-8 bg-[#ffebee] border-2 border-[#f44336] rounded-xl transition-all duration-300 active:scale-[0.98]';
               }
             } else if (isSelected) {
               buttonClass =
@@ -582,9 +596,9 @@ export default function QuizDetailPage() {
                 <div
                   className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
                     quiz.showResult && isCorrectOption
-                      ? 'bg-[#406561]'
-                      : quiz.showResult && isSelected && !isCorrect
-                      ? 'bg-[#ba1a1a]'
+                      ? 'bg-[#4caf50]'
+                      : quiz.showResult && isSelected && !quiz.isAnswerCorrect
+                      ? 'bg-[#f44336]'
                       : isSelected
                       ? 'bg-[#72564c]'
                       : 'bg-[#eeeee9]'
@@ -612,14 +626,18 @@ export default function QuizDetailPage() {
         {/* Explanation Section */}
         {quiz.showResult && (
           <section className="w-full mb-12 mt-8 max-w-3xl">
-            <div className="bg-gradient-to-br from-[#c2ebe5]/20 to-[#ffddb5]/20 border-2 border-[#8d6e63]/30 rounded-xl p-8">
-              {/* Correct Answer Highlight */}
+            <div className={`border-2 rounded-xl p-8 ${
+              quiz.isAnswerCorrect
+                ? 'bg-gradient-to-br from-[#e8f5e9] to-[#c8e6c9] border-[#4caf50]'
+                : 'bg-gradient-to-br from-[#ffebee] to-[#ffcdd2] border-[#f44336]'
+            }`}>
+              {/* Result Status */}
               <div className="mb-8">
-                <p className="text-[#504441]/70 text-sm font-bold tracking-widest mb-2">
-                  ✓ CORRECT ANSWER
+                <p className={`text-lg font-bold tracking-widest mb-2 ${quiz.isAnswerCorrect ? 'text-[#2e7d32]' : 'text-[#c62828]'}`}>
+                  {quiz.isAnswerCorrect ? '✓ ĐÚN G' : '✗ SAI'}
                 </p>
-                <p className="text-3xl font-bold text-[#72564c]">
-                  {currentQuestion.english}
+                <p className={`text-3xl font-bold ${quiz.isAnswerCorrect ? 'text-[#2e7d32]' : 'text-[#d32f2f]'}`}>
+                  {quiz.correctAnswerText}
                 </p>
               </div>
 
@@ -628,10 +646,10 @@ export default function QuizDetailPage() {
                 {/* English Explanation */}
                 {currentQuestion.explanation && (
                   <div className="flex flex-col">
-                    <p className="text-[#504441]/70 text-sm font-['Plus_Jakarta_Sans'] font-bold tracking-widest mb-3">
-                      📖 EXPLANATION
+                    <p className="text-[#504441]/70 text-sm font-bold tracking-widest mb-3">
+                      📖 GIẢI THÍCH
                     </p>
-                    <p className="text-[#504441] text-base leading-relaxed font-['Be_Vietnam_Pro'] font-medium">
+                    <p className="text-[#504441] text-base leading-relaxed font-medium">
                       {currentQuestion.explanation}
                     </p>
                   </div>
@@ -639,11 +657,11 @@ export default function QuizDetailPage() {
 
                 {/* Vietnamese Translation */}
                 {currentQuestion.explanation_vi && (
-                  <div className="flex flex-col bg-[#ffddb5]/20 rounded-lg p-4 border-l-4 border-[#ffddb5]">
-                    <p className="text-[#504441]/70 text-sm font-['Plus_Jakarta_Sans'] font-bold tracking-widest mb-3">
+                  <div className="flex flex-col bg-white/50 rounded-lg p-4">
+                    <p className="text-[#504441]/70 text-sm font-bold tracking-widest mb-3">
                       🇻🇳 DỊCH TIẾNG VIỆT
                     </p>
-                    <p className="text-[#504441] text-base leading-relaxed font-['Be_Vietnam_Pro'] font-medium">
+                    <p className="text-[#504441] text-base leading-relaxed font-medium">
                       {currentQuestion.explanation_vi}
                     </p>
                   </div>

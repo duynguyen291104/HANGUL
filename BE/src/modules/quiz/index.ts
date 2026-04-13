@@ -57,6 +57,61 @@ router.get('/generate', authenticate, async (req: AuthRequest, res: Response) =>
 });
 
 // ========================
+// SUBMIT SINGLE ANSWER (Check if correct/wrong)
+// ========================
+router.post('/submit-answer', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { questionId, userAnswer } = req.body;
+
+    if (!questionId || !userAnswer) {
+      return res.status(400).json({ error: 'questionId and userAnswer are required' });
+    }
+
+    // Get the vocabulary item to check correct answer
+    const vocab = await prisma.vocabulary.findUnique({
+      where: { id: questionId },
+      select: {
+        id: true,
+        korean: true,
+        english: true,
+        vietnamese: true,
+        level: true,
+      },
+    });
+
+    if (!vocab) {
+      return res.status(404).json({ error: 'Question not found' });
+    }
+
+    // Check if the user's answer matches the correct Vietnamese translation
+    const isCorrect = userAnswer.toLowerCase().trim() === vocab.vietnamese.toLowerCase().trim();
+
+    console.log('📊 Answer check:', { 
+      userAnswer, 
+      correctAnswer: vocab.vietnamese, 
+      isCorrect,
+      korean: vocab.korean 
+    });
+
+    res.json({
+      isCorrect,
+      correctAnswer: vocab.vietnamese,
+      questionId,
+      korean: vocab.korean,
+      english: vocab.english,
+      explanation: `"${vocab.korean}" (${vocab.english}) nghĩa là "${vocab.vietnamese}"`,
+    });
+  } catch (error) {
+    console.error('❌ Answer submission error:', error);
+    res.status(500).json({ error: 'Failed to submit answer' });
+  }
+});
+
+// ========================
 // GET QUIZ VOCABULARY BY USER LEVEL (LEGACY - for compatibility)
 // ========================
 router.get('/vocabulary', authenticate, async (req: AuthRequest, res: Response) => {
