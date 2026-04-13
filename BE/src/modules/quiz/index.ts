@@ -65,7 +65,7 @@ router.post('/submit-answer', authenticate, async (req: AuthRequest, res: Respon
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const { questionId, userAnswer } = req.body;
+    const { questionId, userAnswer, topicId } = req.body;
 
     if (!questionId || !userAnswer) {
       return res.status(400).json({ error: 'questionId and userAnswer are required' });
@@ -96,6 +96,26 @@ router.post('/submit-answer', authenticate, async (req: AuthRequest, res: Respon
       isCorrect,
       korean: vocab.korean 
     });
+
+    // Save this answer to QuizHistory
+    if (topicId) {
+      try {
+        await prisma.quizHistory.create({
+          data: {
+            userId: req.user.id,
+            vocabularyId: questionId,
+            topicId: topicId,
+            userAnswer: userAnswer,
+            correctAnswer: vocab.vietnamese,
+            isCorrect: isCorrect,
+          },
+        });
+        console.log('💾 Answer history saved');
+      } catch (err) {
+        console.error('⚠️ Failed to save answer history:', err);
+        // Don't fail the request if history save fails
+      }
+    }
 
     res.json({
       isCorrect,
@@ -195,9 +215,12 @@ router.post('/submit', authenticate, async (req: AuthRequest, res: Response) => 
     }
 
     const userId = req.user.id;
-    const correctCount = answers.filter((a: any) => a.correct).length;
+    // Check for isCorrect field (from frontend)
+    const correctCount = answers.filter((a: any) => a.isCorrect || a.correct).length;
     const totalCount = answers.length;
     const percentage = Math.round((correctCount / totalCount) * 100);
+
+    console.log('📝 Quiz results:', { correctCount, totalCount, percentage, topicId });
 
     // Calculate XP: 10 XP per correct answer
     const xpGained = correctCount * 10;
@@ -225,6 +248,7 @@ router.post('/submit', authenticate, async (req: AuthRequest, res: Response) => 
             attempts: { increment: 1 },
           },
         });
+        console.log('✅ Progress updated for topic', topicId);
       } else {
         await prisma.userProgress.create({
           data: {
@@ -236,6 +260,7 @@ router.post('/submit', authenticate, async (req: AuthRequest, res: Response) => 
             attempts: 1,
           },
         });
+        console.log('✅ Progress created for topic', topicId);
       }
     }
 

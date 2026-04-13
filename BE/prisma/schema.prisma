@@ -49,6 +49,7 @@ model User {
   userProgress UserProgress[]
   levelTestProgress LevelTestProgress[]
   userAnswerHistory UserAnswerHistory[]
+  quizHistory QuizHistory[]
   
   // Game System
   stats         UserStats?
@@ -92,6 +93,7 @@ model Topic {
   quizSessions QuizSession[]
   userProgress UserProgress[]
   userAnswerHistory UserAnswerHistory[]
+  quizHistory QuizHistory[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -121,6 +123,7 @@ model Vocabulary {
   pronunciationWords PronunciationWord[]
   savedByUsers UserSavedVocabulary[]
   quizQuestions QuizQuestion[]
+  quizHistory QuizHistory[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -659,6 +662,29 @@ model UserProgress {
   @@unique([userId, topicId, skillType])
   @@index([userId])
   @@index([topicId])
+}
+
+model QuizHistory {
+  id        String @id @default(cuid())
+  
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  
+  topic     Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId   Int
+  
+  vocabulary Vocabulary @relation(fields: [vocabularyId], references: [id], onDelete: Cascade)
+  vocabularyId Int
+  
+  userAnswer    String
+  correctAnswer String
+  isCorrect     Boolean
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([topicId])
+  @@index([vocabularyId])
 }
 
 model LevelTestProgress {
