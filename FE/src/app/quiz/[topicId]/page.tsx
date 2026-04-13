@@ -219,8 +219,12 @@ export default function QuizDetailPage() {
           );
           if (topicResponse.ok) {
             const topicData = await topicResponse.json();
-            setTopicName(topicData.data?.name || 'Quiz');
-            console.log('📌 Topic name:', topicData.data?.name);
+            // Backend returns topic data directly, not wrapped in 'data'
+            const name = topicData.name || topicData.data?.name || 'Quiz';
+            setTopicName(name);
+            console.log('📌 Topic name fetched:', name, 'Full response:', topicData);
+          } else {
+            console.warn('⚠️ Topic fetch failed:', topicResponse.status);
           }
         } catch (err) {
           console.warn('⚠️ Could not fetch topic name:', err);
