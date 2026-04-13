@@ -124,52 +124,6 @@ export function getSidebarItems(active: SidebarKey): SidebarItem[] {
   ];
 }
 
-export function HangulTopNav({
-  active,
-  avatar = '🦦',
-}: {
-  active: MainNavKey;
-  avatar?: string;
-}) {
-  return (
-    <header className="sticky top-0 z-40 border-b border-[rgba(125,98,86,0.08)] bg-[rgba(249,245,238,0.82)] backdrop-blur-xl">
-      <div className="mx-auto flex max-w-[1520px] items-center justify-between gap-4 px-5 py-5 sm:px-8">
-        <Link href="/" className="text-[2rem] font-black tracking-[-0.04em] text-[var(--hangul-ink)]">
-          HANGUL
-        </Link>
-
-        <nav className="hidden items-center gap-10 md:flex">
-          {NAV_LINKS.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={clsx(
-                'border-b-[3px] pb-1 text-lg font-semibold transition-colors',
-                active === item.label
-                  ? 'border-[var(--hangul-accent)] text-[var(--hangul-ink)]'
-                  : 'border-transparent text-[var(--hangul-muted)] hover:text-[var(--hangul-ink)]'
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="flex items-center gap-4">
-          <button className="grid h-10 w-10 place-items-center rounded-full text-[var(--hangul-ink)] transition hover:bg-white/70">
-            <Bell className="h-5 w-5" />
-          </button>
-          <button className="grid h-10 w-10 place-items-center rounded-full text-[var(--hangul-ink)] transition hover:bg-white/70">
-            <Settings className="h-5 w-5" />
-          </button>
-          <div className="grid h-14 w-14 place-items-center rounded-full border-[3px] border-white bg-[linear-gradient(140deg,#17354c,#0f1722)] text-2xl shadow-[0_18px_42px_rgba(54,36,30,0.22)]">
-            <span>{avatar}</span>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-}
 
 export function HangulPageFrame({
   activeNav,
@@ -184,7 +138,6 @@ export function HangulPageFrame({
 }) {
   return (
     <div className="min-h-screen">
-      <HangulTopNav active={activeNav} />
       <main className="mx-auto max-w-[1520px] px-4 pb-10 pt-7 sm:px-7">
         <div className={clsx(sidebar ? 'grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]' : '', contentClassName)}>
           {sidebar ? <div>{sidebar}</div> : null}

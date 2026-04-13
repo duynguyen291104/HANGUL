@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useMemo } from 'react';
 
 const SIDEBAR_ITEMS = [
   { href: '/quiz', title: 'Quiz', description: 'Test knowledge' },
@@ -25,10 +25,17 @@ function isExcludedPath(pathname: string) {
     .some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
-export default function SideBar({ children }: { children: ReactNode }) {
+export default function SideBar({ 
+  children,
+  sidebarOpen = true,
+  onToggleSidebar,
+}: { 
+  children: ReactNode;
+  sidebarOpen?: boolean;
+  onToggleSidebar?: () => void;
+}) {
   const pathname = usePathname();
   const router = useRouter();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const showSidebar = useMemo(() => !isExcludedPath(pathname), [pathname]);
 
@@ -37,35 +44,13 @@ export default function SideBar({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafaf5] font-['Be_Vietnam_Pro']">
+    <div className="min-h-screen bg-[#fafaf5] font-['Be_Vietnam_Pro'] pt-16">
       <div className="relative flex">
-        <button
-          type="button"
-          onClick={() => setSidebarOpen((prev) => !prev)}
-          className="hidden lg:flex fixed top-6 left-6 z-50 h-12 w-12 items-center justify-center rounded-full bg-[#72564c] text-white shadow-lg transition-all hover:bg-[#8d6e63] active:scale-95"
-          aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
-        >
-          <span className="text-xl leading-none">{sidebarOpen ? '✕' : '☰'}</span>
-        </button>
-
         <aside
-          className={`bg-[#f4f4ef] h-screen sticky left-0 top-0 text-[#72564c] font-['Plus_Jakarta_Sans'] text-sm font-semibold transition-all duration-300 overflow-hidden ${
+          className={`bg-[#f4f4ef] h-screen sticky left-0 top-16 text-[#72564c] font-['Plus_Jakarta_Sans'] text-base font-semibold transition-all duration-300 overflow-hidden z-40 ${
             sidebarOpen ? 'hidden lg:flex w-72 flex-col gap-2 py-6 opacity-100' : 'hidden w-0 opacity-0'
           }`}
         >
-          <div className="px-4 mb-4 pl-10">
-            <Link href="/dashboard" className="flex items-center gap-3 justify-center hover:opacity-80 transition-opacity">
-              <img
-                src="https://res.cloudinary.com/dds5jlp7e/image/upload/v1774702475/Screenshot_from_2026-03-28_19-52-57-removebg-preview_xvqdug.png"
-                alt="HANGUL Logo"
-                className="w-12 h-12 object-contain"
-              />
-              <div className="text-2xl font-black text-[#72564c] tracking-tighter uppercase font-['Plus_Jakarta_Sans']">
-                HANGUL
-              </div>
-            </Link>
-          </div>
-
           <nav className="flex-grow flex flex-col gap-1 px-4">
             {SIDEBAR_ITEMS.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -88,16 +73,6 @@ export default function SideBar({ children }: { children: ReactNode }) {
               );
             })}
           </nav>
-
-          <div className="px-4 mt-auto flex flex-col gap-3">
-            <button
-              type="button"
-              onClick={() => router.push('/profile')}
-              className="w-full py-3 bg-[#e8e8e3] text-[#72564c] rounded-lg font-bold hover:bg-[#d4c3be] transition-all active:scale-95"
-            >
-              User Profile
-            </button>
-          </div>
         </aside>
 
         <main className="flex-grow w-full max-w-7xl mx-auto p-8 lg:p-12 pb-28 md:pb-8 transition-all duration-300">

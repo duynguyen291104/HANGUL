@@ -1,5 +1,5 @@
 ﻿import type { Metadata } from 'next';
-import SideBar from '@/components/layout/SideBar';
+import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <SideBar>{children}</SideBar>
+        <LayoutWrapper>{children}</LayoutWrapper>
       </body>
     </html>
   );
