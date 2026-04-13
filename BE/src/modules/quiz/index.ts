@@ -23,6 +23,7 @@ router.get('/generate', authenticate, async (req: AuthRequest, res: Response) =>
     }
 
     const { topicId } = req.query;
+    console.log('📝 Quiz generate request:', { userId: req.user.id, topicId, queryKeys: Object.keys(req.query) });
 
     if (!topicId) {
       return res.status(400).json({ error: 'topicId is required' });
@@ -41,6 +42,7 @@ router.get('/generate', authenticate, async (req: AuthRequest, res: Response) =>
     const result = await generateQuizQuestions(req.user.id, parseInt(topicId as string), 10);
 
     if (!result.success) {
+      console.error('❌ Quiz generation failed:', result);
       return res.status(400).json(result);
     }
 
