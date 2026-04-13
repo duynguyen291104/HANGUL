@@ -32,6 +32,7 @@ interface QuizState {
   unlockedMessage: string | null;
   correctAnswerText?: string;
   isAnswerCorrect?: boolean;
+  answers: Array<{ questionId: number; isCorrect: boolean }>;
 }
 
 // Fallback questions khi API fail
@@ -178,6 +179,7 @@ export default function QuizDetailPage() {
     unlockedMessage: null,
     correctAnswerText: undefined,
     isAnswerCorrect: undefined,
+    answers: [],
   });
 
   const [startTime, setStartTime] = useState<number>(0);
@@ -302,11 +304,23 @@ export default function QuizDetailPage() {
       console.log('📝 Answer result:', { isCorrect: responseData.isCorrect, correctAnswer: responseData.correctAnswer });
 
       // Store the correct answer info for display
-      setQuiz((prev) => ({
-        ...prev,
-        correctAnswerText: responseData.correctAnswer,
-        isAnswerCorrect: responseData.isCorrect,
-      }));
+      setQuiz((prev) => {
+        const newAnswers = [...prev.answers];
+        // Add or update answer for this question
+        const existingIndex = newAnswers.findIndex(a => a.questionId === currentQuestion.id);
+        if (existingIndex >= 0) {
+          newAnswers[existingIndex] = { questionId: currentQuestion.id, isCorrect: responseData.isCorrect };
+        } else {
+          newAnswers.push({ questionId: currentQuestion.id, isCorrect: responseData.isCorrect });
+        }
+        
+        return {
+          ...prev,
+          correctAnswerText: responseData.correctAnswer,
+          isAnswerCorrect: responseData.isCorrect,
+          answers: newAnswers,
+        };
+      });
 
       if (responseData.isCorrect) {
         setQuiz((prev) => ({ ...prev, score: prev.score + 1 }));
@@ -335,17 +349,26 @@ export default function QuizDetailPage() {
     try {
       console.log('🏁 Ending quiz...');
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/end/${quiz.sessionId}`, {
+      // Use tracked answers from the quiz state
+      const percentage = Math.round((quiz.score / quiz.questions.length) * 100);
+      const isPassed = percentage >= 70;
+
+      // Submit quiz results to backend using tracked answers
+      const response = await fetch(`http://localhost:5000/api/quiz/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
+        body: JSON.stringify({
+          answers: quiz.answers,  // Use tracked answers
+          topicId: parseInt(topicId),
+          score: quiz.score,
+        }),
       });
 
-      await response.json();
-      const percentage = Math.round((quiz.score / quiz.questions.length) * 100);
-      const isPassed = percentage >= 70;
+      const submitData = await response.json();
+      console.log('📊 Quiz submitted:', submitData);
 
       // Calculate completion stats
       const elapsedTime = startTime ? Date.now() - startTime : 0;
@@ -354,8 +377,8 @@ export default function QuizDetailPage() {
       const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
       setCompletionStats({
-        xp: 25,
-        accuracy: percentage,
+        xp: submitData.xpGained || 25,
+        accuracy: submitData.percentage || percentage,
         time: timeStr,
       });
 
