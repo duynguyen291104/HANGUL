@@ -253,4 +253,111 @@ router.post('/submit', authenticate, async (req: AuthRequest, res: Response) => 
   }
 });
 
+// ========================
+// GET QUESTIONS BY TOPIC (for learning map)
+// ========================
+router.get('/by-topic/:topicId', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { topicId } = req.params;
+
+    if (!topicId) {
+      return res.status(400).json({ error: 'topicId is required' });
+    }
+
+    const parsedTopicId = parseInt(topicId);
+
+    // Validate topic exists
+    const topic = await prisma.topic.findUnique({
+      where: { id: parsedTopicId },
+    });
+
+    if (!topic) {
+      return res.status(404).json({ error: 'Topic not found' });
+    }
+
+    // Get user level
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Get vocabulary for this topic and user's level
+    const vocabulary = await prisma.vocabulary.findMany({
+      where: {
+        topicId: parsedTopicId,
+        level: user.level,
+        isActive: true,
+      },
+    });
+
+    res.json({
+      data: vocabulary,
+      count: vocabulary.length,
+      topic: topic.name,
+    });
+  } catch (error) {
+    console.error('❌ Get questions by topic error:', error);
+    res.status(500).json({ error: 'Failed to fetch questions' });
+  }
+});
+
+// ========================
+// GET USER PROGRESS FOR QUIZ TOPIC
+// ========================
+router.get('/user-progress/:topicId', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { topicId } = req.params;
+
+    if (!topicId) {
+      return res.status(400).json({ error: 'topicId is required' });
+    }
+
+    const parsedTopicId = parseInt(topicId);
+
+    // Get user's progress for this topic
+    const progress = await prisma.userProgress.findFirst({
+      where: {
+        userId: req.user.id,
+        topicId: parsedTopicId,
+        skillType: 'QUIZ',
+      },
+    });
+
+    if (!progress) {
+      // Return default progress (not completed)
+      return res.json({
+        data: {
+          completed: false,
+          score: 0,
+          attempts: 0,
+          message: 'Not started',
+        },
+      });
+    }
+
+    res.json({
+      data: {
+        completed: progress.completed,
+        score: progress.score || 0,
+        attempts: progress.attempts || 0,
+        message: progress.completed ? `${progress.score}% - ${progress.attempts} attempt(s)` : 'Not completed',
+      },
+    });
+  } catch (error) {
+    console.error('❌ Get user progress error:', error);
+    res.status(500).json({ error: 'Failed to fetch progress' });
+  }
+});
+
 export default router;

@@ -210,6 +210,7 @@ app.use('/api/learning-path', authenticate, learningPathRouter);  // Also availa
 app.use('/api/user', authenticate, userRouter);  // User management endpoints
 app.use('/api/vocabulary', authenticate, vocabularyRouter);
 app.use('/api/quiz', quizRouter);  // Quiz endpoints (generate, submit)
+app.use('/api/question', quizRouter);  // Also available as /api/question for learning map
 app.use('/api/quiz', quizAdminRouter);  // Admin quiz management endpoints
 app.use('/api/writing', authenticate, writingRouter);
 app.use('/api/topic', authenticate, topicRouter);
