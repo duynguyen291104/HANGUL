@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import prisma from '../../lib/prisma';
+import { getRank } from '../../utils/rankCalculator';
 
 const userRouter = Router();
 
@@ -79,7 +80,13 @@ userRouter.get('/profile', async (req: any, res: any) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json(user);
+    // Calculate rank from trophy
+    const rank = getRank(user.totalTrophy || 0);
+
+    res.json({
+      ...user,
+      rank, // Add rank to response
+    });
   } catch (error) {
     console.error(' USER PROFILE ERROR:', error);
     res.status(500).json({ error: 'Failed to load user profile' });

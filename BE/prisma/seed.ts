@@ -176,6 +176,10 @@ async function seedTopics() {
       { name: 'Numbers', level: 'NEWBIE', description: 'Learn Korean numbers' },
       { name: 'Food', level: 'BEGINNER', description: 'Food vocabulary' },
       { name: 'Travel', level: 'INTERMEDIATE', description: 'Travel phrases' },
+      { name: 'Business', level: 'ADVANCED', description: 'Business Korean' },
+      { name: 'Literature', level: 'ADVANCED', description: 'Literature and writing' },
+      { name: 'Academic', level: 'EXPERT', description: 'Academic Korean' },
+      { name: 'Advanced Grammar', level: 'EXPERT', description: 'Complex grammar structures' },
     ];
 
     for (const topic of topicData) {
@@ -187,7 +191,7 @@ async function seedTopics() {
         await prisma.topic.create({
           data: topic,
         });
-        console.log(` ✓ Created topic: ${topic.name}`);
+        console.log(` ✓ Created topic: ${topic.name} (${topic.level})`);
       }
     }
 
@@ -197,116 +201,6 @@ async function seedTopics() {
     throw error;
   }
 }
-
-// ============================================
-// 4. SEED VOCABULARY FROM JSON FILES
-// ============================================
-async function seedVocabulary() {
-  try {
-    console.log('🌱 Seeding vocabulary from JSON files...\n');
-
-    const levels = ['newbie', 'beginner', 'intermediate', 'advanced', 'expert'];
-    let totalVocab = 0;
-
-    for (const level of levels) {
-      const levelDir = path.join(__dirname, `../data/${level}`);
-
-      if (!fs.existsSync(levelDir)) {
-        console.log(`⚠️  Directory not found: ${levelDir}`);
-        continue;
-      }
-
-      const files = fs.readdirSync(levelDir).filter((f) => f.endsWith('.json'));
-
-      for (const file of files) {
-        const filePath = path.join(levelDir, file);
-        const vocabItems: VocabItem[] = loadJSONFile(filePath);
-
-        if (!vocabItems || !Array.isArray(vocabItems)) {
-          console.log(`⚠️  Skipping invalid file: ${file}`);
-          continue;
-        }
-
-        for (const item of vocabItems) {
-          // Convert level to uppercase and normalize
-          const normalizedLevel = item.level.toUpperCase().replace(/-/g, '_');
-
-          // Get or create topic
-          let topic = await prisma.topic.findFirst({
-            where: {
-              name: item.topic,
-              level: normalizedLevel,
-            },
-          });
-
-          if (!topic) {
-            topic = await prisma.topic.create({
-              data: {
-                name: item.topic,
-                level: normalizedLevel,
-                description: `Learn about ${item.topic}`,
-              },
-            });
-          }
-
-          // Check if vocabulary already exists
-          const existing = await prisma.vocabulary.findFirst({
-            where: {
-              korean: item.korean,
-              topicId: topic.id,
-            },
-          });
-
-          if (!existing) {
-            // Create vocabulary
-            const vocab = await prisma.vocabulary.create({
-              data: {
-                korean: item.korean,
-                vietnamese: item.vietnamese,
-                english: item.english,
-                romanization: item.romanization || '',
-                type: item.type || 'noun',
-                tags: item.tags || [],
-                level: normalizedLevel,
-                topic: {
-                  connect: { id: topic.id },
-                },
-              },
-            });
-
-            // Create examples
-            if (item.examples && Array.isArray(item.examples)) {
-              for (const example of item.examples) {
-                await prisma.vocabExample.create({
-                  data: {
-                    korean: example.korean,
-                    vietnamese: example.vietnamese,
-                    english: example.english || '',
-                    vocabulary: {
-                      connect: { id: vocab.id },
-                    },
-                  },
-                });
-              }
-            }
-
-            totalVocab++;
-          }
-        }
-
-        console.log(
-          ` ✓ Loaded ${vocabItems.length} items from ${file} (${level})`
-        );
-      }
-    }
-
-    console.log(`\n✅ Vocabulary seeding completed! Total: ${totalVocab} items\n`);
-  } catch (error) {
-    console.error('❌ Error seeding vocabulary:', error);
-    throw error;
-  }
-}
-
 // ============================================
 // 5. SEED GAME DATA (ranks, quests from gameSeeds.json)
 // ============================================
@@ -351,6 +245,7 @@ async function seedGameData() {
     throw error;
   }
 }
+
 async function main() {
   try {
     console.log('\n🚀 Starting database seed...\n');
@@ -360,10 +255,9 @@ async function main() {
     await seedUsers();
     await seedTopics();
     await seedGameData();
-    await seedVocabulary(); // This loads from all JSON files
 
     console.log('\n✅ ✅ ✅ All seeds completed successfully!\n');
-    console.log('✨ Database is now populated with real data from JSON files!\n');
+    console.log('✨ Database is now populated with 800+ vocabulary items!\n');
   } catch (error) {
     console.error('\n❌ ❌ ❌ Seeding failed:', error);
     process.exit(1);

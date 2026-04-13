@@ -47,7 +47,7 @@ router.get('/unlocked', async (req: AuthRequest, res: Response) => {
     });
 
     res.json({
-      unlocked: unlocked.map((ua: any) => ({
+      achievements: unlocked.map((ua: any) => ({
         id: ua.achievement.id,
         name: ua.achievement.name,
         description: ua.achievement.description,

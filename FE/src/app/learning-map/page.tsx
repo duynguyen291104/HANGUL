@@ -184,21 +184,22 @@ export default function LearningMapPage() {
           </p>
           
           {/* XP & Trophy Stats */}
-          <div className="grid grid-cols-2 gap-8 max-w-xs">
-            <div>
+          <div className="grid grid-cols-2 gap-8 max-w-xs mt-4 p-6 border border-[#e8e8e3] rounded-[25px]">
+            <div className="text-center">
               <p className="text-sm font-semibold text-[#72564c] mb-2">XP</p>
               <p className="text-3xl font-black text-[#72564c]">{data.xp}</p>
             </div>
-            <div>
+            <div className="text-center">
               <p className="text-sm font-semibold text-[#72564c] mb-2">Trophy</p>
               <p className="text-3xl font-black text-[#72564c]">{data.trophy}</p>
             </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 py-12">
+        {/* Centered Content Container - 350px margin on each side */}
+        <div style={{marginLeft: '350px', marginRight: '350px'}} className="px-6">
           {/* Progress Bar */}
-          <div className="mb-12">
+          <div className="my-12">
             <div className="w-full h-4 bg-[#e8e8e3] rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-[#72564c] to-[#8d6e63] transition-all duration-300"
@@ -211,7 +212,7 @@ export default function LearningMapPage() {
           </div>
 
           {/* Topics */}
-          <div className="space-y-6">
+          <div className="space-y-6 my-12">
           {data.topics.map((topic) => (
             <div
               key={topic.id}
@@ -370,9 +371,18 @@ export default function LearningMapPage() {
               </div>
             </div>
           ))}
-        </div>
+          </div>
         </div>
 
+        {/* Action Button - Learn Beyond - Bottom Right */}
+        <div className="flex justify-end pb-12" style={{paddingRight: '20%'}}>
+          {/* Learn Beyond Button */}
+          <button
+            className="px-12 py-4 bg-[#72564c] text-white rounded-lg font-bold text-lg hover:bg-[#504441] transition-all duration-300 shadow-sm hover:shadow-md"
+          >
+            Học vượt
+          </button>
+        </div>
       </main>
     </div>
   );

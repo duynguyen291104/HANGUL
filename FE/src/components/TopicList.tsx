@@ -164,7 +164,7 @@ export default function TopicList({ mode }: TopicListProps) {
         </h1>
         <p className="text-on-surface-variant font-medium font-body mt-[20px]">{modeInfo.subtitle}</p>
         {mounted && (
-          <div className="inline-block bg-gradient-to-r from-primary to-tertiary text-white px-6 py-3 rounded-full font-semibold text-sm mt-4 font-headline shadow-lg">
+          <div className="inline-block text-on-surface-variant font-semibold text-sm mt-4 font-headline">
             Cấp độ: {user?.level || 'N/A'}
           </div>
         )}

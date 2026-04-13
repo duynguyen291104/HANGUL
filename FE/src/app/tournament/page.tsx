@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Link from 'next/link';
+import { io, Socket } from 'socket.io-client';
 
 interface GameMode {
   id: string;
@@ -19,103 +20,159 @@ interface GameMode {
 
 interface LeaderboardEntry {
   rank: number;
+  userId: number;
   name: string;
-  points: number;
-  avatar: string;
-  avatarAlt: string;
-  isPremium?: boolean;
+  trophy: number;
+  avatar?: string;
+  level: string;
+  xp: number;
 }
 
-interface UserRank {
-  rank: number;
+interface UserInfo {
+  id: number;
   name: string;
-  points: number;
+  email: string;
+  level: string;
+  totalTrophy: number;
+  totalXP: number;
+  avatar?: string;
+  rank?: string;
 }
 
 export default function TournamentPage() {
   const router = useRouter();
+  const socketRef = useRef<Socket | null>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userLevel, setUserLevel] = useState<string>('');
+  const [currentRank, setCurrentRank] = useState<string>('Bronze');
+  const [currentTrophy, setCurrentTrophy] = useState<number>(0);
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  const [userRank] = useState<UserRank>({
-    rank: 42,
-    name: 'OtterLearner',
-    points: 15300,
-  });
-  const [leaderboard] = useState<LeaderboardEntry[]>([
-    {
-      rank: 1,
-      name: 'KimChiWarrior',
-      points: 24850,
-      avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCZM2pK8dCYowOZOj11ds8H89uBQGNs9eeyJh9bwv1wSoB84MBMX8ibCeQ3uTILYTfV3RyD2k4_PWYA3QdSEt74W8XPV7-X9pNFknQl1p9LZxKnIpRJPN-uknCrZjG_qp9YtbV_5bGZx2oiqClZftxhM1_3jNVMlgwvLMQa9WbNHTSDimAF31yGOGwfAbVs7dn_QVYDw-TLDZ9dsW5TVRDEPQmbVK-wxEcbrkMO_byOd4nuY-LzQQqd8f1OhHFSSBGVe8xN1bYfL3wY',
-      avatarAlt: 'Clever fox wearing a crown',
-      isPremium: true,
-    },
-    {
-      rank: 2,
-      name: 'SeoulRunner',
-      points: 22100,
-      avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCVi9wPjnpA1lQVrOtpxijtSBOn8cvq-4PxlIRFypJHW24Rr6XNmYutEnv81CMhlEl_ZJaaTpxk4oJeoPvL9BAMhV_3mrfFEc03a0k0PiHYEMnMnhhuOaD2nH3myKi-rwJhSUVuNKgNAkbwYi7AEmbA1Ftcb9VpmCBoX-XmDCG-HQsaxhQtQFAgrmhmrawR78mTHHtPUJGlYyt4WE6n-Y4hZKgjKZb6B5TIEOXe0KBWNWxPKT0PiOVdvK9qiLL_4fB1BInm6DmFbn2F',
-      avatarAlt: 'Happy bear wearing a blue hoodie',
-    },
-    {
-      rank: 3,
-      name: 'PaliPali_99',
-      points: 21450,
-      avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCNi2ZQ5PddpH4mo6LxotH06OtoOPvo_OHLDLYgmiEXE3YijgHSjlkLCJImCpQ7PsHbEBkuLrJDHIjLCGwrvzNbgquvEcP-G3Grfkh7UTgfay6alo4ELnPExLCpd6yR8aJZfISjlzbXKXKi_hqFV_NhAnXdQo8M7GglceSj4LyuaD9alhLg8_Kf7_QdcOgDMGUeFuuNKo8Sq0OSN3AzGJYwG4JTpfIBQVa_07uNxHrRs5Yh9__i2NylEIQvqqjBWln-yB2hGcy3pySc',
-      avatarAlt: 'Ninja cat with a mask',
-    },
-  ]);
 
   const gameModes: GameMode[] = [
     {
       id: 'speed-quiz',
-      title: 'Speed Quiz',
-      description: 'Match Korean vowels and consonants against the clock.',
+      title: 'Trắc Nghiệm Tốc Độ',
+      description: 'Ghép các nguyên âm và phụ âm Hàn Quốc đối với thời gian.',
       icon: '',
       color: 'bg-[#ffddb5]',
-      status: 'Live Now',
-      difficulty: 'Intermediate',
+      status: 'Đang Diễn Ra',
+      difficulty: 'Trung Cấp',
       mascot: 'https://res.cloudinary.com/dds5jlp7e/image/upload/q_auto/f_auto/v1775133394/clock_okbser.png',
-      mascotAlt: 'Clock icon for Speed Quiz',
+      mascotAlt: 'Biểu tượng đồng hồ cho Trắc Nghiệm Tốc Độ',
     },
     {
       id: 'flash-writing',
-      title: 'Flash Writing',
-      description: 'Precision stroke order training with immediate feedback.',
+      title: 'Luyện Viết Nhanh',
+      description: 'Huấn luyện thứ tự nét với phản hồi tức thì.',
       icon: '',
       color: 'bg-[#c2ebe5]',
-      status: 'Expert Tier',
-      difficulty: 'Advanced',
+      status: 'Tầng Chuyên Gia',
+      difficulty: 'Nâng Cao',
       mascot: 'https://res.cloudinary.com/dds5jlp7e/image/upload/q_auto/f_auto/v1775133605/writing_kgqgdy.png',
-      mascotAlt: 'Writing icon for Flash Writing',
+      mascotAlt: 'Biểu tượng viết cho Luyện Viết Nhanh',
     },
     {
       id: 'word-match',
-      title: 'Word Match',
-      description: 'Connect definitions to complex Hangul structures fast.',
+      title: 'Ghép Từ',
+      description: 'Kết nối các định nghĩa với các cấu trúc Hangul phức tạp nhanh chóng.',
       icon: '',
       color: 'bg-[#ffddb5]',
-      status: 'New Records',
-      difficulty: 'Intermediate',
+      status: 'Kỷ Lục Mới',
+      difficulty: 'Trung Cấp',
       mascot: 'https://res.cloudinary.com/dds5jlp7e/image/upload/q_auto/f_auto/v1775133703/puzzle_k88yqv.png',
-      mascotAlt: 'Puzzle icon for Word Match',
+      mascotAlt: 'Biểu tượng câu đố cho Ghép Từ',
     },
     {
       id: 'perfect-speaking',
-      title: 'Perfect Speaking',
-      description: 'AI-powered pronunciation battle for top fluency scores.',
+      title: 'Phát Âm Hoàn Hảo',
+      description: 'Trận chiến phát âm được hỗ trợ bởi AI cho các điểm lưu loát hàng đầu.',
       icon: '',
       color: 'bg-[#ffdad6]',
-      status: 'Intense',
-      difficulty: 'Expert',
+      status: 'Cực Độ',
+      difficulty: 'Chuyên Gia',
       mascot: 'https://res.cloudinary.com/dds5jlp7e/image/upload/q_auto/f_auto/v1775133799/microphone_1_syam64.png',
-      mascotAlt: 'Microphone icon for Perfect Speaking',
+      mascotAlt: 'Biểu tượng micrô cho Phát Âm Hoàn Hảo',
     },
   ];
 
   useEffect(() => {
     if (!token) {
       router.push('/login');
+      return;
     }
+
+    // Fetch user info and leaderboard
+    const initializeTournament = async () => {
+      try {
+        // Get current user info
+        const userRes = await fetch('http://localhost:5000/api/user/profile', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (userRes.ok) {
+          const userData = await userRes.json();
+          setUserInfo(userData);
+          setUserLevel(userData.level);
+          setCurrentRank(userData.rank || 'Bronze');
+          setCurrentTrophy(userData.totalTrophy || 0);
+
+          // Connect to WebSocket
+          const socket = io('http://localhost:5000', {
+            auth: { token }
+          });
+
+          socketRef.current = socket;
+
+          socket.on('connect', () => {
+            console.log('🎮 Connected to tournament WebSocket');
+            
+            // Join level-based room
+            socket.emit('tournament:join', {
+              userId: userData.id,
+              name: userData.name
+            });
+          });
+
+          // Listen for rank updates
+          socket.on('rankUpdate', (data: any) => {
+            console.log('🏆 Rank updated:', data.rank, data.trophy);
+            setCurrentRank(data.rank);
+            setCurrentTrophy(data.trophy);
+          });
+
+          socket.on('tournament:leaderboard-updated', (data: any) => {
+            if (data.leaderboard) {
+              setLeaderboard(data.leaderboard);
+            }
+          });
+
+          // Fetch initial leaderboard
+          const leaderboardRes = await fetch('http://localhost:5000/api/tournament/leaderboard', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          
+          if (leaderboardRes.ok) {
+            const leaderboardData = await leaderboardRes.json();
+            setLeaderboard(leaderboardData.leaderboard || []);
+          }
+
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('❌ Failed to initialize tournament:', error);
+        setLoading(false);
+      }
+    };
+
+    initializeTournament();
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
   }, [token, router]);
 
   return (
@@ -125,11 +182,22 @@ export default function TournamentPage() {
         {/* Main Content */}
         <div className="flex-1 min-h-screen">
           {/* Header Section */}
-          <div className="pt-[70px] pl-[200px]">
-            <h1 className="text-5xl font-extrabold text-[#1a1c19] tracking-tight mb-0">The Otter Arena</h1>
-            <p className="text-[#504441] max-w-lg leading-relaxed mt-[20px]">
-              Choose your battleground. Sharpen your skills against players worldwide and climb the seasonal rankings for exclusive rewards.
-            </p>
+          <div className="pt-[70px] pl-[200px] pr-[90px]">
+            <div className="flex items-start justify-between">
+              <div>
+                <h1 className="text-5xl font-extrabold text-[#1a1c19] tracking-tight mb-0">Đấu Trường</h1>
+                <p className="text-[#504441] max-w-lg leading-relaxed mt-[20px]">
+                  Chọn chiến trường của bạn. Rèn luyện kỹ năng của bạn chống lại các cầu thủ trên toàn thế giới và leo lên bảng xếp hạng theo mùa để nhận được phần thưởng độc quyền.
+                </p>
+              </div>
+              
+              {/* Current Rank - Right Side */}
+              <div className="border-2 border-[#72564c] rounded-[25px] p-6 mr-[300px]">
+                <p className="text-xs font-bold uppercase tracking-widest text-[#72564c] mb-2">Current Rank</p>
+                <p className="text-2xl font-bold text-[#1a1c19]">{currentRank}</p>
+                <p className="text-sm text-[#504441] mt-2">🏆 {currentTrophy} Trophy</p>
+              </div>
+            </div>
           </div>
 
           <div className="px-[90px] py-12 max-w-7xl mx-auto">
@@ -164,61 +232,51 @@ export default function TournamentPage() {
             {/* Leaderboard Section */}
             <div className="bg-white rounded-xl p-8 shadow-lg mb-8">
               <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-bold text-[#1a1c19]">Leaderboard</h2>
-                <span className="text-xs font-bold text-[#72564c] px-3 py-1 bg-[#ffdbce] rounded-full">GLOBAL</span>
-              </div>
-
-              <div className="space-y-4">
-                {leaderboard.map((entry) => (
-                  <div key={entry.rank} className="flex items-center gap-4 p-4 bg-[#f9f9f7] rounded-lg hover:shadow-md transition-shadow">
-                    <div className="w-8 text-center font-black text-[#815300]">{entry.rank}</div>
-                    <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border-2 border-[#ffddb5]">
-                      <img alt={entry.avatarAlt} src={entry.avatar} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-bold text-sm text-[#1a1c19]">{entry.name}</p>
-                      <p className="text-xs text-[#504441]">{entry.points.toLocaleString()} pts</p>
-                    </div>
-                    {entry.isPremium && <span className="text-lg"></span>}
-                  </div>
-                ))}
-
-                <div className="py-2 border-t border-[#d4c3be] opacity-20 my-4"></div>
-
-                {/* Current User */}
-                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-[#72564c] to-[#8d6e63] text-white rounded-lg shadow-lg">
-                  <div className="w-8 text-center font-black">{userRank.rank}</div>
-                  <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border-2 border-white">
-                    <img
-                      alt="Your profile"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJoMsfYw4TU1mbNhOektUNzsOIA6ArwLScIPgB3T32k-lOj3j3eSSyQx7Gfb-dJaHA_rPiDxHDgQmpPf5hg3WnGlupY7yTEnG39i-I959118mt6M5iRaG_SelTBVYyMC5uogTjogAqw8P5eO8ENM8bCb6NXWtwUtvCTpgFx2DSt04FrvbAnXiMBMhN0slj_KQfMoJpPGuP2qoe6y7CQmDnkvqx6-wrQ_CknwDmwgu7R2zJuIaBQXUK7Wibsadwqbkf776axCcux6EO"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-bold text-sm">You ({userRank.name})</p>
-                    <p className="text-xs opacity-80">{userRank.points.toLocaleString()} pts</p>
-                  </div>
-                  <span>📈</span>
+                <div>
+                  <h2 className="text-2xl font-bold text-[#1a1c19]">Bảng Xếp Hạng</h2>
+                  {userLevel && <p className="text-xs text-[#72564c] mt-2">Level: <strong>{userLevel}</strong></p>}
                 </div>
               </div>
 
-              <button className="w-full mt-8 py-4 text-[#72564c] font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#eeeee9] transition-colors rounded-full">
-                View Full Standings →
-              </button>
-
-              {/* Weekly Reward */}
-              <div className="mt-8 bg-gradient-to-br from-[#815300] to-[#a26900] text-white p-6 rounded-lg relative overflow-hidden">
-                <div className="relative z-10">
-                  <p className="text-xs font-bold uppercase tracking-widest opacity-80 mb-1">Weekly Prize</p>
-                  <h4 className="text-lg font-bold mb-4">Master Calligrapher Otter Skin</h4>
-                  <div className="flex items-center gap-2">
-                    <span>⏰</span>
-                    <span className="text-sm">Ends in: 2d 14h 22m</span>
-                  </div>
+              {loading ? (
+                <div className="text-center py-8 text-[#504441]">
+                  Đang tải bảng xếp hạng...
                 </div>
-                <div className="absolute -right-6 -bottom-6 w-32 h-32 opacity-20 text-6xl">🏅</div>
-              </div>
+              ) : leaderboard.length === 0 ? (
+                <div className="text-center py-8 text-[#504441]">
+                  Chưa có người chơi nào ở level {userLevel}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {leaderboard.slice(0, 10).map((entry) => (
+                    <div 
+                      key={entry.userId} 
+                      className={`flex items-center gap-4 p-4 rounded-lg transition-all ${
+                        entry.userId === userInfo?.id
+                          ? 'bg-gradient-to-r from-[#72564c] to-[#8d6e63] text-white shadow-lg'
+                          : 'bg-[#f9f9f7] hover:shadow-md'
+                      }`}
+                    >
+                      <div className={`w-8 text-center font-black ${entry.userId === userInfo?.id ? 'text-white' : 'text-[#815300]'}`}>
+                        {entry.rank}
+                      </div>
+                      <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border-2 border-[#ffddb5]">
+                        <div className="w-full h-full bg-gradient-to-br from-[#ff6b6b] to-[#ffd93d] flex items-center justify-center text-white font-bold">
+                          {entry.name.charAt(0).toUpperCase()}
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <p className={`font-bold text-sm ${entry.userId === userInfo?.id ? 'text-white' : 'text-[#1a1c19]'}`}>
+                          {entry.name} {entry.userId === userInfo?.id && '(Bạn)'}
+                        </p>
+                        <p className={`text-xs ${entry.userId === userInfo?.id ? 'text-gray-100' : 'text-[#504441]'}`}>
+                          🏆 {entry.trophy} Trophy • ⭐ {entry.xp} XP
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

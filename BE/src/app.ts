@@ -3,6 +3,7 @@ const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
 const { prisma } = require('./lib/prisma');
+const { setIO } = require('./io');
 require('dotenv').config();
 
 // Import module routes (new modular structure)
@@ -16,6 +17,7 @@ const cameraRouter = require('./modules/camera/index').default;
 const topicRouter = require('./modules/topic/index').default;
 const writingRouter = require('./modules/writing/index').default;
 const leaderboardRouter = require('./modules/leaderboard/index').default;
+const tournamentRouter = require('./modules/tournament/index').default;
 const achievementsRouter = require('./modules/achievements/index').default;
 const learningPathRouter = require('./modules/learning-path/controller').default;
 const adminRouter = require('./modules/admin/index').default;
@@ -37,7 +39,10 @@ const io = new Server(server, {
   },
 });
 
-// Store active connections
+// Set global io instance for use in other modules
+setIO(io);
+
+// Store active connections with level info for level-based leaderboard
 const tournamentPlayers = new Map();
 
 // ========================
@@ -46,20 +51,73 @@ const tournamentPlayers = new Map();
 io.on('connection', (socket: any) => {
   console.log(`🎮 Tournament player connected: ${socket.id}`);
 
-  // Join tournament room
-  socket.on('tournament:join', (data: any) => {
+  // Join tournament room with level-based room assignment
+  socket.on('tournament:join', async (data: any) => {
     const { userId, name } = data;
-    tournamentPlayers.set(userId, { socketId: socket.id, name });
-    socket.join('tournament');
-    console.log(`📍 ${name} joined tournament room`);
+    
+    try {
+      // Get user's level from database
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { level: true },
+      });
+
+      if (!user) {
+        console.error(`❌ User not found: ${userId}`);
+        return;
+      }
+
+      // Store player info with level
+      tournamentPlayers.set(userId, { 
+        socketId: socket.id, 
+        name, 
+        level: user.level 
+      });
+
+      // Join level-based room (e.g., "tournament_NEWBIE")
+      const roomName = `tournament_${user.level}`;
+      socket.join(roomName);
+      
+      // Join personal user room for rank updates
+      socket.join(`user_${userId}`);
+      
+      console.log(`📍 ${name} (${user.level}) joined room: ${roomName} + user_${userId}`);
+    } catch (error) {
+      console.error('Error joining tournament:', error);
+    }
   });
 
-  // When player scores updated
+  // When player scores updated - emit only to same level room
   socket.on('tournament:score-update', async (data: any) => {
     const { userId } = data;
+    
     try {
-      const updatedLeaderboard = await prisma.user.findMany({
-        where: { totalTrophy: { gte: 1000 } },
+      // Get user's current level
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { level: true, role: true, email: true },
+      });
+
+      if (!user) {
+        console.error(`❌ User not found: ${userId}`);
+        return;
+      }
+
+      // Skip test/admin users
+      if (user.role === 'ADMIN' || user.email.includes('test')) {
+        console.log(`⏭️ Skipping test/admin user for leaderboard: ${userId}`);
+        return;
+      }
+
+      const roomName = `tournament_${user.level}`;
+
+      // Get leaderboard only for users at same level (exclude test/admin)
+      const levelLeaderboard = await prisma.user.findMany({
+        where: { 
+          level: user.level,
+          role: { not: 'ADMIN' },
+          email: { not: { contains: 'test' } }
+        },
         select: {
           id: true,
           name: true,
@@ -68,21 +126,33 @@ io.on('connection', (socket: any) => {
           level: true,
           totalXP: true,
         },
-        orderBy: [{ totalTrophy: 'desc' }, { totalXP: 'desc' }],
-        take: 100,
+        orderBy: [
+          { totalTrophy: 'desc' },
+          { totalXP: 'desc' }
+        ],
+        take: 50,
       });
-      const formatted = updatedLeaderboard.map((user: any, idx: number) => ({
+
+      const formatted = levelLeaderboard.map((u: any, idx: number) => ({
         rank: idx + 1,
-        userId: user.id,
-        name: user.name,
-        avatar: user.avatar,
-        trophy: user.totalTrophy,
-        level: user.level,
-        xp: user.totalXP,
+        userId: u.id,
+        name: u.name,
+        avatar: u.avatar,
+        trophy: u.totalTrophy,
+        level: u.level,
+        xp: u.totalXP,
       }));
-      io.to('tournament').emit('tournament:leaderboard-updated', formatted);
+
+      // Emit ONLY to users at same level
+      io.to(roomName).emit('tournament:leaderboard-updated', {
+        level: user.level,
+        leaderboard: formatted,
+        timestamp: new Date().toISOString(),
+      });
+
+      console.log(`🏆 Leaderboard updated for ${roomName}: ${formatted.length} users`);
     } catch (error) {
-      console.error('Error updating leaderboard:', error);
+      console.error('❌ Error updating leaderboard:', error);
     }
   });
 
@@ -92,7 +162,7 @@ io.on('connection', (socket: any) => {
     for (let [userId, player] of tournamentPlayers) {
       if (player.socketId === socket.id) {
         tournamentPlayers.delete(userId);
-        console.log(`🚪 ${player.name} left tournament`);
+        console.log(`🚪 ${player.name} (${player.level}) left tournament`);
         break;
       }
     }
@@ -144,6 +214,7 @@ app.use('/api/topic', authenticate, topicRouter);
 
 // Semi-public routes (some endpoints public, some protected)
 app.use('/api/leaderboard', leaderboardRouter);
+app.use('/api/tournament', authenticate, tournamentRouter);
 app.use('/api/achievements', achievementsRouter);
 
 // Camera detection route (requires authentication for saving)
