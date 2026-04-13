@@ -127,27 +127,10 @@ export const useAuthStore = create<AuthStore>((set) => {
     set({ token });
   },
 
+
   updateLevel: async (level: string) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/update-level`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ level }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update level');
-      }
-
-      const data = await response.json();
+      // Update local state immediately (API call already done in handleSelectLevel)
       set((state) => {
         if (!state.user) {
           console.error('❌ User not found in state');
@@ -156,11 +139,12 @@ export const useAuthStore = create<AuthStore>((set) => {
 
         const updatedUser = {
           ...state.user,
-          level: data.level,
-          levelLocked: data.levelLocked,
+          level,
+          levelLocked: true,  // Level is locked after selection
         };
         
-        // 🔥 LƯU LEVEL MỚI VÀO LOCALSTORAGE
+        console.log('✅ Level updated locally:', level);
+        // 🔥 SAVE UPDATED USER TO LOCALSTORAGE
         localStorage.setItem('user', JSON.stringify(updatedUser));
         
         return {
@@ -168,7 +152,7 @@ export const useAuthStore = create<AuthStore>((set) => {
         };
       });
     } catch (error: any) {
-      console.error('Update level error:', error);
+      console.error('❌ Error updating level:', error);
       throw error;
     }
   }

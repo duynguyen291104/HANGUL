@@ -41,6 +41,17 @@ export default function LevelSelectionPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    console.log('[LevelSelection] Token:', token ? 'EXISTS' : 'MISSING');
+    console.log('[LevelSelection] User:', user);
+    
+    if (!token) {
+      console.warn('[LevelSelection] No token found, redirecting to login');
+      router.push('/login');
+      return;
+    }
+
     if (user && user.levelLocked) {
       router.push('/dashboard');
     }
@@ -49,9 +60,18 @@ export default function LevelSelectionPage() {
   const handleSelectLevel = async (level: Level) => {
     setSelected(level);
     setLoading(true);
+    setError('');
 
     try {
       const token = localStorage.getItem('token');
+      
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
+      }
+
+      console.log('[LevelSelection] Sending token:', token.substring(0, 20) + '...');
+      console.log('[LevelSelection] API URL:', process.env.NEXT_PUBLIC_API_URL);
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/set-level`, {
         method: 'POST',
         headers: {
@@ -61,22 +81,28 @@ export default function LevelSelectionPage() {
         body: JSON.stringify({ level }),
       });
 
+      console.log('[LevelSelection] Response status:', response.status);
+
       if (response.ok) {
-        updateLevel(level);
+        // Await the level update to complete
+        await updateLevel(level);
+        // Now redirect to dashboard
         router.push('/dashboard');
       } else {
-        setError('Failed to update level');
+        const errorData = await response.json();
+        console.error('[LevelSelection] API Error:', errorData);
+        setError(errorData.error || `Failed to update level (${response.status})`);
       }
     } catch (err) {
-      console.error('Error updating level:', err);
-      setError('An error occurred');
+      console.error('[LevelSelection] Error:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#fafaf5] font-['Be_Vietnam_Pro'] flex flex-col" style={{
+    <div className="min-h-screen bg-[#fafaf5] flex flex-col" style={{
       backgroundImage: 'radial-gradient(#d4c3be 0.5px, transparent 0.5px)',
       backgroundSize: '24px 24px',
     }}>
@@ -91,7 +117,7 @@ export default function LevelSelectionPage() {
               src="/otter-mascot.png"
             />
           </div>
-          <h1 className="font-['Plus_Jakarta_Sans'] text-6xl font-black tracking-tighter mb-4 uppercase text-[#72564c]">
+          <h1 className="text-6xl font-black tracking-tighter mb-4 uppercase text-[#72564c]">
             HANGUL
           </h1>
           <p className="text-2xl font-bold text-[#8d6e63] mb-1" suppressHydrationWarning>
@@ -111,7 +137,7 @@ export default function LevelSelectionPage() {
               disabled={loading}
               className="tactile-card bg-white p-8 rounded-xl flex flex-col items-center text-center shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-300 border-2 border-transparent hover:border-[#8d6e63] hover:shadow-[0_20px_25px_-5px_rgba(114,86,76,0.1),0_10px_10px_-5px_rgba(114,86,76,0.04)] hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <h3 className="font-['Plus_Jakarta_Sans'] text-xl font-extrabold text-[#72564c] mb-2">
+              <h3 className="text-xl font-extrabold text-[#72564c] mb-2">
                 {level.label}
               </h3>
               <p className="text-sm text-[#504441] leading-relaxed">
@@ -129,7 +155,7 @@ export default function LevelSelectionPage() {
             disabled={loading}
             className="tactile-card bg-white p-8 rounded-xl flex flex-col items-center text-center md:col-span-2 shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-300 border-2 border-transparent hover:border-[#8d6e63] hover:shadow-[0_20px_25px_-5px_rgba(114,86,76,0.1),0_10px_10px_-5px_rgba(114,86,76,0.04)] hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <h3 className="font-['Plus_Jakarta_Sans'] text-xl font-extrabold text-[#72564c] mb-2">
+            <h3 className="text-xl font-extrabold text-[#72564c] mb-2">
               {levels[4].label}
             </h3>
             <p className="text-sm text-[#504441] leading-relaxed">
@@ -150,7 +176,7 @@ export default function LevelSelectionPage() {
       </main>
 
       {/* Footer Branding */}
-      <footer className="p-10 text-center opacity-40 text-xs tracking-[0.2em] font-['Plus_Jakarta_Sans'] font-bold uppercase text-[#72564c]">
+      <footer className="p-10 text-center opacity-40 text-xs tracking-[0.2em] font-bold uppercase text-[#72564c]">
         Designed with Otter Love • Hangul Learning System
       </footer>
 

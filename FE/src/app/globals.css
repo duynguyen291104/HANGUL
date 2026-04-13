@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Playwrite+IE:wght@100..400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -13,13 +15,25 @@ html {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Cormorant Garamond', serif;
+  background-color: rgb(250, 250, 245);
+  color: rgb(26, 28, 25);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #f5f1e8 0%, #ede4d3 100%);
-  color: #2d3436;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+  font-size: 16px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+p, span, a, button, label, input, textarea {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
 }
 
 input:focus,
@@ -29,28 +43,42 @@ button:focus {
 }
 
 :root {
-  --primary-color: #2d5d4d;
-  --primary-light: #4a8f7d;
-  --accent-color: #a8d5ba;
-  --accent-light: #c8e6d7;
-  --bg-primary: #f5f1e8;
-  --bg-secondary: #ede4d3;
-  --text-primary: #2d3436;
-  --text-secondary: #636e72;
-  --card-bg: #ffffff;
+  /* Brand Colors */
+  --primary: #72564c;
+  --primary-fixed: #ffdbce;
+  --primary-fixed-dim: #e4beb2;
+  --primary-container: #8d6e63;
+  
+  --secondary: #406561;
+  --secondary-fixed: #c2ebe5;
+  --secondary-fixed-dim: #a6cec9;
+  
+  --tertiary: #815300;
+  --tertiary-fixed: #ffddb5;
+  --tertiary-fixed-dim: #ffb957;
+  
+  /* Surface Colors */
+  --surface: #fafaf5;
+  --surface-dim: #dadad5;
+  --surface-container: #eeeee9;
+  --surface-container-high: #e8e8e3;
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-[#2d5d4d] hover:bg-[#1f4439] text-white font-semibold py-3 px-6 rounded-full transition duration-300 shadow-md hover:shadow-lg;
+    @apply bg-primary hover:bg-primary-container text-white font-semibold py-3 px-6 rounded-full transition duration-300 shadow-md hover:shadow-lg font-headline;
   }
 
   .btn-secondary {
-    @apply bg-[#a8d5ba] hover:bg-[#8bc9a8] text-[#2d3436] font-semibold py-2 px-4 rounded-lg transition duration-300;
+    @apply bg-secondary-fixed hover:bg-secondary-fixed-dim text-secondary font-semibold py-2 px-4 rounded-lg transition duration-300 font-headline;
+  }
+
+  .card-base {
+    @apply bg-surface-container rounded-lg shadow-sm hover:shadow-lg transition-all;
   }
 
   .btn-outline {
-    @apply border-2 border-[#2d5d4d] text-[#2d5d4d] hover:bg-[#2d5d4d] hover:text-white font-semibold py-2 px-4 rounded-lg transition duration-300;
+    @apply border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold py-2 px-4 rounded-lg transition duration-300;
   }
 
   .card {
@@ -58,11 +86,11 @@ button:focus {
   }
 
   .card-primary {
-    @apply bg-gradient-to-br from-[#2d5d4d] to-[#1f4439] text-white rounded-2xl shadow-md p-6;
+    @apply bg-gradient-to-br from-primary to-primary-container text-white rounded-2xl shadow-md p-6;
   }
 
   .card-accent {
-    @apply bg-gradient-to-br from-[#a8d5ba] to-[#8bc9a8] text-[#2d3436] rounded-2xl shadow-md p-6;
+    @apply bg-gradient-to-br from-secondary-fixed to-secondary-fixed-dim text-secondary rounded-2xl shadow-md p-6;
   }
 
   .container-md {
@@ -74,7 +102,7 @@ button:focus {
   }
 
   .section-title {
-    @apply text-3xl font-bold text-[#2d3436] mb-6;
+    @apply text-3xl font-bold text-on-background mb-6 font-headline;
   }
 
   .stat-box {
@@ -82,11 +110,11 @@ button:focus {
   }
 
   .progress-bar {
-    @apply w-full bg-gray-200 rounded-full h-2 overflow-hidden;
+    @apply w-full bg-surface-container-high rounded-full h-2 overflow-hidden;
   }
 
   .progress-fill {
-    @apply bg-[#2d5d4d] rounded-full h-full transition-all duration-500;
+    @apply bg-primary rounded-full h-full transition-all duration-500;
   }
 }
 

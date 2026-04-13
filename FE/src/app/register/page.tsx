@@ -64,7 +64,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="bg-hangul-pattern min-h-screen font-['Be_Vietnam_Pro'] text-[#1a1c19] flex items-center justify-center p-6 relative overflow-hidden" style={{ backgroundColor: '#fafaf5' }}>
+    <div className="bg-hangul-pattern min-h-screen text-[#1a1c19] flex items-center justify-center p-6 relative overflow-hidden" style={{ backgroundColor: '#fafaf5' }}>
       {/* Decorative Mascots */}
       {/* Hana - Top Left */}
       <div className="absolute top-[15%] left-[5%] md:left-[15%] lg:left-[25%] -rotate-12 z-0" style={{ filter: 'drop-shadow(0 10px 20px rgba(43, 22, 15, 0.1))' }}>
@@ -104,7 +104,7 @@ export default function RegisterPage() {
               alt="HANGUL Mascot"
               className="w-20 h-20 mx-auto mb-4 object-contain"
             />
-            <h1 className="font-['Plus_Jakarta_Sans'] font-black text-4xl tracking-tighter text-[#72564c] uppercase mb-2">
+            <h1 className="font-black text-4xl tracking-tighter text-[#72564c] uppercase mb-2">
               HANGUL
             </h1>
             <p className="text-[#504441] font-medium">Join our learning journey today.</p>
@@ -121,7 +121,7 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name Field */}
             <div className="space-y-2">
-              <label className="block font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#72564c] px-1">
+              <label className="block text-sm font-bold text-[#72564c] px-1">
                 Full Name
               </label>
               <input
@@ -136,7 +136,7 @@ export default function RegisterPage() {
 
             {/* Email Field */}
             <div className="space-y-2">
-              <label className="block font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#72564c] px-1">
+              <label className="block text-sm font-bold text-[#72564c] px-1">
                 Email
               </label>
               <input
@@ -151,7 +151,7 @@ export default function RegisterPage() {
 
             {/* Password Field */}
             <div className="space-y-2">
-              <label className="block font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#72564c] px-1">
+              <label className="block text-sm font-bold text-[#72564c] px-1">
                 Password
               </label>
               <input
@@ -167,7 +167,7 @@ export default function RegisterPage() {
 
             {/* Confirm Password Field */}
             <div className="space-y-2">
-              <label className="block font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#72564c] px-1">
+              <label className="block text-sm font-bold text-[#72564c] px-1">
                 Confirm Password
               </label>
               <input
@@ -184,7 +184,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-gradient-to-r from-[#72564c] to-[#8d6e63] text-white font-['Plus_Jakarta_Sans'] font-bold text-lg rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all disabled:opacity-50"
+              className="w-full py-4 bg-gradient-to-r from-[#72564c] to-[#8d6e63] text-white font-bold text-lg rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all disabled:opacity-50"
             >
               {loading ? 'Creating account...' : 'Create Account'}
             </button>

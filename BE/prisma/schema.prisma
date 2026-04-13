@@ -188,6 +188,10 @@ model Question {
   topic         Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
   topicId       Int
   
+  // Explanation & Translation (for learning features)
+  explanation    String? // English explanation of the answer
+  explanation_vi String? // Vietnamese translation of the explanation
+  
   // Status
   isActive      Boolean @default(true)
   version       Int     @default(1)

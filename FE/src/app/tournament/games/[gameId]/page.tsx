@@ -46,7 +46,7 @@ export default function GamePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafaf5] font-['Be_Vietnam_Pro']">
+    <div className="min-h-screen bg-[#fafaf5]">
       {renderGame()}
     </div>
   );

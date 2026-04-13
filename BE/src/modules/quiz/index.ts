@@ -46,6 +46,16 @@ router.post('/start', async (req: AuthRequest, res: Response) => {
       orderBy: {
         id: 'asc',
       },
+      select: {
+        id: true,
+        questionText: true,
+        options: true,
+        language_from: true,
+        language_to: true,
+        explanation: true,
+        explanation_vi: true,
+        difficulty: true,
+      },
     });
 
     console.log(`📚 Found ${questions.length} questions with filters:`, where);
@@ -79,6 +89,8 @@ router.post('/start', async (req: AuthRequest, res: Response) => {
       options: q.options,
       language_from: q.language_from,
       language_to: q.language_to,
+      explanation: q.explanation,
+      explanation_vi: q.explanation_vi,
     }));
 
     res.json({
@@ -852,6 +864,8 @@ router.get('/questions', async (req: AuthRequest, res: Response) => {
         difficulty: true,
         language_from: true,
         language_to: true,
+        explanation: true,
+        explanation_vi: true,
         // NOT getting correctAnswer - keep it secret!
       },
     });
@@ -886,6 +900,14 @@ router.post('/submit-answer', async (req: AuthRequest, res: Response) => {
     // Get question from DB
     const question = await prisma.question.findUnique({
       where: { id: Number(questionId) },
+      select: {
+        id: true,
+        questionText: true,
+        correctAnswer: true,
+        topicId: true,
+        explanation: true,
+        explanation_vi: true,
+      },
     });
 
     if (!question) {
@@ -914,6 +936,8 @@ router.post('/submit-answer', async (req: AuthRequest, res: Response) => {
     res.json({
       isCorrect,
       correctAnswer: question.correctAnswer,
+      explanation: question.explanation,
+      explanation_vi: question.explanation_vi,
       xpGained: isCorrect ? 10 : 0,
     });
   } catch (error) {

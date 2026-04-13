@@ -135,13 +135,13 @@ export default function SpeedTournament({ onComplete, onExit }: SpeedTournamentP
   const question = questions[currentQuestion];
 
   return (
-    <div className="min-h-screen p-6 bg-[#fafaf5] font-['Be_Vietnam_Pro']">
+    <div className="min-h-screen p-6 bg-[#fafaf5]">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <span className="text-4xl">⚡</span>
+              <span className="text-4xl"></span>
               <h1 className="text-3xl font-bold text-[#72564c]">Tốc Độ</h1>
             </div>
             <p className="text-[#8d6e63] text-sm">{String(timeLeft).padStart(2, '0')} giây đếm ngược</p>

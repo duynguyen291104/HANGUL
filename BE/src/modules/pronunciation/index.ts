@@ -119,6 +119,71 @@ router.post('/tts', async (req: Request, res: Response) => {
   }
 });
 
+// Get vocabulary by topicId for pronunciation practice
+router.get('/vocabulary/topic/:topicId', async (req: Request, res: Response) => {
+  try {
+    const { topicId } = req.params;
+    const { limit = 20 } = req.query;
+
+    console.log(`🎤 [Pronunciation API] Fetching vocabulary for topicId: ${topicId}, limit: ${limit}`);
+
+    // Get vocabulary for this specific topic
+    const vocabulary = await prisma.vocabulary.findMany({
+      where: {
+        topicId: Number(topicId),
+        isActive: true,
+      },
+      include: {
+        examples: true,
+        topic: {
+          select: {
+            name: true,
+            level: true,
+          }
+        }
+      },
+      take: parseInt(limit as string),
+      orderBy: {
+        createdAt: 'asc',
+      }
+    });
+
+    console.log(`✅ Found ${vocabulary.length} vocabulary words for topicId: ${topicId}`);
+
+    // Shuffle the results
+    const shuffled = vocabulary.sort(() => Math.random() - 0.5);
+
+    res.json({
+      success: true,
+      source: 'database',
+      topicId: Number(topicId),
+      count: shuffled.length,
+      vocabulary: shuffled.map((item) => ({
+        id: item.id,
+        korean: item.korean,
+        english: item.english,
+        vietnamese: item.vietnamese,
+        romanization: item.romanization,
+        type: item.type,
+        topic: item.topic?.name,
+        level: item.topic?.level,
+        difficulty: 1,
+        examples: item.examples?.map(ex => ({
+          korean: ex.korean,
+          english: ex.english,
+          vietnamese: ex.vietnamese,
+        })) || []
+      }))
+    });
+  } catch (error: any) {
+    console.error(`❌ Pronunciation API error:`, error);
+    res.status(500).json({ 
+      error: 'Failed to fetch vocabulary',
+      message: error.message 
+    });
+  }
+});
+
 // Get vocabulary by level for pronunciation practice (from Database)
 router.get('/vocabulary/:level', async (req: Request, res: Response) => {
   try {

@@ -109,12 +109,12 @@ export default function WritingTournament({ onComplete, onExit }: WritingTournam
   const isCorrect = userInput.trim().toLowerCase() === question.vietnamese.toLowerCase();
 
   return (
-    <div className="min-h-screen p-6 bg-[#fafaf5] font-['Be_Vietnam_Pro']">
+    <div className="min-h-screen p-6 bg-[#fafaf5]">
       <div className="max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <span className="text-4xl">✍️</span>
+              <span className="text-4xl"></span>
               <h1 className="text-3xl font-bold text-[#72564c]">Viết</h1>
             </div>
             <p className="text-[#8d6e63] text-sm">Luyện viết từ vựng</p>
@@ -133,13 +133,13 @@ export default function WritingTournament({ onComplete, onExit }: WritingTournam
                 disabled={playing}
                 className="flex-1 bg-gradient-to-r from-[#72564c] to-[#8d6e63] hover:opacity-90 text-white font-bold py-3 rounded-lg transition-all active:scale-95"
               >
-                {playing ? '🔊 Đang phát...' : '🔊 Nghe'}
+                {playing ? 'Đang phát...' : 'Nghe'}
               </button>
               <button
                 onClick={() => setShowHint(!showHint)}
                 className="flex-1 bg-[#f0e6e0] hover:bg-[#e8dcd4] text-[#72564c] font-bold py-3 rounded-lg transition-all active:scale-95"
               >
-                💡 Gợi ý
+                Gợi ý
               </button>
             </div>
           </div>

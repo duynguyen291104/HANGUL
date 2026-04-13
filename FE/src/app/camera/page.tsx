@@ -101,7 +101,7 @@ export default function CameraPage() {
   };
 
   return (
-    <div className="min-h-screen overflow-hidden flex flex-col bg-[#fafaf5] font-['Be_Vietnam_Pro']">
+    <div className="min-h-screen overflow-hidden flex flex-col bg-[#fafaf5]">
       <Header />
 
       {/* Main Content */}
@@ -148,7 +148,7 @@ export default function CameraPage() {
               {/* Not Active State */}
               {!isStreamActive && (
                 <div className="absolute inset-0 z-10 flex flex-col items-center justify-center">
-                  <p className="text-3xl mb-4 font-['Plus_Jakarta_Sans'] font-bold text-white text-center">
+                  <p className="text-3xl mb-4 font-bold text-white text-center">
                     {serverStatus === 'disconnected' 
                       ? 'YOLO Server chưa kết nối' 
                       : 'Webcam chưa khởi động'}
@@ -209,7 +209,7 @@ export default function CameraPage() {
 
             {/* Detection Results Panel */}
             <div className="bg-white rounded-xl shadow-md p-5 border-l-4 border-[#406561] flex-1">
-              <h3 className="text-base font-['Plus_Jakarta_Sans'] font-bold text-[#72564c] mb-3">
+              <h3 className="text-base font-bold text-[#72564c] mb-3">
                 Kết Quả Phát Hiện ({detections.length})
               </h3>
               <div className="max-h-96 overflow-y-auto space-y-2">
@@ -219,7 +219,7 @@ export default function CameraPage() {
                   detections.map((detection, idx) => (
                     <div key={idx} className="bg-[#fafaf5] p-3 rounded-lg border border-[#406561]/20 hover:bg-[#eeeee9] transition-colors">
                       <div className="flex justify-between items-start mb-2">
-                        <span className="font-['Plus_Jakarta_Sans'] font-semibold text-[#72564c] text-sm">{detection.label}</span>
+                        <span className="font-semibold text-[#72564c] text-sm">{detection.label}</span>
                         <span className="bg-[#406561] text-white text-[10px] font-bold px-2 py-0.5 rounded">
                           {Math.round(detection.confidence * 100)}%
                         </span>

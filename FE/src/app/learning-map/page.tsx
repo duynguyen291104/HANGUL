@@ -33,35 +33,6 @@ interface LearningPathData {
   trophy: number;
 }
 
-const getIconForTopic = (topicName: string) => {
-  const iconMap: Record<string, string> = {
-    'Học Chữ': 'text_fields',
-    'Từ Vựng': 'chat_bubble',
-    'Ẩm Thực': 'restaurant',
-    'Du Lịch': 'travel_explore',
-    'Cấu Trúc': 'architecture',
-    'Business': 'business_center',
-    'Technology': 'computer',
-    'default': 'auto_stories',
-  };
-
-  for (const [key, icon] of Object.entries(iconMap)) {
-    if (topicName.includes(key)) return icon;
-  }
-  return iconMap['default'];
-};
-
-const getColorForTopic = (topicLevel: string) => {
-  const colorMap: Record<string, { bg: string; text: string; icon: string }> = {
-    'Sơ Cấp': { bg: 'bg-secondary-fixed', text: 'text-secondary', icon: 'secondary' },
-    'Cơ Bản': { bg: 'bg-primary-fixed', text: 'text-primary', icon: 'primary' },
-    'Trung Cấp': { bg: 'bg-secondary-fixed-dim', text: 'text-secondary', icon: 'secondary' },
-    'Nâng Cao': { bg: 'bg-tertiary-fixed', text: 'text-tertiary', icon: 'tertiary' },
-    'Chuyên Sâu': { bg: 'bg-primary-fixed-dim', text: 'text-primary', icon: 'primary' },
-  };
-  return colorMap[topicLevel] || colorMap['Cơ Bản'];
-};
-
 interface AnswerHistory {
   id: string;
   question: string;
@@ -202,14 +173,14 @@ export default function LearningMapPage() {
   return (
     <div className="min-h-screen bg-[#fafaf5]">
       <Header />
-      <main className="max-w-7xl mx-auto px-6 py-12">
+      <main className="pt-[70px] pl-[200px]">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="font-['Plus_Jakarta_Sans'] text-4xl font-black text-[#72564c] mb-2">
+          <h1 className="text-5xl font-extrabold text-[#1a1c19] tracking-tight mb-0">
             Lộ Trình Học Tập
           </h1>
-          <p className="text-[#504441] mb-6">
-            {data.level} •  {data.completedSkills}/{data.totalSkills} kỹ năng hoàn thành
+          <p className="text-[#504441] mt-[20px]">
+            {data.level} •  {data.completedSkills}/{data.totalSkills} kỹ náng hoàn thành
           </p>
           
           {/* XP & Trophy Stats */}
@@ -225,27 +196,28 @@ export default function LearningMapPage() {
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="mb-12">
-          <div className="w-full h-4 bg-[#e8e8e3] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-[#72564c] to-[#8d6e63] transition-all duration-300"
-              style={{ width: `${data.progressPercentage}%` }}
-            />
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          {/* Progress Bar */}
+          <div className="mb-12">
+            <div className="w-full h-4 bg-[#e8e8e3] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-[#72564c] to-[#8d6e63] transition-all duration-300"
+                style={{ width: `${data.progressPercentage}%` }}
+              />
+            </div>
+            <p className="text-sm text-[#504441] mt-2">
+              {data.progressPercentage}% hoàn thành
+            </p>
           </div>
-          <p className="text-sm text-[#504441] mt-2">
-            {data.progressPercentage}% hoàn thành
-          </p>
-        </div>
 
-        {/* Topics */}
-        <div className="space-y-6">
+          {/* Topics */}
+          <div className="space-y-6">
           {data.topics.map((topic) => (
             <div
               key={topic.id}
               className="bg-white p-6 rounded-lg border border-[#e8e8e3] hover:shadow-md transition-shadow"
             >
-              <h3 className="font-['Plus_Jakarta_Sans'] text-xl font-bold text-[#72564c] mb-2">
+              <h3 className="text-xl font-bold text-[#72564c] mb-2">
                 {topic.name}
               </h3>
               <p className="text-[#504441] text-sm mb-4">{topic.description}</p>
@@ -256,7 +228,7 @@ export default function LearningMapPage() {
                 <div className="flex-1 min-w-[140px]">
                   <button
                     onClick={() => handleToggleSkill(topic.id, 'QUIZ')}
-                    className={`w-full p-3 rounded-lg text-center transition-all font-['Plus_Jakarta_Sans'] font-bold ${
+                    className={`w-full p-3 rounded-lg text-center transition-all font-bold ${
                       topic.quiz.done
                         ? 'bg-[#c2ebe5] text-[#406561]'
                         : 'bg-[#f4f4ef] text-[#504441] hover:bg-[#e8e8e3]'
@@ -304,7 +276,7 @@ export default function LearningMapPage() {
                 <div className="flex-1 min-w-[140px]">
                   <button
                     onClick={() => handleToggleSkill(topic.id, 'WRITING')}
-                    className={`w-full p-3 rounded-lg text-center transition-all font-['Plus_Jakarta_Sans'] font-bold ${
+                    className={`w-full p-3 rounded-lg text-center transition-all font-bold ${
                       topic.writing.done
                         ? 'bg-[#c2ebe5] text-[#406561]'
                         : 'bg-[#f4f4ef] text-[#504441] hover:bg-[#e8e8e3]'
@@ -352,7 +324,7 @@ export default function LearningMapPage() {
                 <div className="flex-1 min-w-[140px]">
                   <button
                     onClick={() => handleToggleSkill(topic.id, 'PRONUNCIATION')}
-                    className={`w-full p-3 rounded-lg text-center transition-all font-['Plus_Jakarta_Sans'] font-bold ${
+                    className={`w-full p-3 rounded-lg text-center transition-all font-bold ${
                       topic.pronunciation.done
                         ? 'bg-[#c2ebe5] text-[#406561]'
                         : 'bg-[#f4f4ef] text-[#504441] hover:bg-[#e8e8e3]'
@@ -399,7 +371,7 @@ export default function LearningMapPage() {
             </div>
           ))}
         </div>
-
+        </div>
 
       </main>
     </div>

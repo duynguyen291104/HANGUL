@@ -94,7 +94,7 @@ export default function MatchingTournament({ onComplete, onExit }: MatchingTourn
   const koreanList = pairs.slice(4, 8).sort(() => Math.random() - 0.5);
 
   return (
-    <div className="min-h-screen p-6 bg-[#fafaf5] font-['Be_Vietnam_Pro']">
+    <div className="min-h-screen p-6 bg-[#fafaf5]">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>

@@ -86,43 +86,8 @@ userRouter.get('/profile', async (req: any, res: any) => {
   }
 });
 
-// ========================
-// SET LEVEL (First time selection)
-// ========================
-userRouter.post('/set-level', async (req: any, res: any) => {
-  try {
-    const userId = req.user.id;
-    const { level } = req.body;
-
-    if (!level) {
-      return res.status(400).json({ error: 'Level is required' });
-    }
-
-    const validLevels = ['NEWBIE', 'BEGINNER', 'INTERMEDIATE', 'UPPER', 'ADVANCED'];
-    if (!validLevels.includes(level)) {
-      return res.status(400).json({ error: 'Invalid level' });
-    }
-
-    const user = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        level,
-        levelLocked: true,
-      },
-      select: {
-        id: true,
-        level: true,
-        levelLocked: true,
-      },
-    });
-
-    console.log(` Level set for user ${userId}: ${level} (locked)`);
-    res.json({ message: 'Level set successfully', level: user.level, levelLocked: user.levelLocked });
-  } catch (error) {
-    console.error(' SET LEVEL ERROR:', error);
-    res.status(500).json({ error: 'Failed to set level' });
-  }
-});
+// NOTE: /set-level endpoint moved to learning-path module
+// Use POST /api/learning-path/set-level or /api/user/set-level (same endpoint)
 
 // ========================
 // UPDATE LEVEL (From learning-map page)

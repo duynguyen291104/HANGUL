@@ -8,20 +8,21 @@ const router = Router();
 // LEVEL REQUIREMENTS
 // ========================
 const LEVEL_REQUIREMENTS: Record<string, { xp: number; trophy: number }> = {
+  // English level names (Frontend uses these)
+  'NEWBIE': { xp: 0, trophy: 0 },
+  'BEGINNER': { xp: 1500, trophy: 500 },
+  'INTERMEDIATE': { xp: 2500, trophy: 1000 },
+  'UPPER': { xp: 3500, trophy: 2000 },
+  'ADVANCED': { xp: 5000, trophy: 4000 },
+  // Vietnamese level names (Legacy support)
   'CỰC_CƠ_BẢN': { xp: 0, trophy: 0 },
   'CƠ_BẢN': { xp: 1500, trophy: 500 },
   'TRUNG_CẤP': { xp: 2500, trophy: 1000 },
   'NÂNG_CAO': { xp: 3500, trophy: 2000 },
   'LÃO_LUYỆN': { xp: 5000, trophy: 4000 },
-  // Fallback for existing data
-  'NEWBIE': { xp: 0, trophy: 0 },
-  'BEGINNER': { xp: 1500, trophy: 500 },
-  'INTERMEDIATE': { xp: 2500, trophy: 1000 },
-  'UPPER_INTERMEDIATE': { xp: 3500, trophy: 2000 },
-  'ADVANCED': { xp: 5000, trophy: 4000 },
 };
 
-const LEVEL_ORDER = ['CỰC_CƠ_BẢN', 'CƠ_BẢN', 'TRUNG_CẤP', 'NÂNG_CAO', 'LÃO_LUYỆN'];
+const LEVEL_ORDER = ['NEWBIE', 'BEGINNER', 'INTERMEDIATE', 'UPPER', 'ADVANCED'];
 
 // ========================
 // 1. SET LEVEL
@@ -60,11 +61,12 @@ router.post('/set-level', authenticate, async (req, res) => {
       });
     }
 
-    // Update level
+    // Update level and lock it
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
         level,
+        levelLocked: true,
         levelUnlockedAt: new Date(),
       },
     });

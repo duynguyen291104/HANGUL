@@ -214,13 +214,13 @@ export default function PronunciationTournament({ onComplete, onExit }: Pronunci
   }
 
   return (
-    <div className="min-h-screen bg-[#fafaf5] font-['Be_Vietnam_Pro'] p-6">
+    <div className="min-h-screen bg-[#fafaf5] p-6">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <span className="text-4xl">🎤</span>
+              <span className="text-4xl"></span>
               <h1 className="text-3xl font-bold text-[#72564c]">Perfect Speaking</h1>
             </div>
             <p className="text-[#8d6e63] text-sm">Luyện phát âm hoàn hảo</p>
@@ -268,7 +268,7 @@ export default function PronunciationTournament({ onComplete, onExit }: Pronunci
               disabled={isPlayingAudio}
               className="px-8 py-3 bg-[#ffddb5] text-[#815300] rounded-lg font-bold hover:bg-[#ffcd9b] transition-all disabled:opacity-50"
             >
-              {isPlayingAudio ? '🔊 Playing...' : '🔊 Listen to Native'}
+              {isPlayingAudio ? 'Playing...' : 'Listen to Native'}
             </button>
           </div>
 
@@ -292,14 +292,14 @@ export default function PronunciationTournament({ onComplete, onExit }: Pronunci
                 onClick={handleStartRecording}
                 className="w-full px-8 py-6 bg-gradient-to-r from-[#72564c] to-[#8d6e63] text-white rounded-lg font-bold text-lg hover:scale-105 transition-transform active:scale-95"
               >
-                🎤 Start Recording
+                Start Recording
               </button>
             ) : (
               <button
                 onClick={handleStopRecording}
                 className="w-full px-8 py-6 bg-[#f44336] text-white rounded-lg font-bold text-lg hover:bg-[#da190b] transition-all active:scale-95 animate-pulse"
               >
-                ⏹ Stop Recording
+                Stop Recording
               </button>
             )}
           </div>

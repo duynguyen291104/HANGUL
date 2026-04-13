@@ -18,7 +18,7 @@ interface GameStats {
 
 export default function Dashboard() {
   const router = useRouter();
-  const { user: authUser, logout } = useAuthStore();
+  const { user: authUser } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<GameStats | null>(null);
 
@@ -109,7 +109,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafaf5] font-['Be_Vietnam_Pro']">
+    <div className="min-h-screen bg-[#fafaf5]">
       <Header />
       <div className="flex">
         {/* Main Content */}
@@ -119,17 +119,17 @@ export default function Dashboard() {
           <section className="relative mb-12 pt-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
               <div className="lg:col-span-8">
-                <h1 className="text-5xl lg:text-7xl font-['Plus_Jakarta_Sans'] font-extrabold text-[#72564c] tracking-tighter mb-4 leading-none">
+                <h1 className="text-5xl lg:text-7xl font-extrabold text-[#72564c] tracking-tighter mb-4 leading-none">
                   Welcome back,<br />
                   <span className="text-[#815300]">Explorer!</span>
                 </h1>
-                <p className="text-xl text-[#504441] max-w-lg font-['Be_Vietnam_Pro']">
+                <p className="text-xl text-[#504441] max-w-lg">
                   You're on a {stats?.quizCount ?? 0}-day streak. Keep the momentum going and master your next 10 characters today.
                 </p>
               </div>
               <div className="lg:col-span-4 relative group">
                 <div className="absolute -top-16 -left-12 bg-white/80 backdrop-blur-md p-4 rounded-xl shadow-xl border border-white/20 transform -rotate-3 group-hover:rotate-0 transition-transform duration-500 z-10">
-                  <p className="font-['Plus_Jakarta_Sans'] font-bold text-[#72564c] italic">"Fighting! You are doing great today!"</p>
+                  <p className="font-bold text-[#72564c] italic">"Fighting! You are doing great today!"</p>
                 </div>
                 <img
                   alt="Hana the Otter mascot"
@@ -143,7 +143,7 @@ export default function Dashboard() {
           {/* Game Stats */}
           {stats && (
             <div className="mb-16">
-              <h2 className="text-2xl font-['Plus_Jakarta_Sans'] font-bold text-[#72564c] mb-6">📊 Your Stats</h2>
+              <h2 className="text-2xl font-bold text-[#72564c] mb-6">Your Stats</h2>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div className="bg-gradient-to-br from-[#815300] to-[#a26900] rounded-lg p-4 text-white shadow-lg">
                   <p className="text-sm opacity-90 mb-2">Rank</p>
@@ -155,7 +155,7 @@ export default function Dashboard() {
                 </div>
                 <div className="bg-gradient-to-br from-[#72564c] to-[#8d6e63] rounded-lg p-4 text-white shadow-lg">
                   <p className="text-sm opacity-90 mb-2">XP</p>
-                  <p className="text-3xl font-bold">⭐ {stats?.xp ?? 0}</p>
+                  <p className="text-3xl font-bold">{stats?.xp ?? 0}</p>
                 </div>
                 <div className="bg-gradient-to-br from-[#406561] to-[#c2ebe5] rounded-lg p-4 text-white shadow-lg">
                   <p className="text-sm opacity-90 mb-2">Quiz</p>
@@ -163,7 +163,7 @@ export default function Dashboard() {
                 </div>
                 <div className={`rounded-lg p-4 shadow-lg text-white ${stats.eligible ? 'bg-gradient-to-br from-green-500 to-emerald-600' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
                   <p className="text-sm opacity-90 mb-2">Tournament</p>
-                  <p className="text-2xl font-bold">{stats.eligible ? '🔓' : '🔒'}</p>
+                  <p className="text-2xl font-bold">{stats.eligible ? 'Eligible' : 'Locked'}</p>
                 </div>
               </div>
             </div>
@@ -176,45 +176,45 @@ export default function Dashboard() {
               <div className="absolute top-0 right-0 p-4">
                 <span className="text-6xl opacity-20">✨</span>
               </div>
-              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-[#72564c] mb-8">Daily Goal</h3>
+              <h3 className="font-bold text-[#72564c] mb-8">Daily Goal</h3>
               <div className="relative w-48 h-48 flex items-center justify-center mb-6">
                 <svg className="w-full h-full transform -rotate-90">
                   <circle cx="96" cy="96" r="88" fill="transparent" stroke="currentColor" strokeWidth="12" className="text-[#e8e8e3]"></circle>
                   <circle cx="96" cy="96" r="88" fill="transparent" stroke="currentColor" strokeWidth="12" className="text-[#815300] rounded-full transition-all duration-1000" strokeDasharray="553" strokeDashoffset="138"></circle>
                 </svg>
                 <div className="absolute flex flex-col items-center">
-                  <span className="text-4xl font-black font-['Plus_Jakarta_Sans'] text-[#72564c]">75%</span>
+                  <span className="text-4xl font-black text-[#72564c]">75%</span>
                   <span className="text-xs uppercase tracking-widest font-bold opacity-60">Complete</span>
                 </div>
               </div>
-              <p className="text-sm font-['Be_Vietnam_Pro'] font-medium text-[#504441]">15 / 20 XP earned today</p>
+              <p className="text-sm font-medium text-[#504441]">15 / 20 XP earned today</p>
             </div>
 
             {/* Continue Lesson */}
             <Link href="/quiz" className="bg-[#72564c] text-white p-8 rounded-lg flex flex-col justify-between group cursor-pointer hover:bg-[#8d6e63] transition-all shadow-lg active:scale-[0.98]">
               <div className="flex justify-between items-start">
                 <div className="p-3 bg-white/10 rounded-full">
-                  <span className="text-2xl">▶️</span>
+                  <span className="text-2xl"></span>
                 </div>
                 <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">Level 2</span>
               </div>
               <div>
-                <h3 className="text-2xl font-['Plus_Jakarta_Sans'] font-bold mb-2">Continue Lesson</h3>
-                <p className="text-sm opacity-80 font-['Be_Vietnam_Pro']">Common Verbs & Sentence Structures</p>
+                <h3 className="text-2xl font-bold mb-2">Continue Lesson</h3>
+                <p className="text-sm opacity-80">Common Verbs & Sentence Structures</p>
               </div>
             </Link>
 
             {/* Vocabulary Flashcards */}
             <div className="bg-[#e3e3de] p-8 rounded-lg flex flex-col justify-between hover:shadow-xl transition-shadow cursor-pointer relative overflow-hidden">
               <div className="absolute -bottom-4 -right-4 opacity-10">
-                <span className="text-9xl">📚</span>
+                <span className="text-9xl"></span>
               </div>
               <div className="p-3 bg-[#72564c]/10 rounded-full w-fit">
-                <span className="text-2xl">📚</span>
+                <span className="text-2xl"></span>
               </div>
               <div className="z-10">
-                <h3 className="text-xl font-['Plus_Jakarta_Sans'] font-bold text-[#72564c] mb-1">Vocabulary</h3>
-                <p className="text-sm text-[#504441] font-['Be_Vietnam_Pro']">42 words to review</p>
+                <h3 className="text-xl font-bold text-[#72564c] mb-1">Vocabulary</h3>
+                <p className="text-sm text-[#504441]">42 words to review</p>
               </div>
             </div>
 
@@ -224,15 +224,15 @@ export default function Dashboard() {
                 <span className="text-2xl">❓</span>
               </div>
               <div>
-                <h3 className="text-xl font-['Plus_Jakarta_Sans'] font-bold text-[#1a1c19] mb-1">Daily Quiz</h3>
-                <p className="text-sm text-[#504441] font-['Be_Vietnam_Pro']">Test your knowledge from yesterday</p>
+                <h3 className="text-xl font-bold text-[#1a1c19] mb-1">Daily Quiz</h3>
+                <p className="text-sm text-[#504441]">Test your knowledge from yesterday</p>
               </div>
             </div>
 
             {/* Weekly Activity */}
             <div className="lg:col-span-2 bg-white p-8 rounded-lg border border-[#d4c3be]/10 flex flex-col justify-center">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-[#72564c]">Weekly Activity</h3>
+                <h3 className="font-bold text-[#72564c]">Weekly Activity</h3>
                 <div className="flex gap-1">
                   <div className="w-3 h-3 rounded-full bg-[#815300]"></div>
                   <div className="w-3 h-3 rounded-full bg-[#ffdbce]"></div>
@@ -264,15 +264,15 @@ export default function Dashboard() {
       {/* Mobile Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg flex justify-around items-center py-4 px-6 border-t border-[#d4c3be]/10 z-50">
         <Link href="/dashboard" className="flex flex-col items-center gap-1 text-[#72564c]">
-          <span className="text-2xl">🏠</span>
+          <span className="text-2xl"></span>
           <span className="text-[10px] font-bold uppercase">Home</span>
         </Link>
         <Link href="/quiz" className="flex flex-col items-center gap-1 text-[#504441]/60">
-          <span className="text-2xl">📚</span>
+          <span className="text-2xl"></span>
           <span className="text-[10px] font-bold uppercase">Learn</span>
         </Link>
         <Link href="/tournament" className="flex flex-col items-center gap-1 text-[#504441]/60">
-          <span className="text-2xl">🏆</span>
+          <span className="text-2xl"></span>
           <span className="text-[10px] font-bold uppercase">Rank</span>
         </Link>
         <button className="flex flex-col items-center gap-1 text-[#504441]/60">

@@ -1,0 +1,35 @@
+      table_name      
+----------------------
+ Achievement
+ BatchJob
+ DetectionSession
+ DetectionStats
+ HandwritingAttempt
+ HandwritingExercise
+ LearningNode
+ LearningPath
+ LevelTestProgress
+ MonthlyTask
+ PronunciationAttempt
+ PronunciationWord
+ Question
+ QuizAnswer
+ QuizSession
+ Rank
+ Topic
+ User
+ UserAchievement
+ UserAnswerHistory
+ UserNodeProgress
+ UserProgress
+ UserRank
+ UserSavedVocabulary
+ UserStats
+ VocabExample
+ Vocabulary
+ WritingPractice
+ YOLODetection
+ _UserToVocabulary
+ _prisma_migrations
+(31 rows)
+

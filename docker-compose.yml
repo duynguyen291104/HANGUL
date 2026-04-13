@@ -48,15 +48,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      flask:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/api || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    volumes:
-      - ./BE/src:/app/src
+    restart: always
 
   # Flask AI Backend
   flask:

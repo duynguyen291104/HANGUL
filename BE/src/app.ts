@@ -18,6 +18,7 @@ const writingRouter = require('./modules/writing/index').default;
 const leaderboardRouter = require('./modules/leaderboard/index').default;
 const achievementsRouter = require('./modules/achievements/index').default;
 const learningPathRouter = require('./modules/learning-path/controller').default;
+const adminRouter = require('./modules/admin/index').default;
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -129,10 +130,13 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // ========================
 app.use('/api/auth', authRouter);
 
+// Admin routes (require admin authentication)
+app.use('/api/admin', authenticate, adminRouter);
+
 // Protected routes (require authentication)
-app.use('/api/user', authenticate, learningPathRouter);
-app.use('/api/learning-path', authenticate, learningPathRouter);  // Add this for history endpoint
-app.use('/api/user', authenticate, userRouter);
+app.use('/api/user', authenticate, learningPathRouter);  // Learning path endpoints (includes set-level)
+app.use('/api/learning-path', authenticate, learningPathRouter);  // Also available at this path
+app.use('/api/user', authenticate, userRouter);  // User management endpoints
 app.use('/api/vocabulary', authenticate, vocabularyRouter);
 app.use('/api/quiz', quizRouter);  // Allow public access to GET /questions
 app.use('/api/writing', authenticate, writingRouter);
