@@ -12,6 +12,7 @@ const authRouter = require('./modules/auth/auth.routes').default;
 const userRouter = require('./modules/user/index').default;
 const vocabularyRouter = require('./modules/vocabulary/index').default;
 const quizRouter = require('./modules/quiz/index').default;
+const quizAdminRouter = require('./modules/quizAdmin/index').default;
 const pronunciationRouter = require('./modules/pronunciation/index').default;
 const cameraRouter = require('./modules/camera/index').default;
 const topicRouter = require('./modules/topic/index').default;
@@ -208,7 +209,8 @@ app.use('/api/user', authenticate, learningPathRouter);  // Learning path endpoi
 app.use('/api/learning-path', authenticate, learningPathRouter);  // Also available at this path
 app.use('/api/user', authenticate, userRouter);  // User management endpoints
 app.use('/api/vocabulary', authenticate, vocabularyRouter);
-app.use('/api/quiz', quizRouter);  // Allow public access to GET /questions
+app.use('/api/quiz', quizRouter);  // Quiz endpoints (generate, submit)
+app.use('/api/quiz', quizAdminRouter);  // Admin quiz management endpoints
 app.use('/api/writing', authenticate, writingRouter);
 app.use('/api/topic', authenticate, topicRouter);
 

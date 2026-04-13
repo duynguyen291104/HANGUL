@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import prisma from '../../lib/prisma';
 import { authenticate } from '../../middleware/authenticate';
+import { generateQuizQuestions, createQuizQuestion, getQuizQuestionWithAnswers } from '../../utils/quizGenerator';
 
 const router = Router();
 
@@ -13,7 +14,48 @@ interface AuthRequest extends Request {
 }
 
 // ========================
-// GET QUIZ VOCABULARY BY USER LEVEL
+// GENERATE QUIZ QUESTIONS DYNAMICALLY (10 questions from vocabulary)
+// ========================
+router.get('/generate', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { topicId } = req.query;
+
+    if (!topicId) {
+      return res.status(400).json({ error: 'topicId is required' });
+    }
+
+    // Validate topic exists
+    const topic = await prisma.topic.findUnique({
+      where: { id: parseInt(topicId as string) },
+    });
+
+    if (!topic) {
+      return res.status(404).json({ error: 'Topic not found' });
+    }
+
+    // Generate 10 quiz questions dynamically from vocabulary
+    const result = await generateQuizQuestions(req.user.id, parseInt(topicId as string), 10);
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    res.json({
+      ...result,
+      topicName: topic.name,
+    });
+  } catch (error) {
+    console.error('❌ Quiz generation error:', error);
+    res.status(500).json({ error: 'Failed to generate quiz questions' });
+  }
+});
+
+// ========================
+// GET QUIZ VOCABULARY BY USER LEVEL (LEGACY - for compatibility)
 // ========================
 router.get('/vocabulary', authenticate, async (req: AuthRequest, res: Response) => {
   try {

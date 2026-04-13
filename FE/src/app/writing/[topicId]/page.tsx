@@ -29,7 +29,6 @@ export default function WritingDetailPage() {
   const [score, setScore] = useState<number | null>(null);
   const [brushSize, setBrushSize] = useState(3);
   const [brushColor, setBrushColor] = useState('#72564c');
-  const [isLoading, setIsLoading] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
   const [startTime, setStartTime] = useState<number>(0);
   const [totalScores, setTotalScores] = useState<number[]>([]);
@@ -83,7 +82,6 @@ export default function WritingDetailPage() {
       } catch (error) {
         console.warn('Failed to fetch writing exercises:', error);
       } finally {
-        setIsLoading(false);
         setStartTime(Date.now());
       }
     };

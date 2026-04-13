@@ -84,6 +84,7 @@ model Topic {
   // Relations
   vocabulary Vocabulary[]
   questions Question[]
+  quizQuestions QuizQuestion[]
   writingPractices WritingPractice[]
   handwritingExercises HandwritingExercise[]
   pronunciationWords PronunciationWord[]
@@ -119,6 +120,7 @@ model Vocabulary {
   usersLearned User[]
   pronunciationWords PronunciationWord[]
   savedByUsers UserSavedVocabulary[]
+  quizQuestions QuizQuestion[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -204,6 +206,45 @@ model Question {
   
   // Database Indexes for Performance
   @@index([topicId])
+  @@index([isActive])
+}
+
+// ========================
+// QUIZ QUESTION (GENERATED FROM VOCABULARY)
+// ========================
+model QuizQuestion {
+  id                    Int     @id @default(autoincrement())
+  
+  // Core question data
+  vocabulary            Vocabulary @relation(fields: [vocabularyId], references: [id], onDelete: Cascade)
+  vocabularyId          Int
+  
+  topic                 Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId               Int
+  
+  // Question type
+  questionType          String  @default("vocabulary") // vocabulary, phrase, context
+  questionText          String  // e.g., "_____ nghĩa là gì?" or "Từ nào có nghĩa giống '[word]'?"
+  correctAnswerText     String  // The correct answer display text
+  
+  // Correct answer (always from vocabulary meaning)
+  isActive              Boolean @default(true)
+  
+  // Status
+  usageCount            Int     @default(0)  // Tracking for analytics
+  correctRate           Float   @default(0)  // 0-100: percentage of correct answers
+  level                 String  // NEWBIE, BEGINNER, INTERMEDIATE, ADVANCED, EXPERT
+  
+  // Relations for wrong answers (store the vocabulary IDs of wrong answers)
+  wrongAnswerIds        Int[]   @default([]) // Array of vocabulary IDs for wrong answers
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  // Database Indexes for Performance
+  @@index([vocabularyId])
+  @@index([topicId])
+  @@index([level])
   @@index([isActive])
 }
 
