@@ -193,12 +193,19 @@ export default function QuizDetailPage() {
         setQuiz((prev) => ({ ...prev, loading: true }));
         console.log('🎬 Fetching quiz for topicId:', topicId);
 
+        // Add authorization header with token
+        const headers: any = {
+          'Content-Type': 'application/json',
+        };
+        
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/quiz/questions?topicId=${topicId}&limit=10`,
+          `http://localhost:5000/api/quiz/generate?topicId=${topicId}`,
           {
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers,
           }
         );
 
@@ -207,7 +214,24 @@ export default function QuizDetailPage() {
         }
 
         const data = await response.json();
-        let questions = data.questions || data || [];
+        
+        // Parse questions from new endpoint format
+        let questions = data.questions || [];
+        
+        // Transform the new quiz format to match expected interface
+        questions = questions.map((q: any) => ({
+          id: q.vocabularyId,
+          type: 'multiple-choice',
+          question: q.questionText,
+          korean: q.korean,
+          english: q.english,
+          options: q.answers.map((a: any) => a.text),
+          difficulty: 'Medium',
+          level: q.level,
+          explanation: `Correct answer: ${q.correctAnswerText}`,
+          explanation_vi: `Đáp án đúng: ${q.correctAnswerText}`,
+        }));
+        
         console.log('✅ Quiz loaded from API:', questions.length);
 
         // If API returns 0 questions, use fallback
@@ -239,7 +263,7 @@ export default function QuizDetailPage() {
     };
 
     loadQuiz();
-  }, [topicId, router]);
+  }, [topicId, token]);
 
   const handleAnswerSelect = (answer: string) => {
     if (quiz.showResult) return;
