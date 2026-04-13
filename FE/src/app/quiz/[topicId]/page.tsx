@@ -608,7 +608,7 @@ export default function QuizDetailPage() {
                     className={`font-black text-lg ${
                       quiz.showResult && isCorrectOption
                         ? 'text-white'
-                        : quiz.showResult && isSelected && !isCorrect
+                        : quiz.showResult && isSelected && !quiz.isAnswerCorrect
                         ? 'text-white'
                         : isSelected
                         ? 'text-white'
