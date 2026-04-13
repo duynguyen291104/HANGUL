@@ -520,14 +520,14 @@ export default function QuizDetailPage() {
             {/* Action Buttons */}
             <div className="flex flex-col w-full max-w-sm gap-4">
               <button
-                onClick={() => router.push('/quiz')}
+                onClick={() => router.push('/quiz?refresh=true')}
                 className="bg-gradient-to-r from-[#72564c] to-[#8d6e63] text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:from-[#8d6e63] hover:to-[#a0806e] active:scale-95 transition-all flex items-center justify-center gap-2"
               >
                 Tiếp tục
                 <span>→</span>
               </button>
               <button
-                onClick={() => router.push('/learning-map')}
+                onClick={() => router.push('/learning-map?refresh=true')}
                 className="bg-[#ffdbce] text-[#2b160f] font-bold text-lg py-4 rounded-xl hover:bg-[#e4beb2] active:scale-95 transition-all"
               >
                 Bài tiếp theo

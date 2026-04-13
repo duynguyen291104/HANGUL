@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import Header from '@/components/Header';
 import TopicCard from '@/components/TopicCard';
@@ -20,13 +20,14 @@ interface TopicListProps {
 
 export default function TopicList({ mode }: TopicListProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuthStore();
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [mounted, setMounted] = useState(false);
   const [questionCounts, setQuestionCounts] = useState<Record<number, number>>({});
-  const [progressData, setProgressData] = useState<Record<number, { completed: number; total: number }>>({});
+  const [progressData, setProgressData] = useState<Record<number, { completed: number; total: number; correctCount?: number; score?: number }>>({});
 
   useEffect(() => {
     setMounted(true);
@@ -61,28 +62,8 @@ export default function TopicList({ mode }: TopicListProps) {
         const topicsData = data.data || [];
         setTopics(topicsData);
 
-        // Fetch question counts for each topic (for all modes)
-        const counts: Record<number, number> = {};
-        for (const topic of topicsData) {
-          try {
-            const qResponse = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/question/by-topic/${topic.id}`,
-              {
-                headers: token ? { Authorization: `Bearer ${token}` } : {},
-              }
-            );
-            if (qResponse.ok) {
-              const qData = await qResponse.json();
-              counts[topic.id] = (qData.data || []).length;
-            }
-          } catch (e) {
-            console.error(`Error fetching questions for topic ${topic.id}:`, e);
-          }
-        }
-        setQuestionCounts(counts);
-
         // Fetch progress data for each topic
-        const progress: Record<number, { completed: number; total: number }> = {};
+        const progress: Record<number, { completed: number; total: number; correctCount?: number; score?: number }> = {};
         for (const topic of topicsData) {
           try {
             const progressResponse = await fetch(
@@ -94,18 +75,37 @@ export default function TopicList({ mode }: TopicListProps) {
             if (progressResponse.ok) {
               const progressData = await progressResponse.json();
               const data = progressData.data || {};
-              progress[topic.id] = {
-                completed: data.completed || data.completedQuestions || 0,
-                total: data.total || data.totalQuestions || data.questionCount || questionCounts[topic.id] || 0,
-              };
-              console.log(`Progress for topic ${topic.id}:`, progress[topic.id]);
+              
+              // For quiz mode, calculate completed count from score percentage
+              // Quiz always has 10 questions
+              if (mode === 'quiz') {
+                const hasAttempted = data.attempts && data.attempts > 0;
+                const totalQuestions = hasAttempted ? 10 : 0;
+                const completedCount = hasAttempted ? Math.round((data.score || 0) / 100 * 10) : 0;
+                
+                progress[topic.id] = {
+                  completed: completedCount,
+                  total: totalQuestions,
+                  correctCount: completedCount,
+                  score: data.score,
+                };
+                console.log(`Progress for topic ${topic.id}:`, progress[topic.id]);
+              } else {
+                // For non-quiz modes, use the default format
+                progress[topic.id] = {
+                  completed: data.completedQuestions || 0,
+                  total: data.totalQuestions || 0,
+                  correctCount: data.correctCount,
+                  score: data.score,
+                };
+              }
             } else {
               console.warn(`Progress endpoint not found for topic ${topic.id}, setting default`);
-              progress[topic.id] = { completed: 0, total: questionCounts[topic.id] || 0 };
+              progress[topic.id] = { completed: 0, total: 0 };
             }
           } catch (e) {
             console.error(`Error fetching progress for topic ${topic.id}:`, e);
-            progress[topic.id] = { completed: 0, total: questionCounts[topic.id] || 0 };
+            progress[topic.id] = { completed: 0, total: 0 };
           }
         }
         console.log('All progress data:', progress);
@@ -119,7 +119,12 @@ export default function TopicList({ mode }: TopicListProps) {
     };
 
     fetchTopics();
-  }, [mounted, user, router, mode]);
+    
+    // Clear the refresh param from URL if it exists
+    if (searchParams.get('refresh')) {
+      window.history.replaceState({}, '', `/${mode === 'speak' ? 'pronunciation' : mode}`);
+    }
+  }, [mounted, user, router, mode, searchParams]);
 
   const getModeInfo = () => {
     switch (mode) {

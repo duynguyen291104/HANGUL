@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import Header from '@/components/Header';
 import { Check } from 'lucide-react';
@@ -44,6 +44,7 @@ interface AnswerHistory {
 
 export default function LearningMapPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { token } = useAuthStore();
   const [data, setData] = useState<LearningPathData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -92,7 +93,12 @@ export default function LearningMapPage() {
     };
 
     fetchTopics();
-  }, [token, router]);
+    
+    // Clear the refresh param from URL if it exists
+    if (searchParams.get('refresh')) {
+      window.history.replaceState({}, '', '/learning-map');
+    }
+  }, [token, router, searchParams]);
 
   const handleToggleSkill = async (topicId: number, skillType: string) => {
     const key = `${topicId}-${skillType}`;
@@ -240,8 +246,13 @@ export default function LearningMapPage() {
                       <span>Quiz</span>
                       <span className="text-sm">{expandedSkill === `${topic.id}-QUIZ` ? '▼' : '▶'}</span>
                     </div>
-                    {topic.quiz.score && (
-                      <div className="text-xs mt-1">{topic.quiz.score}%</div>
+                    {/* Show X/10 format instead of percentage */}
+                    {topic.quiz.done ? (
+                      <div className="text-xs mt-1">
+                        {Math.round((topic.quiz.score || 0) / 100 * 10)}/10
+                      </div>
+                    ) : (
+                      <div className="text-xs mt-1 text-[#504441]">tiến độ: chưa làm</div>
                     )}
                   </button>
 

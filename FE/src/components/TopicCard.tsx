@@ -72,8 +72,9 @@ export default function TopicCard({
     if (!totalQuestions || totalQuestions === 0) {
       return 'tiến độ: chưa làm';
     }
-    // Show progress with total questions
-    return `tiến độ: ${completedQuestions}/${totalQuestions}`;
+    
+    // Show progress with X/X format
+    return `${completedQuestions}/${totalQuestions}`;
   };
 
   return (

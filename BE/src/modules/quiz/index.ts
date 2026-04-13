@@ -325,6 +325,11 @@ router.get('/user-progress/:topicId', authenticate, async (req: AuthRequest, res
 
     const parsedTopicId = parseInt(topicId);
 
+    // Get total questions for this topic (so we can calculate completed count)
+    const totalQuestions = await prisma.vocabulary.count({
+      where: { topicId: parsedTopicId, isActive: true },
+    });
+
     // Get user's progress for this topic
     const progress = await prisma.userProgress.findFirst({
       where: {
@@ -338,7 +343,10 @@ router.get('/user-progress/:topicId', authenticate, async (req: AuthRequest, res
       // Return default progress (not completed)
       return res.json({
         data: {
-          completed: false,
+          completed: 0,
+          total: totalQuestions,
+          completedQuestions: 0,
+          totalQuestions: totalQuestions,
           score: 0,
           attempts: 0,
           message: 'Not started',
@@ -346,9 +354,15 @@ router.get('/user-progress/:topicId', authenticate, async (req: AuthRequest, res
       });
     }
 
+    // Calculate completed count from score percentage
+    const completedCount = Math.round((progress.score! / 100) * 10);
+
     res.json({
       data: {
-        completed: progress.completed,
+        completed: completedCount,
+        total: totalQuestions,
+        completedQuestions: completedCount,
+        totalQuestions: totalQuestions,
         score: progress.score || 0,
         attempts: progress.attempts || 0,
         message: progress.completed ? `${progress.score}% - ${progress.attempts} attempt(s)` : 'Not completed',
