@@ -182,6 +182,7 @@ export default function QuizDetailPage() {
     answers: [],
   });
 
+  const [topicName, setTopicName] = useState<string>('');
   const [startTime, setStartTime] = useState<number>(0);
   const [completionStats, setCompletionStats] = useState({
     xp: 25,
@@ -206,6 +207,23 @@ export default function QuizDetailPage() {
         
         if (token) {
           headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        // Fetch topic name first
+        try {
+          const topicResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/topic/${topicId}`,
+            {
+              headers,
+            }
+          );
+          if (topicResponse.ok) {
+            const topicData = await topicResponse.json();
+            setTopicName(topicData.data?.name || 'Quiz');
+            console.log('📌 Topic name:', topicData.data?.name);
+          }
+        } catch (err) {
+          console.warn('⚠️ Could not fetch topic name:', err);
         }
 
         const response = await fetch(
@@ -551,7 +569,7 @@ export default function QuizDetailPage() {
         <section className="w-full mb-16">
           <div className="flex items-center justify-between mb-4">
             <span className="font-bold text-[#72564c] tracking-tight">
-              Lesson {Math.floor(Math.random() * 10) + 1}: Korean Basics
+              {topicName || 'Quiz'}
             </span>
             <span className="font-bold text-[#72564c]/60">
               {quiz.currentIndex + 1} / {quiz.questions.length}
