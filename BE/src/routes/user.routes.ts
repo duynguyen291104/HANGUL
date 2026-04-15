@@ -161,7 +161,7 @@ userRouter.put('/change-password', async (req: any, res: any) => {
     }
 
     // Verify current password
-    const bcrypt = require('bcrypt');
+    const bcrypt = require('bcryptjs');
     const isValidPassword = await bcrypt.compare(currentPassword, user.password);
     if (!isValidPassword) {
       return res.status(400).json({ error: 'Current password is incorrect' });

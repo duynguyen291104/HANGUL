@@ -116,7 +116,7 @@ router.get('/user/:userId', async (req, res) => {
     const { userId } = req.params;
     const { limit = 100, offset = 0, label, sessionId } = req.query;
 
-    const where = { userId: parseInt(userId) };
+    const where: any = { userId: parseInt(userId) };
     if (label) where.label = label;
     if (sessionId) where.sessionId = sessionId;
 
@@ -368,3 +368,4 @@ async function updateDetectionStats(userId, newLabel) {
 }
 
 module.exports = router;
+export {};

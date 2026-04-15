@@ -17,8 +17,8 @@ const quizRouter = require('./routes/quiz.routes');
 const listeningRouter = require('./routes/listening.routes');
 const pronunciationRouter = require('./routes/pronunciation.routes');
 const cameraRouter = require('./routes/camera.routes');
-const yoloRouter = require('./routes/yolo.routes.js');
-const tournamentRouter = require('./routes/tournament.routes.ts');
+const yoloRouter = require('./routes/yolo.routes');
+const tournamentRouter = require('./routes/tournament.routes');
 const handwritingRouter = require('./routes/handwriting.routes');
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');

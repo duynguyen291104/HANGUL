@@ -41,6 +41,8 @@ services:
         condition: service_healthy
     volumes:
       - ./BE/src:/app/src
+      - /app/node_modules
+      - ./BE/prisma:/app/prisma 
 
   # Flask AI Backend
   flask:
