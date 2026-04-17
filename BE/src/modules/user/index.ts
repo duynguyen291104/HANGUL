@@ -1,24 +1,24 @@
-import { Router, Request, Response } from 'express';
-import prisma from '../../lib/prisma';
-import { getRank } from '../../utils/rankCalculator';
-
+const { Router } = require('express');
+const { PrismaClient } = require('@prisma/client');
+const { updateUserXP } = require('../services/userService');
 const userRouter = Router();
+const userPrisma = new PrismaClient();
 
 // ========================
 // GET USER STATS
 // ========================
-userRouter.get('/stats', async (req: any, res: Response) => {
+userRouter.get('/stats', async (req: any, res: any) => {
   try {
     const userId = req.user.id;
 
-    const user = await prisma.user.findUnique({
+    const user = await userPrisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
         name: true,
         email: true,
         totalXP: true,
-        totalTrophy: true,
+        trophy: true,
         currentStreak: true,
         level: true,
         lastCheckinDate: true,
@@ -29,7 +29,7 @@ userRouter.get('/stats', async (req: any, res: Response) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const trophyValue = user.totalTrophy || 0;
+    const trophyValue = user.trophy || 0;
     const isEligible = trophyValue >= 1000;
 
     console.log(`✅ User ${user.email}: Trophy=${trophyValue}, Eligible=${isEligible}`);
@@ -59,7 +59,7 @@ userRouter.get('/profile', async (req: any, res: any) => {
   try {
     const userId = req.user.id;
 
-    const user = await prisma.user.findUnique({
+    const user = await userPrisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -70,7 +70,7 @@ userRouter.get('/profile', async (req: any, res: any) => {
         level: true,
         levelLocked: true,
         totalXP: true,
-        totalTrophy: true,
+        trophy: true,
         currentStreak: true,
         lastCheckinDate: true,
       },
@@ -80,21 +80,50 @@ userRouter.get('/profile', async (req: any, res: any) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Calculate rank from trophy
-    const rank = getRank(user.totalTrophy || 0);
-
-    res.json({
-      ...user,
-      rank, // Add rank to response
-    });
+    res.json(user);
   } catch (error) {
     console.error(' USER PROFILE ERROR:', error);
     res.status(500).json({ error: 'Failed to load user profile' });
   }
 });
 
-// NOTE: /set-level endpoint moved to learning-path module
-// Use POST /api/learning-path/set-level or /api/user/set-level (same endpoint)
+// ========================
+// SET LEVEL (First time selection)
+// ========================
+userRouter.post('/set-level', async (req: any, res: any) => {
+  try {
+    const userId = req.user.id;
+    const { level } = req.body;
+
+    if (!level) {
+      return res.status(400).json({ error: 'Level is required' });
+    }
+
+    const validLevels = ['NEWBIE', 'BEGINNER', 'INTERMEDIATE', 'UPPER', 'ADVANCED'];
+    if (!validLevels.includes(level)) {
+      return res.status(400).json({ error: 'Invalid level' });
+    }
+
+    const user = await userPrisma.user.update({
+      where: { id: userId },
+      data: {
+        level,
+        levelLocked: true,
+      },
+      select: {
+        id: true,
+        level: true,
+        levelLocked: true,
+      },
+    });
+
+    console.log(` Level set for user ${userId}: ${level} (locked)`);
+    res.json({ message: 'Level set successfully', level: user.level, levelLocked: user.levelLocked });
+  } catch (error) {
+    console.error(' SET LEVEL ERROR:', error);
+    res.status(500).json({ error: 'Failed to set level' });
+  }
+});
 
 // ========================
 // UPDATE LEVEL (From learning-map page)
@@ -113,7 +142,7 @@ userRouter.put('/update-level', async (req: any, res: any) => {
       return res.status(400).json({ error: 'Invalid level' });
     }
 
-    const user = await prisma.user.update({
+    const user = await userPrisma.user.update({
       where: { id: userId },
       data: { level },
       select: {
@@ -129,5 +158,28 @@ userRouter.put('/update-level', async (req: any, res: any) => {
     res.status(500).json({ error: 'Failed to update level' });
   }
 });
+//Thêm cơ chế tăng điểm kinh nghiệm
+    userRouter.post('/xp', async (req: any, res: any) => {
+      try {
+        const userId = req.user.id;
+        const xpAmount = Number(req.body?.xpAmount ?? 0);
 
-export default userRouter;
+        if (!Number.isFinite(xpAmount) || xpAmount <= 0) {
+          return res.status(400).json({ error: 'Valid xpAmount is required' });
+        }
+
+        const updatedUser = await updateUserXP(userId, xpAmount);
+
+        return res.json({
+          message: 'XP updated',
+          xpAwarded: xpAmount,
+          user: updatedUser,
+        });
+      } catch (error) {
+        console.error('XP update error:', error);
+        return res.status(500).json({ error: 'Failed to update XP' });
+      }
+    });
+
+module.exports = userRouter;
+export {};

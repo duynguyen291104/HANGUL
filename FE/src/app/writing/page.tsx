@@ -1,7 +1,2 @@
-'use client';
-
-import TopicList from '@/components/TopicList';
-
-export default function WritingPage() {
-  return <TopicList mode="writing" />;
-}
+﻿// Re-export the new writing page
+export { default } from './page-new';

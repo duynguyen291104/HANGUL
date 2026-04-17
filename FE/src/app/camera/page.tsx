@@ -1,9 +1,20 @@
-'use client';
+﻿'use client';
 
-import { useEffect, useState } from 'react';
-import { useAuthStore } from '@/store/authStore';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Header from '@/components/Header';
+import { Camera, CameraOff, RotateCw, ScanSearch, Volume2, Zap } from 'lucide-react';
+import {
+  HangulCard,
+  HangulPageFrame,
+  HangulSidebar,
+  MascotPortrait,
+  Pill,
+  ProgressBar,
+  StatusChip,
+  getLevelMeta,
+  getSidebarItems,
+} from '@/components/hangul/ui';
+import { useAuthStore } from '@/store/authStore';
 
 interface Detection {
   id: number;
@@ -13,10 +24,10 @@ interface Detection {
   age: number;
 }
 
-const YOLO_SERVER = process.env.NEXT_PUBLIC_FLASK_API_URL || 'http://localhost:5001';
+const YOLO_SERVER = 'http://localhost:5002';
 
 export default function CameraPage() {
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
   const router = useRouter();
   const [isStreamActive, setIsStreamActive] = useState(false);
   const [detections, setDetections] = useState<Detection[]>([]);
@@ -24,54 +35,65 @@ export default function CameraPage() {
   const [error, setError] = useState<string | null>(null);
   const [serverStatus, setServerStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
   const [frameCount, setFrameCount] = useState(0);
+  const [isRecording, setIsRecording] = useState(false);
+  const [historyCount, setHistoryCount] = useState(12);
 
-  // Check server health on mount
   useEffect(() => {
     if (!token) {
       router.push('/login');
       return;
     }
 
+    const checkServerHealth = async () => {
+      try {
+        const response = await fetch(`${YOLO_SERVER}/api/yolo/health`);
+        const data = await response.json();
+        setServerStatus('connected');
+        setFrameCount(data.frame_count ?? 0);
+      } catch (requestError) {
+        console.error(requestError);
+        setServerStatus('disconnected');
+      }
+    };
+
     checkServerHealth();
-    const healthInterval = setInterval(checkServerHealth, 5000);
-    
-    return () => clearInterval(healthInterval);
-  }, [token, router]);
+    const intervalId = window.setInterval(checkServerHealth, 5000);
+    return () => window.clearInterval(intervalId);
+  }, [router, token]);
 
-  // Fetch detections when stream is active
   useEffect(() => {
-    if (!isStreamActive) return;
-
-    const detectionInterval = setInterval(fetchDetections, 500);
-    return () => clearInterval(detectionInterval);
-  }, [isStreamActive]);
-
-  const checkServerHealth = async () => {
-    try {
-      const response = await fetch(`${YOLO_SERVER}/api/yolo/health`);
-      const data = await response.json();
-      setServerStatus('connected');
-      setFrameCount(data.frame_count);
-    } catch (err) {
-      setServerStatus('disconnected');
-      console.error('YOLO server health check failed:', err);
+    if (!isStreamActive) {
+      return undefined;
     }
-  };
+
+    const fetchDetections = async () => {
+      try {
+        const response = await fetch(`${YOLO_SERVER}/api/yolo/detections`);
+        const payload = await response.json();
+        setDetections(payload.detections || []);
+        setFrameCount(payload.frame_count || 0);
+      } catch (requestError) {
+        console.error(requestError);
+      }
+    };
+
+    fetchDetections();
+    const intervalId = window.setInterval(fetchDetections, 600);
+    return () => window.clearInterval(intervalId);
+  }, [isStreamActive]);
 
   const startDetection = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${YOLO_SERVER}/api/yolo/start`, {
-        method: 'POST',
-      });
-      if (response.ok) {
-        setIsStreamActive(true);
-      } else {
-        throw new Error('Failed to start detection');
+      const response = await fetch(`${YOLO_SERVER}/api/yolo/start`, { method: 'POST' });
+      if (!response.ok) {
+        throw new Error('Unable to start detection');
       }
-    } catch (err) {
-      setError('❌ Không thể khởi động phát hiện: ' + (err as Error).message);
+      setIsStreamActive(true);
+    } catch (requestError) {
+      const safeError = requestError as Error;
+      setError(safeError.message);
     } finally {
       setLoading(false);
     }
@@ -79,187 +101,194 @@ export default function CameraPage() {
 
   const stopDetection = async () => {
     try {
-      await fetch(`${YOLO_SERVER}/api/yolo/stop`, {
-        method: 'POST',
-      });
+      await fetch(`${YOLO_SERVER}/api/yolo/stop`, { method: 'POST' });
       setIsStreamActive(false);
       setDetections([]);
-    } catch (err) {
-      setError('❌ Lỗi dừng phát hiện');
+    } catch (requestError) {
+      console.error(requestError);
     }
   };
 
-  const fetchDetections = async () => {
+  const toggleRecording = async () => {
     try {
-      const response = await fetch(`${YOLO_SERVER}/api/yolo/detections`);
-      const data = await response.json();
-      setDetections(data.detections || []);
-      setFrameCount(data.frame_count);
-    } catch (err) {
-      console.error('Error fetching detections:', err);
+      await fetch(`${YOLO_SERVER}/api/yolo/record/${isRecording ? 'stop' : 'start'}`, { method: 'POST' });
+      setIsRecording((current) => !current);
+    } catch (requestError) {
+      console.error(requestError);
+      setError('Unable to change recording state.');
     }
   };
+
+  const saveDetections = async () => {
+    try {
+      await fetch(`${YOLO_SERVER}/api/yolo/detections/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ detections }),
+      });
+      setHistoryCount((current) => current + detections.length);
+    } catch (requestError) {
+      console.error(requestError);
+      setError('Could not save this batch.');
+    }
+  };
+
+  const speakLabel = async (label: string) => {
+    try {
+      await fetch(`${YOLO_SERVER}/api/yolo/speak`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ label }),
+      });
+    } catch (requestError) {
+      console.error(requestError);
+    }
+  };
+
+  const primaryDetection = useMemo(() => detections[0], [detections]);
+  const levelMeta = getLevelMeta(user?.level ?? 'BEGINNER');
 
   return (
-    <div className="min-h-screen overflow-hidden flex flex-col bg-[#fafaf5]">
-      <Header />
+    <HangulPageFrame
+      activeNav="Arena"
+      sidebar={
+        <HangulSidebar
+          items={getSidebarItems('vocabulary')}
+          profile={{
+            title: `${levelMeta.step}: ${levelMeta.label}`,
+            subtitle: `Next: ${levelMeta.next}`,
+            emoji: '🦦',
+            tone: 'mint',
+          }}
+        />
+      }
+    >
+      <div className="space-y-6">
+        {error ? <div className="rounded-[28px] bg-[#ffe8e1] px-5 py-4 text-base text-[#944f42]">{error}</div> : null}
 
-      {/* Main Content */}
-      <main className="flex-1 relative overflow-auto bg-[#fafaf5]">
-        <div className="flex gap-6 p-8 pt-[60px] min-h-full">
-          {/* Left: Camera Section */}
-          <div className="relative">
-            {/* AR Camera Section */}
-            <section 
-              className="bg-black rounded-[20px] overflow-hidden shadow-2xl border-4 border-[#72564c]"
-              style={{ width: '1100px', height: '730px' }}
-            >
-              {/* Camera Viewport Background */}
-              <div className="absolute inset-0 z-0 w-full h-full flex items-center justify-center">
-                {isStreamActive ? (
-                  <img 
-                    src={`${YOLO_SERVER}/api/yolo/stream?t=${Date.now()}`}
-                    alt="Camera view"
-                    className="w-full h-full object-cover opacity-90"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-gray-900 to-black"></div>
-                )}
-                {/* AR Scanning Effect Overlay */}
-                <div className="absolute inset-0 pointer-events-none border-[12px] border-white/10"></div>
-                {isStreamActive && <div className="ar-scanner-line"></div>}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
+        <HangulCard className="overflow-hidden bg-[#101418] p-4 sm:p-6">
+          <div className="relative overflow-hidden rounded-[34px] border border-white/10 bg-[#0b0f12] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+            <div className="absolute left-6 top-6 z-20 grid h-20 w-20 place-items-center rounded-full bg-white text-[var(--hangul-accent)] shadow-[0_20px_40px_rgba(0,0,0,0.26)]">
+              {isStreamActive ? <CameraOff className="h-9 w-9" /> : <Camera className="h-9 w-9" />}
+            </div>
+            <div className="absolute right-6 top-6 z-20 flex gap-4">
+              <button className="grid h-20 w-20 place-items-center rounded-full bg-white text-[var(--hangul-accent)] shadow-[0_20px_40px_rgba(0,0,0,0.26)]" onClick={toggleRecording} type="button">
+                <Zap className="h-8 w-8" />
+              </button>
+              <button className="grid h-20 w-20 place-items-center rounded-full bg-white text-[var(--hangul-accent)] shadow-[0_20px_40px_rgba(0,0,0,0.26)]" type="button">
+                <RotateCw className="h-8 w-8" />
+              </button>
+            </div>
+
+            <div className="relative aspect-[4/3] overflow-hidden rounded-[30px] bg-[#0d1215]">
+              {isStreamActive ? (
+                <img
+                  alt="YOLO stream"
+                  className="h-full w-full object-cover"
+                  src={`${YOLO_SERVER}/api/yolo/stream?t=${Date.now()}`}
+                />
+              ) : (
+                <div className="grid h-full w-full place-items-center bg-[radial-gradient(circle_at_50%_25%,rgba(255,255,255,0.08),transparent_22%),linear-gradient(180deg,#11171d,#0b0f12)]">
+                  <Camera className="h-32 w-32 text-white/18" />
+                </div>
+              )}
+
+              <div className="pointer-events-none absolute left-1/2 top-1/2 h-[24%] w-[22%] -translate-x-1/2 -translate-y-1/2 rounded-[34px] border-[4px] border-dashed border-[#d39b42] shadow-[0_0_0_4px_rgba(211,155,66,0.18)]" />
+
+              {primaryDetection ? (
+                <div className="absolute bottom-[28%] left-[46%] flex -translate-x-1/2 flex-col items-center gap-3">
+                  <div className="rounded-full bg-white px-10 py-6 text-5xl font-black tracking-[-0.05em] text-[var(--hangul-accent)]">
+                    책
+                  </div>
+                  <Pill className="bg-[#3b5d63] px-5 py-2 text-white">{primaryDetection.label} ({Math.round(primaryDetection.confidence * 100)}%)</Pill>
+                </div>
+              ) : null}
+
+              <div className="absolute bottom-5 left-6 z-20">
+                <Pill className="bg-white text-[var(--hangul-soft-ink)]">AI vision active</Pill>
               </div>
 
-              {/* Server Status Indicator - Top Left (for devs only) */}
-              <div className="absolute top-4 left-4 z-20">
-                <div className={`w-3 h-3 rounded-full ${serverStatus === 'connected' ? 'bg-green-500' : 'bg-red-500'} shadow-lg`}></div>
+              <div className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-4">
+                <button className="grid h-28 w-28 place-items-center rounded-full border-[8px] border-[rgba(255,255,255,0.35)] bg-white shadow-[0_24px_48px_rgba(0,0,0,0.28)]" disabled={loading} onClick={isStreamActive ? stopDetection : startDetection} type="button">
+                  <ScanSearch className="h-12 w-12 text-[var(--hangul-accent)]" />
+                </button>
+                <p className="text-2xl font-black tracking-[0.08em] text-white">SCAN OBJECT</p>
               </div>
 
-              {/* Camera Status Indicator - Top Right (when inactive) */}
-              {!isStreamActive && (
-                <div className="absolute top-4 right-4 z-20">
-                  <div className="bg-black/50 backdrop-blur-md px-4 py-2 rounded-full">
-                    <p className="text-white text-xs font-bold tracking-wide">Camera Off</p>
+              <div className="absolute bottom-6 right-6 z-20 flex gap-4">
+                <MascotPortrait emoji="🦦" tone="paper" className="h-40 w-32 shrink-0" />
+                <div className="w-[320px] rounded-[30px] bg-[rgba(255,251,245,0.92)] p-5 text-[var(--hangul-ink)] shadow-[0_20px_46px_rgba(0,0,0,0.18)]">
+                  <p className="text-2xl font-black tracking-[-0.03em]">Ji-woo's Tip</p>
+                  <p className="mt-4 text-lg leading-8 text-[var(--hangul-soft-ink)]">
+                    Excellent! You found a <span className="font-bold italic">chaek</span>. This word sounds like the “che-” in “check”.
+                  </p>
+                  <div className="mt-6 space-y-2">
+                    <div className="flex items-center justify-between text-sm font-semibold text-[var(--hangul-soft-ink)]">
+                      <span>Objects found: {historyCount}/15</span>
+                      <span>+50 XP</span>
+                    </div>
+                    <ProgressBar className="h-3" value={(historyCount / 15) * 100} />
                   </div>
                 </div>
-              )}
+              </div>
+            </div>
+          </div>
+        </HangulCard>
 
-              {/* Not Active State */}
-              {!isStreamActive && (
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center">
-                  <p className="text-3xl mb-4 font-bold text-white text-center">
-                    {serverStatus === 'disconnected' 
-                      ? 'YOLO Server chưa kết nối' 
-                      : 'Webcam chưa khởi động'}
-                  </p>
-                  <p className="text-sm text-gray-300">
-                    {serverStatus === 'disconnected'
-                      ? 'Chạy: python3 yolo_flask_server.py'
-                      : 'Nhấn nút bên dưới để khởi động'}
-                  </p>
+        <HangulCard className="flex flex-wrap items-center justify-between gap-4 px-7 py-6">
+          <div className="flex flex-wrap gap-3">
+            <StatusChip label={serverStatus === 'connected' ? 'Server connected' : 'Server disconnected'} tone={serverStatus === 'connected' ? 'mint' : 'peach'} />
+            <StatusChip label={`Frames: ${frameCount}`} tone="paper" />
+            <StatusChip label={`Detections: ${detections.length}`} tone="paper" />
+          </div>
+          <div className="flex flex-wrap gap-4">
+            <button className="hangul-button-secondary" onClick={toggleRecording} type="button">
+              {isRecording ? 'Stop Recording' : 'Start Recording'}
+            </button>
+            <button className="hangul-button-primary" onClick={saveDetections} type="button">
+              Save Detections
+            </button>
+          </div>
+        </HangulCard>
+
+        <div className="grid gap-6 xl:grid-cols-[0.7fr_0.3fr]">
+          <HangulCard className="p-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--hangul-soft-ink)]">Detection Queue</p>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {detections.length === 0 ? (
+                <div className="rounded-[28px] bg-white/72 p-5 text-lg text-[var(--hangul-soft-ink)]">
+                  No objects detected yet. Scan a real-world item to populate this panel.
                 </div>
+              ) : (
+                detections.map((item) => (
+                  <button
+                    key={item.id}
+                    className="rounded-[28px] bg-white/72 p-5 text-left shadow-[0_16px_34px_rgba(121,95,78,0.08)]"
+                    onClick={() => speakLabel(item.label)}
+                    type="button"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <p className="text-2xl font-black tracking-[-0.03em] text-[var(--hangul-ink)]">{item.label}</p>
+                      <Volume2 className="h-5 w-5 text-[var(--hangul-accent)]" />
+                    </div>
+                    <p className="mt-3 text-base text-[var(--hangul-soft-ink)]">Confidence {Math.round(item.confidence * 100)}%</p>
+                    <ProgressBar className="mt-4 h-3" value={item.confidence * 100} />
+                  </button>
+                ))
               )}
-
-              {/* Interface Controls - Bottom */}
-              <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20">
-                {!isStreamActive ? (
-                  <button 
-                    onClick={startDetection}
-                    disabled={loading || serverStatus === 'disconnected'}
-                    className="group relative p-2 rounded-full bg-white/20 backdrop-blur-md transition-all hover:scale-110 active:scale-95 disabled:opacity-50"
-                  >
-                    <div className="w-20 h-20 rounded-full border-4 border-white flex items-center justify-center overflow-hidden">
-                      <div className="w-16 h-16 rounded-full bg-white transition-all group-hover:bg-[#815300]"></div>
-                    </div>
-                  </button>
-                ) : (
-                  <button 
-                    onClick={stopDetection}
-                    className="group relative p-2 rounded-full bg-white/20 backdrop-blur-md transition-all hover:scale-110 active:scale-95"
-                  >
-                    <div className="w-20 h-20 rounded-full border-4 border-red-600 flex items-center justify-center overflow-hidden">
-                      <div className="w-16 h-16 rounded-full bg-red-600 transition-all group-hover:bg-red-700 flex items-center justify-center">
-                        <span className="text-white text-2xl">⏹</span>
-                      </div>
-                    </div>
-                  </button>
-                )}
-              </div>
-            </section>
-          </div>
-
-          {/* Right: Info Panels */}
-          <div className="flex-1 min-w-[350px] flex flex-col gap-4 overflow-y-auto" style={{ maxHeight: '730px' }}>
-            {/* Frames Counter Panel */}
-            <div className="bg-white rounded-xl shadow-md p-5 border-l-4 border-[#72564c]">
-              <div className="flex justify-between items-center">
-                <span className="text-[#72564c]/70 text-sm">Frames</span>
-                <span className="font-bold text-[#72564c] text-2xl">{frameCount}</span>
-              </div>
             </div>
+          </HangulCard>
 
-            {/* Detection Counter Panel */}
-            <div className="bg-white rounded-xl shadow-md p-5 border-l-4 border-[#815300]">
-              <div className="flex justify-between items-center">
-                <span className="text-[#72564c]/70 text-sm">Phát Hiện</span>
-                <span className="font-bold text-[#72564c] text-2xl">{detections.length}</span>
-              </div>
-            </div>
-
-            {/* Detection Results Panel */}
-            <div className="bg-white rounded-xl shadow-md p-5 border-l-4 border-[#406561] flex-1">
-              <h3 className="text-base font-bold text-[#72564c] mb-3">
-                Kết Quả Phát Hiện ({detections.length})
-              </h3>
-              <div className="max-h-96 overflow-y-auto space-y-2">
-                {detections.length === 0 ? (
-                  <p className="text-[#72564c]/60 text-sm text-center py-4">Chưa phát hiện vật dụng</p>
-                ) : (
-                  detections.map((detection, idx) => (
-                    <div key={idx} className="bg-[#fafaf5] p-3 rounded-lg border border-[#406561]/20 hover:bg-[#eeeee9] transition-colors">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="font-semibold text-[#72564c] text-sm">{detection.label}</span>
-                        <span className="bg-[#406561] text-white text-[10px] font-bold px-2 py-0.5 rounded">
-                          {Math.round(detection.confidence * 100)}%
-                        </span>
-                      </div>
-                      <button className="w-full bg-[#72564c] hover:bg-[#8d6e63] text-white text-xs font-bold py-1.5 rounded-lg transition-colors">
-                        Thêm vào học
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                <p className="text-red-600 text-xs font-semibold">{error}</p>
-              </div>
-            )}
-          </div>
+          <HangulCard className="p-6" tone="soft">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--hangul-soft-ink)]">Scan Notes</p>
+            <p className="mt-4 text-3xl font-black tracking-[-0.04em] text-[var(--hangul-ink)]">Arena-ready vision lab</p>
+            <p className="mt-4 text-lg leading-8 text-[var(--hangul-soft-ink)]">
+              This screen mirrors the arena mini-game: soft chrome, dark camera stage, floating mentor card, and quick detection actions.
+            </p>
+          </HangulCard>
         </div>
-      </main>
-
-      <style>{`
-        .glass-panel {
-          background: rgba(250, 250, 245, 0.8);
-          backdrop-filter: blur(12px);
-        }
-        .ar-scanner-line {
-          background: linear-gradient(to bottom, transparent, #815300, transparent);
-          height: 4px;
-          width: 100%;
-          position: absolute;
-          animation: scan 3s ease-in-out infinite;
-        }
-        @keyframes scan {
-          0%, 100% { top: 10%; opacity: 0; }
-          50% { top: 90%; opacity: 1; }
-        }
-      `}</style>
-    </div>
+      </div>
+    </HangulPageFrame>
   );
 }
+

@@ -2,32 +2,27 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
-const { prisma } = require('./lib/prisma');
-const { setIO } = require('./io');
+const { PrismaClient } = require('@prisma/client');
 require('dotenv').config();
 
-// Import module routes (new modular structure)
-// Note: Using .default because modules export as ES6 but app.ts uses CommonJS require()
-const authRouter = require('./modules/auth/auth.routes').default;
-const userRouter = require('./modules/user/index').default;
-const vocabularyRouter = require('./modules/vocabulary/index').default;
-const quizRouter = require('./modules/quiz/index').default;
-const quizAdminRouter = require('./modules/quizAdmin/index').default;
-const pronunciationRouter = require('./modules/pronunciation/index').default;
-const pronunciationScoringRouter = require('./modules/pronunciation/scoring').default;
-const cameraRouter = require('./modules/camera/index').default;
-const topicRouter = require('./modules/topic/index').default;
-const writingRouter = require('./modules/writing/index').default;
-const leaderboardRouter = require('./modules/leaderboard/index').default;
-const tournamentRouter = require('./modules/tournament/index').default;
-const achievementsRouter = require('./modules/achievements/index').default;
-const learningPathRouter = require('./modules/learning-path/controller').default;
-const adminRouter = require('./modules/admin/index').default;
-const activityRouter = require('./modules/activity/index').default;
+// Initialize Prisma
+const prisma = new PrismaClient();
 
+// Import routes
+const healthRouter = require('./routes/health.routes');
+const authRouter = require('./routes/auth.routes');
+const userRouter = require('./routes/user.routes');
+const vocabularyRouter = require('./routes/vocabulary.routes');
+const quizRouter = require('./routes/quiz.routes');
+const listeningRouter = require('./routes/listening.routes');
+const pronunciationRouter = require('./routes/pronunciation.routes');
+const cameraRouter = require('./routes/camera.routes');
+const yoloRouter = require('./routes/yolo.routes.js');
+const tournamentRouter = require('./routes/tournament.routes.ts');
+const handwritingRouter = require('./routes/handwriting.routes');
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
-const { authenticate } = require('./middleware/authenticate');
+const authenticate = require('./middleware/authenticate');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -42,10 +37,7 @@ const io = new Server(server, {
   },
 });
 
-// Set global io instance for use in other modules
-setIO(io);
-
-// Store active connections with level info for level-based leaderboard
+// Store active connections
 const tournamentPlayers = new Map();
 
 // ========================
@@ -54,108 +46,43 @@ const tournamentPlayers = new Map();
 io.on('connection', (socket: any) => {
   console.log(`🎮 Tournament player connected: ${socket.id}`);
 
-  // Join tournament room with level-based room assignment
-  socket.on('tournament:join', async (data: any) => {
+  // Join tournament room
+  socket.on('tournament:join', (data: any) => {
     const { userId, name } = data;
-    
-    try {
-      // Get user's level from database
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { level: true },
-      });
-
-      if (!user) {
-        console.error(`❌ User not found: ${userId}`);
-        return;
-      }
-
-      // Store player info with level
-      tournamentPlayers.set(userId, { 
-        socketId: socket.id, 
-        name, 
-        level: user.level 
-      });
-
-      // Join level-based room (e.g., "tournament_NEWBIE")
-      const roomName = `tournament_${user.level}`;
-      socket.join(roomName);
-      
-      // Join personal user room for rank updates
-      socket.join(`user_${userId}`);
-      
-      console.log(`📍 ${name} (${user.level}) joined room: ${roomName} + user_${userId}`);
-    } catch (error) {
-      console.error('Error joining tournament:', error);
-    }
+    tournamentPlayers.set(userId, { socketId: socket.id, name });
+    socket.join('tournament');
+    console.log(`📍 ${name} joined tournament room`);
   });
 
-  // When player scores updated - emit only to same level room
+  // When player scores updated
   socket.on('tournament:score-update', async (data: any) => {
     const { userId } = data;
-    
     try {
-      // Get user's current level
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { level: true, role: true, email: true },
-      });
-
-      if (!user) {
-        console.error(`❌ User not found: ${userId}`);
-        return;
-      }
-
-      // Skip test/admin users
-      if (user.role === 'ADMIN' || user.email.includes('test')) {
-        console.log(`⏭️ Skipping test/admin user for leaderboard: ${userId}`);
-        return;
-      }
-
-      const roomName = `tournament_${user.level}`;
-
-      // Get leaderboard only for users at same level (exclude test/admin)
-      const levelLeaderboard = await prisma.user.findMany({
-        where: { 
-          level: user.level,
-          role: { not: 'ADMIN' },
-          email: { not: { contains: 'test' } }
-        },
+      const updatedLeaderboard = await prisma.user.findMany({
+        where: { trophy: { gte: 1000 } },
         select: {
           id: true,
           name: true,
           avatar: true,
-          totalTrophy: true,
+          trophy: true,
           level: true,
           totalXP: true,
         },
-        orderBy: [
-          { totalTrophy: 'desc' },
-          { totalXP: 'desc' }
-        ],
-        take: 50,
+        orderBy: [{ trophy: 'desc' }, { totalXP: 'desc' }],
+        take: 100,
       });
-
-      const formatted = levelLeaderboard.map((u: any, idx: number) => ({
+      const formatted = updatedLeaderboard.map((user: any, idx: number) => ({
         rank: idx + 1,
-        userId: u.id,
-        name: u.name,
-        avatar: u.avatar,
-        trophy: u.totalTrophy,
-        level: u.level,
-        xp: u.totalXP,
-      }));
-
-      // Emit ONLY to users at same level
-      io.to(roomName).emit('tournament:leaderboard-updated', {
+        userId: user.id,
+        name: user.name,
+        avatar: user.avatar,
+        trophy: user.trophy,
         level: user.level,
-        leaderboard: formatted,
-        timestamp: new Date().toISOString(),
-      });
-
-      console.log(`🏆 Leaderboard updated for ${roomName}: ${formatted.length} users`);
+        xp: user.totalXP,
+      }));
+      io.to('tournament').emit('tournament:leaderboard-updated', formatted);
     } catch (error) {
-      console.error('❌ Error updating leaderboard:', error);
+      console.error('Error updating leaderboard:', error);
     }
   });
 
@@ -165,7 +92,7 @@ io.on('connection', (socket: any) => {
     for (let [userId, player] of tournamentPlayers) {
       if (player.socketId === socket.id) {
         tournamentPlayers.delete(userId);
-        console.log(`🚪 ${player.name} (${player.level}) left tournament`);
+        console.log(`🚪 ${player.name} left tournament`);
         break;
       }
     }
@@ -178,7 +105,6 @@ module.exports.io = io;
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:3000',
   'http://localhost:3000',
-  'http://localhost:3001',
 ];
 
 app.use(cors({
@@ -201,42 +127,55 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // ========================
 // ROUTES
 // ========================
+app.use('/api/health', healthRouter);
 app.use('/api/auth', authRouter);
 
-// Admin routes (require admin authentication)
-app.use('/api/admin', authenticate, adminRouter);
+// Public tournament leaderboard (read-only)
+const tournamentLeaderboardRouter = express.Router();
+tournamentLeaderboardRouter.get('/', async (req: any, res: any) => {
+  try {
+    const leaderboard = await prisma.user.findMany({
+      where: { trophy: { gte: 1000 } },
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+        trophy: true,
+        level: true,
+        totalXP: true,
+      },
+      orderBy: [{ trophy: 'desc' }, { totalXP: 'desc' }],
+      take: 100,
+    });
+    const formatted = leaderboard.map((user: any, idx: number) => ({
+      rank: idx + 1,
+      userId: user.id,
+      name: user.name,
+      avatar: user.avatar,
+      trophy: user.trophy,
+      level: user.level,
+      xp: user.totalXP,
+    }));
+    res.json(formatted);
+  } catch (error) {
+    console.error('Leaderboard error:', error);
+    res.status(500).json([]);
+  }
+});
+app.use('/api/tournament/leaderboard', tournamentLeaderboardRouter);
 
 // Protected routes (require authentication)
-app.use('/api/user', authenticate, learningPathRouter);  // Learning path endpoints (includes set-level)
-app.use('/api/learning-path', authenticate, learningPathRouter);  // Also available at this path
-app.use('/api/user', authenticate, userRouter);  // User management endpoints
+app.use('/api/user', authenticate, userRouter);
 app.use('/api/vocabulary', authenticate, vocabularyRouter);
-
-// Public vocabulary routes (no authentication required)
-app.use('/api/public-vocab', vocabularyRouter);
-
-app.use('/api/quiz', quizRouter);  // Quiz endpoints (generate, submit)
-app.use('/api/question', quizRouter);  // Also available as /api/question for learning map
-app.use('/api/quiz', quizAdminRouter);  // Admin quiz management endpoints
-app.use('/api/writing', authenticate, writingRouter);
-app.use('/api/topic', topicRouter);  // Topic endpoints are public for GET, protected for POST/PUT/DELETE
-
-// Semi-public routes (some endpoints public, some protected)
-app.use('/api/leaderboard', leaderboardRouter);
+app.use('/api/quiz', authenticate, quizRouter);
+app.use('/api/listening', authenticate, listeningRouter);
 app.use('/api/tournament', authenticate, tournamentRouter);
-app.use('/api/achievements', achievementsRouter);
 
-// Camera detection route (requires authentication for saving)
-app.use('/api/camera', authenticate, cameraRouter);
-
-// Pronunciation route (public for testing)
+// Pronunciation and Camera detection routes (public for testing)
 app.use('/api/pronunciation', pronunciationRouter);
-
-// Pronunciation scoring (requires authentication)
-app.use('/api/pronunciation', authenticate, pronunciationScoringRouter);
-
-// Activity tracking (requires authentication)
-app.use('/api/activity', authenticate, activityRouter);
+app.use('/api/camera', cameraRouter);
+app.use('/api/yolo', authenticate, yoloRouter);
+app.use('/api/handwriting', authenticate, handwritingRouter);
 
 // ========================
 // 404 HANDLER
@@ -252,28 +191,6 @@ app.use((_req, res) => {
 app.use(errorHandler);
 
 // ========================
-// GLOBAL ERROR HANDLERS
-// ========================
-// Handle unhandled promise rejections (e.g., from Google Cloud auth attempts)
-process.on('unhandledRejection', (reason, promise) => {
-  if (reason && reason.toString && reason.toString().includes('Could not load the default credentials')) {
-    console.warn('⚠️ Google Cloud credentials not configured - fallback scoring enabled');
-  } else {
-    console.error('Unhandled Rejection:', reason);
-  }
-});
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-  if (error.message && error.message.includes('Could not load the default credentials')) {
-    console.warn('⚠️ Google Cloud credentials not configured - fallback scoring enabled');
-  } else {
-    console.error('Uncaught Exception:', error);
-    process.exit(1);
-  }
-});
-
-// ========================
 // START SERVER
 // ========================
 server.listen(PORT, () => {
@@ -281,5 +198,5 @@ server.listen(PORT, () => {
   console.log(`🎮 Socket.IO running for tournament`);
   console.log(`Environment: ${process.env.NODE_ENV}`);
 });
-
+export {};
 module.exports = app;

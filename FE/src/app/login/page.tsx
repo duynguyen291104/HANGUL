@@ -1,9 +1,11 @@
-'use client';
+﻿'use client';
 
-import { useState, useEffect } from 'react';
-import { useAuthStore } from '@/store/authStore';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { LockKeyhole, Mail } from 'lucide-react';
+import { HangulCard, MascotPortrait } from '@/components/hangul/ui';
+import { useAuthStore } from '@/store/authStore';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -14,31 +16,29 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const { login, user } = useAuthStore();
 
-  // 🔥 Auth Guard: Nếu đã login → redirect đến dashboard
   useEffect(() => {
     if (user) {
       router.push('/dashboard');
     }
-  }, [user, router]);
+  }, [router, user]);
 
-  // Check if user just registered
   useEffect(() => {
     if (searchParams.get('registered') === 'true') {
       setSuccess('Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.');
     }
   }, [searchParams]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((current) => ({ ...current, [event.target.name]: event.target.value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setLoading(true);
+    setError('');
 
     if (!formData.email || !formData.password) {
-      setError('Vui lòng điền email và mật khẩu');
+      setError('Please enter both email and password.');
       setLoading(false);
       return;
     }
@@ -88,8 +88,8 @@ export default function LoginPage() {
 
       {/* Main Login Container */}
       <div className="relative z-10 w-full max-w-md">
-        {/* Login Card */}
-        <div className="bg-[#fafaf5]/80 backdrop-blur-xl rounded-lg shadow-[0_20px_40px_rgba(43,22,15,0.06)] p-8 md:p-12 border border-[#d4c3be]/10">
+        {/* Login Card bọc ngoài bằng HangulCard cho đúng style */}
+        <HangulCard className="backdrop-blur-xl rounded-lg shadow-[0_20px_40px_rgba(43,22,15,0.06)] p-8 md:p-12 border border-[#d4c3be]/10">
           {/* Brand Header */}
           <div className="text-center mb-10">
             <img
@@ -173,7 +173,7 @@ export default function LoginPage() {
               Create an account
             </Link>
           </p>
-        </div>
+        </HangulCard>
       </div>
     </div>
   );

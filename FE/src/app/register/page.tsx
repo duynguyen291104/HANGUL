@@ -1,9 +1,11 @@
-'use client';
+﻿'use client';
 
-import { useState, useEffect } from 'react';
-import { useAuthStore } from '@/store/authStore';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { LockKeyhole, Mail, UserRound } from 'lucide-react';
+import { HangulCard, MascotPortrait } from '@/components/hangul/ui';
+import { useAuthStore } from '@/store/authStore';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -17,37 +19,36 @@ export default function RegisterPage() {
   const router = useRouter();
   const { register, user } = useAuthStore();
 
-  // 🔥 Auth Guard: Nếu đã login → redirect đến dashboard
   useEffect(() => {
     if (user) {
       router.push('/dashboard');
     }
-  }, [user, router]);
+  }, [router, user]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormData((current) => ({ ...current, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setError('');
     setLoading(true);
 
     if (!formData.email || !formData.name || !formData.password) {
-      setError('Vui lòng điền đầy đủ thông tin');
+      setError('Please complete every field.');
       setLoading(false);
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Mật khẩu không khớp');
+      setError('Passwords do not match.');
       setLoading(false);
       return;
     }
 
     if (formData.password.length < 6) {
-      setError('Mật khẩu phải tối thiểu 6 ký tự');
+      setError('Password must be at least 6 characters.');
       setLoading(false);
       return;
     }
@@ -55,9 +56,9 @@ export default function RegisterPage() {
     try {
       await register(formData.email, formData.name, formData.password);
       router.push('/login?registered=true');
-    } catch (err) {
-      const error = err as Error;
-      setError(error?.message || 'Đăng ký thất bại');
+    } catch (requestError) {
+      const safeError = requestError as Error;
+      setError(safeError.message || 'Unable to create account.');
     } finally {
       setLoading(false);
     }

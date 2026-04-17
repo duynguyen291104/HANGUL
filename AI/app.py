@@ -1,503 +1,583 @@
-#!/usr/bin/env python3
-"""YOLO Detection - Flask Server with PostgreSQL Integration"""
-
-import cv2
-import numpy as np
-import json
-import torch
-import os
-import sys
-import threading
-import time
-from datetime import datetime
-from PIL import Image, ImageDraw, ImageFont
-from flask import Flask, Response, jsonify, request, send_file
+from flask import Flask, request, jsonify
 from flask_cors import CORS
-from gtts import gTTS
+import base64
 import io
-import csv
-import psycopg2
-from psycopg2.extras import execute_values
-import requests
+import json
+import os
+import re
+import tempfile
+from pathlib import Path
+from typing import Any
 
-# Setup torch
-original_load = torch.load
-def patched_load(*args, **kwargs):
-    kwargs['weights_only'] = False
-    return original_load(*args, **kwargs)
-torch.load = patched_load
-
-from ultralytics import YOLO
-
-os.environ['TORCH_WEIGHTS_ONLY'] = '0'
-
-print("=" * 70)
-print("🎥 YOLO Detection - Flask Server (PostgreSQL Integration)")
-print("=" * 70)
-
-# Initialize Flask
 app = Flask(__name__)
 CORS(app)
 
-# PostgreSQL Configuration
-DB_CONFIG = {
-    'host': os.getenv('DB_HOST', 'postgres'),  # Use 'postgres' as default (Docker service name)
-    'port': int(os.getenv('DB_PORT', '5432')),
-    'database': os.getenv('DB_NAME', 'hangul'),
-    'user': os.getenv('DB_USER', 'hangul'),
-    'password': os.getenv('DB_PASSWORD', 'hangul123'),
-}
-
-# Backend API Configuration
-BACKEND_URL = os.getenv('BACKEND_URL', 'http://backend:5000')  # Use 'backend' as default (Docker service name)
-BACKEND_API_KEY = os.getenv('BACKEND_API_KEY', '')
-
-# Load fonts
-print("📝 Loading Korean font...")
-font_path = "/usr/share/fonts/opentype/noto/NotoSerifCJK-Bold.ttc"
-if not os.path.exists(font_path):
-    font_path = "/usr/share/fonts/truetype/nanum/NanumSquareRoundB.ttf"
+try:
+    from dotenv import load_dotenv
+except Exception:
+    load_dotenv = None
 
 try:
-    korean_font = ImageFont.truetype(font_path, 40) if os.path.exists(font_path) else None
-    print("✅ Korean font loaded")
-except Exception as e:
-    korean_font = None
-    print(f"⚠️  Font: {e}")
+    from gtts import gTTS
+except Exception:
+    gTTS = None
 
-# Load model
-print("📦 Loading YOLOv8 model...")
-model = YOLO('yolov8s.pt')
-print("✅ Model loaded!")
-
-# Load labels
-print("🇰🇷 Loading labels...")
 try:
-    with open('labels_ko_fixed.json', 'r', encoding='utf-8') as f:
-        labels_ko = json.load(f)
-except FileNotFoundError:
-    coco_names = [
-        "사람", "자전거", "자동차", "오토바이", "비행기",
-        "버스", "기차", "트럭", "배", "신호등",
-        "소화전", "정지 표지판", "주차 미터기", "벤치", "새",
-        "고양이", "개", "말", "양", "소",
-        "코끼리", "곰", "얼룩말", "기린", "배낭",
-        "우산", "핸드백", "넥타이", "여행 가방", "프리스비",
-        "스키", "스노보드", "공", "연", "야구 방망이",
-        "야구 글러브", "스케이트보드", "서핑보드", "테니스 라켓", "병",
-        "와인잔", "컵", "포크", "칼", "숟가락",
-        "그릇", "바나나", "사과", "샌드위치", "오렌지",
-        "브로콜리", "당근", "핫도그", "피자", "도넛",
-        "케이크", "의자", "소파", "화분", "침대",
-        "식탁", "변기", "텔레비전", "노트북", "마우스",
-        "리모컨", "키보드", "휴대전화", "전자레인지", "오븐",
-        "토스터", "싱크대", "냉장고", "책", "시계",
-        "꽃병", "가위", "테디 베어", "헤어 드라이어", "칫솔"
-    ]
-    labels_ko = {str(i): name for i, name in enumerate(coco_names)}
+    from faster_whisper import WhisperModel
+except Exception:
+    WhisperModel = None
 
-# Global state
-class DetectionState:
-    def __init__(self):
-        self.frame = None
-        self.detections = []
-        self.lock = threading.Lock()
-        self.is_running = False
-        self.frame_count = 0
-        self.skip_frames = 1
-        self.confidence_threshold = 0.35
-        self.max_object_age = 15
-        self.tracked_objects = {}
-        self.next_id = 0
-        self.is_recording = False
-        self.video_writer = None
-        self.detection_history = []
-        self.last_spoken = {}
-        self.session_id = str(int(time.time() * 1000))  # Session ID
-        self.session_start = datetime.now()
-        self.user_id = 1  # Default user for now
+try:
+    from google import genai
+    from google.genai import types
+except Exception:
+    genai = None
+    types = None
 
-# ========================
-# INITIALIZATION
-# ========================
-state = DetectionState()
 
-# Start webcam thread
-def capture_frames():
-    print("📹 Starting webcam capture...")
-    cap = cv2.VideoCapture(0)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-    cap.set(cv2.CAP_PROP_FPS, 30)
-    
-    if not cap.isOpened():
-        print("❌ Cannot open webcam")
-        return
+BASE_DIR = Path(__file__).resolve().parent
 
-    print("✅ Webcam opened")
+if load_dotenv is not None:
+    for env_file in [BASE_DIR / ".env", BASE_DIR.parent / ".env", BASE_DIR.parent / "BE" / ".env"]:
+        if env_file.exists():
+            load_dotenv(env_file, override=False)
 
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            print("⚠️  Failed to read frame")
-            continue
 
-        with state.lock:
-            state.frame = frame
-            
-            if state.is_running and state.frame_count % state.skip_frames == 0:
-                try:
-                    results = model.predict(frame, conf=state.confidence_threshold, verbose=False)
-                    state.detections = []
+def get_env(*names: str, default: str = "") -> str:
+    for name in names:
+        value = os.getenv(name)
+        if value:
+            return value
+    return default
 
-                    for result in results:
-                        for box in result.boxes:
-                            x1, y1, x2, y2 = map(int, box.xyxy[0])
-                            confidence = float(box.conf[0])
-                            class_id = int(box.cls[0])
-                            label = labels_ko.get(str(class_id), f"Object {class_id}")
 
-                            state.detections.append({
-                                'label': label,
-                                'confidence': confidence,
-                                'bbox': {'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2},
-                                'class_id': class_id,
-                                'timestamp': datetime.now().isoformat(),
-                                'frame_number': state.frame_count,
-                            })
+GEMINI_API_KEY = get_env("GEMINI_API_KEY", "Gemini_API_KEY")
+GEMINI_MODEL = get_env("GEMINI_MODEL", default="gemini-2.5-flash-lite")
+WHISPER_MODEL_SIZE = get_env("WHISPER_MODEL_SIZE", default="base")
+WHISPER_DEVICE = get_env("WHISPER_DEVICE", default="cpu")
+WHISPER_COMPUTE_TYPE = get_env("WHISPER_COMPUTE_TYPE", default="int8")
 
-                            # Add to history
-                            state.detection_history.append({
-                                'label': label,
-                                'confidence': confidence,
-                                'bbox': {'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2},
-                                'class_id': class_id,
-                                'timestamp': datetime.now().isoformat(),
-                                'frame_number': state.frame_count,
-                            })
-
-                except Exception as e:
-                    print(f"⚠️  Detection error: {e}")
-
-            state.frame_count += 1
-
-capture_thread = threading.Thread(target=capture_frames, daemon=True)
-capture_thread.start()
-
-# ========================
-# HEALTH CHECK
-# ========================
-
-@app.route('/api/yolo/health', methods=['GET'])
-def health():
+gemini_client = None
+if genai is not None and GEMINI_API_KEY:
     try:
-        conn = get_db_connection()
-        db_status = "✅ Connected" if conn else "❌ Error"
-        if conn:
-            conn.close()
-        
-        return jsonify({
-            'status': 'running',
-            'model': 'YOLOv8s',
-            'database': db_status,
-            'detections': len(state.detections),
-            'frame_count': state.frame_count,
-            'session': state.session_id,
+        gemini_client = genai.Client(api_key=GEMINI_API_KEY)
+    except Exception:
+        gemini_client = None
+
+whisper_model = None
+if WhisperModel is not None:
+    try:
+        whisper_model = WhisperModel(
+            WHISPER_MODEL_SIZE,
+            device=WHISPER_DEVICE,
+            compute_type=WHISPER_COMPUTE_TYPE,
+        )
+    except Exception:
+        whisper_model = None
+
+tts_cache: dict[str, str] = {}
+
+
+def clamp_score(value: Any, default: int = 0) -> int:
+    try:
+        return max(0, min(100, round(float(value))))
+    except Exception:
+        return default
+
+
+def normalize_text(value: str) -> str:
+    value = (value or "").lower().strip()
+    value = re.sub(r"[^\w\s가-힣]", " ", value, flags=re.UNICODE)
+    return re.sub(r"\s+", " ", value).strip()
+
+
+def split_syllables(value: str) -> list[str]:
+    return list(normalize_text(value).replace(" ", ""))
+
+
+def levenshtein(left: str, right: str) -> int:
+    if left == right:
+        return 0
+    if not left:
+        return len(right)
+    if not right:
+        return len(left)
+
+    rows = [[0] * (len(right) + 1) for _ in range(len(left) + 1)]
+    for i in range(len(left) + 1):
+        rows[i][0] = i
+    for j in range(len(right) + 1):
+        rows[0][j] = j
+
+    for i in range(1, len(left) + 1):
+        for j in range(1, len(right) + 1):
+            cost = 0 if left[i - 1] == right[j - 1] else 1
+            rows[i][j] = min(
+                rows[i - 1][j] + 1,
+                rows[i][j - 1] + 1,
+                rows[i - 1][j - 1] + cost,
+            )
+
+    return rows[len(left)][len(right)]
+
+
+def similarity_score(recognized: str, target: str) -> int:
+    recognized = normalize_text(recognized)
+    target = normalize_text(target)
+
+    if not recognized or not target:
+        return 0
+
+    distance = levenshtein(recognized, target)
+    max_len = max(len(recognized), len(target))
+    return clamp_score(((max_len - distance) / max_len) * 100)
+
+
+def extract_extension_from_data_url(data_url: str) -> tuple[str, str]:
+    if "," in data_url:
+        header, raw = data_url.split(",", 1)
+    else:
+        header, raw = "", data_url
+
+    mime = "audio/webm"
+    if ":" in header and ";" in header:
+        mime = header.split(":", 1)[1].split(";", 1)[0].strip().lower()
+
+    ext_map = {
+        "audio/webm": ".webm",
+        "audio/wav": ".wav",
+        "audio/x-wav": ".wav",
+        "audio/mpeg": ".mp3",
+        "audio/mp3": ".mp3",
+        "audio/mp4": ".m4a",
+        "audio/m4a": ".m4a",
+        "audio/ogg": ".ogg",
+        "audio/flac": ".flac",
+    }
+
+    return ext_map.get(mime, ".webm"), raw
+
+
+def save_audio_temp_file(audio_data_url: str) -> str:
+    suffix, raw = extract_extension_from_data_url(audio_data_url)
+    audio_bytes = base64.b64decode(raw)
+
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+    temp_file.write(audio_bytes)
+    temp_file.close()
+    return temp_file.name
+
+
+def transcribe_with_local_whisper(audio_path: str) -> str:
+    if whisper_model is None:
+        raise RuntimeError("Whisper local chưa được khởi tạo. Kiểm tra faster-whisper và model size.")
+
+    segments, _ = whisper_model.transcribe(
+        audio_path,
+        language="ko",
+        task="transcribe",
+        beam_size=1,
+        vad_filter=False,
+        condition_on_previous_text=False,
+        compression_ratio_threshold=2.4,
+        no_speech_threshold=0.6,
+    )
+
+    transcript = " ".join(segment.text for segment in segments).strip()
+    return transcript
+
+
+def detect_pronunciation_issues(transcript: str, target: str) -> list[dict[str, Any]]:
+    target_syllables = split_syllables(target)
+    transcript_syllables = split_syllables(transcript)
+    issues: list[dict[str, Any]] = []
+
+    if not transcript_syllables:
+        return [{
+            "unit": target,
+            "error_type": "Unclear",
+            "score": 20,
+            "advice_vi": "Hệ thống không nghe rõ phần bạn đọc. Hãy nói chậm hơn và đứng gần micro hơn."
+        }]
+
+    if len(transcript_syllables) < len(target_syllables):
+        missing = "".join(target_syllables[len(transcript_syllables):]) or target
+        issues.append({
+            "unit": missing,
+            "error_type": "Omission",
+            "score": 45,
+            "advice_vi": f"Bạn đang đọc thiếu phần '{missing}'. Hãy phát âm đủ toàn bộ âm tiết."
         })
-    except Exception as e:
-        return jsonify({'status': 'error', 'error': str(e)}), 500
 
-# ========================
-# MJPEG STREAM
-# ========================
+    if len(transcript_syllables) > len(target_syllables):
+        extra = "".join(transcript_syllables[len(target_syllables):]) or transcript
+        issues.append({
+            "unit": extra,
+            "error_type": "Insertion",
+            "score": 40,
+            "advice_vi": f"Bạn đang thêm dư phần '{extra}'. Hãy đọc gọn hơn và bám sát từ mẫu."
+        })
 
-def generate_frames():
-    while True:
-        with state.lock:
-            if state.frame is None:
+    mismatch_index = -1
+    for index, syllable in enumerate(target_syllables):
+        if index >= len(transcript_syllables) or transcript_syllables[index] != syllable:
+            mismatch_index = index
+            break
+
+    if mismatch_index >= 0:
+        expected = target_syllables[mismatch_index]
+        heard = transcript_syllables[mismatch_index] if mismatch_index < len(transcript_syllables) else "bị thiếu"
+        issues.append({
+            "unit": expected,
+            "error_type": "Mispronunciation",
+            "score": 55,
+            "advice_vi": f"Âm tiết thứ {mismatch_index + 1} nên là '{expected}', nhưng hệ thống nghe gần giống '{heard}'."
+        })
+
+    if target_syllables and transcript_syllables and transcript_syllables[-1] != target_syllables[-1]:
+        issues.append({
+            "unit": target_syllables[-1],
+            "error_type": "Mispronunciation",
+            "score": 58,
+            "advice_vi": f"Âm cuối '{target_syllables[-1]}' chưa rõ. Hãy nhấn rõ phần kết thúc hơn."
+        })
+
+    if normalize_text(transcript) == normalize_text(target):
+        issues = [{
+            "unit": target,
+            "error_type": "Unclear",
+            "score": 82,
+            "advice_vi": "Transcript đã khớp với từ mục tiêu. Đây vẫn là đánh giá dựa trên transcript nên bạn hãy luyện thêm ngữ điệu và âm cuối."
+        }]
+
+    deduped: list[dict[str, Any]] = []
+    seen = set()
+    for item in issues:
+        key = (item["unit"], item["error_type"], item["advice_vi"])
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(item)
+
+    return deduped[:5]
+
+
+def build_rule_based_assessment(transcript: str, target: str) -> dict[str, Any]:
+    accuracy = similarity_score(transcript, target)
+
+    if normalize_text(transcript) == normalize_text(target):
+        accuracy = min(accuracy, 88)
+        fluency = 81
+        prosody = 75
+        overall = 83
+    else:
+        fluency = clamp_score(accuracy - 6 if accuracy > 10 else accuracy)
+        prosody = clamp_score(accuracy - 10 if accuracy > 15 else accuracy)
+        overall = clamp_score((accuracy * 0.55) + (fluency * 0.25) + (prosody * 0.20))
+
+    issues = detect_pronunciation_issues(transcript, target)
+
+    if issues:
+        feedback_vi = issues[0]["advice_vi"]
+    elif overall >= 85:
+        feedback_vi = "Bạn đọc khá đúng từ mục tiêu. Hãy luyện thêm ngữ điệu để tự nhiên hơn."
+    elif overall >= 65:
+        feedback_vi = "Bạn đọc gần đúng, nhưng vẫn cần chỉnh lại nhịp đọc và âm cuối."
+    else:
+        feedback_vi = "Bạn cần đọc chậm hơn và tách rõ từng âm tiết."
+
+    return {
+        "metrics": {
+            "overall": clamp_score(overall),
+            "accuracy": clamp_score(accuracy),
+            "fluency": clamp_score(fluency),
+            "prosody": clamp_score(prosody),
+        },
+        "issues": issues,
+        "feedback_vi": feedback_vi,
+    }
+
+
+def should_skip_gemini(transcript: str, target: str, baseline: dict[str, Any]) -> bool:
+    normalized_transcript = normalize_text(transcript)
+    normalized_target = normalize_text(target)
+    overall = baseline["metrics"]["overall"]
+
+    if not gemini_client:
+        return True
+
+    if normalized_transcript == normalized_target and overall >= 80:
+        return True
+
+    if overall >= 86:
+        return True
+
+    return False
+
+
+def build_gemini_prompt(target: str, transcript: str, baseline: dict[str, Any]) -> str:
+    return f"""
+Bạn là giám khảo luyện phát âm tiếng Hàn cho người Việt.
+
+Từ mục tiêu:
+"{target}"
+
+Transcript từ local Whisper:
+"{transcript}"
+
+Baseline assessment:
+{json.dumps(baseline, ensure_ascii=False)}
+
+Yêu cầu:
+1. So sánh transcript với target.
+2. Điều chỉnh baseline nếu cần.
+3. Đây chỉ là transcript-based assessment, không phải phoneme-level assessment.
+4. Không được khen quá mức nếu transcript lệch target.
+5. Nếu transcript trùng target, không được tự động cho điểm 95-100.
+6. Feedback phải bằng tiếng Việt, ngắn gọn, thực tế.
+7. Trả đúng JSON, không markdown.
+
+Schema:
+{{
+  "metrics": {{
+    "overall": 0,
+    "accuracy": 0,
+    "fluency": 0,
+    "prosody": 0
+  }},
+  "issues": [
+    {{
+      "unit": "string",
+      "error_type": "Mispronunciation|Omission|Insertion|Unclear",
+      "score": 0,
+      "advice_vi": "string"
+    }}
+  ],
+  "feedback_vi": "string"
+}}
+""".strip()
+
+
+def parse_json_response(text: str) -> dict[str, Any]:
+    cleaned = text.strip()
+
+    if cleaned.startswith("```"):
+        parts = cleaned.split("```")
+        for part in parts:
+            part = part.strip()
+            if part.startswith("{") and part.endswith("}"):
+                cleaned = part
+                break
+            if "\n" in part:
+                candidate = part.split("\n", 1)[1].strip()
+                if candidate.startswith("{") and candidate.endswith("}"):
+                    cleaned = candidate
+                    break
+
+    start = cleaned.find("{")
+    end = cleaned.rfind("}")
+    if start >= 0 and end > start:
+        cleaned = cleaned[start:end + 1]
+
+    return json.loads(cleaned)
+
+
+def normalize_gemini_assessment(payload: dict[str, Any], transcript: str, target: str, baseline: dict[str, Any]) -> dict[str, Any]:
+    raw_metrics = payload.get("metrics", {}) if isinstance(payload, dict) else {}
+    raw_issues = payload.get("issues", []) if isinstance(payload, dict) else []
+    feedback_vi = str(payload.get("feedback_vi", "")).strip() if isinstance(payload, dict) else ""
+
+    baseline_metrics = baseline["metrics"]
+
+    metrics = {
+        "overall": clamp_score(raw_metrics.get("overall", baseline_metrics["overall"])),
+        "accuracy": clamp_score(raw_metrics.get("accuracy", baseline_metrics["accuracy"])),
+        "fluency": clamp_score(raw_metrics.get("fluency", baseline_metrics["fluency"])),
+        "prosody": clamp_score(raw_metrics.get("prosody", baseline_metrics["prosody"])),
+    }
+
+    if normalize_text(transcript) == normalize_text(target):
+        metrics["overall"] = min(metrics["overall"], 88)
+        metrics["accuracy"] = min(metrics["accuracy"], 90)
+
+    issues: list[dict[str, Any]] = []
+    if isinstance(raw_issues, list):
+        for item in raw_issues[:5]:
+            if not isinstance(item, dict):
                 continue
 
-            frame = state.frame.copy()
+            issues.append({
+                "unit": str(item.get("unit", target)).strip() or target,
+                "error_type": str(item.get("error_type", "Unclear")).strip() or "Unclear",
+                "score": clamp_score(item.get("score", 0)),
+                "advice_vi": str(item.get("advice_vi", "")).strip() or f"Phần '{target}' cần đọc rõ hơn.",
+            })
 
-            # Draw detections
-            for det in state.detections:
-                bbox = det['bbox']
-                x1, y1, x2, y2 = bbox['x1'], bbox['y1'], bbox['x2'], bbox['y2']
-                label = det['label']
-                confidence = det['confidence']
+    if not issues:
+        issues = baseline["issues"]
 
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                text = f"{label}: {confidence:.2f}"
-                cv2.putText(frame, text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    if not feedback_vi:
+        feedback_vi = baseline["feedback_vi"]
 
-        ret, buffer = cv2.imencode('.jpg', frame)
-        frame = buffer.tobytes()
+    return {
+        "metrics": metrics,
+        "issues": issues,
+        "feedback_vi": feedback_vi,
+    }
 
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
-@app.route('/api/yolo/stream', methods=['GET'])
-def stream():
-    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+def analyze_with_gemini(transcript: str, target: str, baseline: dict[str, Any]) -> dict[str, Any]:
+    prompt = build_gemini_prompt(target, transcript, baseline)
 
-# ========================
-# DETECTIONS API
-# ========================
+    response = gemini_client.models.generate_content(
+        model=GEMINI_MODEL,
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            temperature=0.15,
+            response_mime_type="application/json",
+        ) if types is not None else None,
+    )
 
-@app.route('/api/yolo/detections', methods=['GET'])
-def get_detections():
-    with state.lock:
-        detections = state.detections.copy()
-    
+    parsed = parse_json_response(response.text)
+    return normalize_gemini_assessment(parsed, transcript, target, baseline)
+
+
+@app.get("/health")
+def health():
     return jsonify({
-        'count': len(detections),
-        'detections': detections,
-        'frame_number': state.frame_count,
+        "status": "ok",
+        "service": "hangul-pronunciation-ai",
+        "gemini_configured": bool(gemini_client),
+        "whisper_configured": bool(whisper_model),
+        "gemini_model": GEMINI_MODEL,
+        "whisper_model": WHISPER_MODEL_SIZE,
+        "whisper_device": WHISPER_DEVICE,
+        "whisper_compute_type": WHISPER_COMPUTE_TYPE,
     })
 
-# ========================
-# SAVE TO POSTGRESQL
-# ========================
 
-@app.route('/api/yolo/save-detections', methods=['POST'])
-def save_detections():
-    """Save detections to PostgreSQL"""
+@app.post("/tts")
+def tts():
+    data = request.get_json(silent=True) or {}
+    text = (data.get("text") or "").strip()
+
+    if not text:
+        return jsonify({"error": "Text required"}), 400
+
+    if text in tts_cache:
+        return jsonify({
+            "success": True,
+            "text": text,
+            "audio": tts_cache[text]
+        })
+
+    if gTTS is None:
+        return jsonify({"error": "gTTS is unavailable"}), 500
+
     try:
-        data = request.json or {}
-        user_id = data.get('user_id', state.user_id)
-        detections_to_save = data.get('detections', state.detections)
+        buffer = io.BytesIO()
+        tts_engine = gTTS(text=text, lang="ko", slow=False)
+        tts_engine.write_to_fp(buffer)
+        buffer.seek(0)
+        audio_content = buffer.read()
 
-        if not detections_to_save:
-            return jsonify({'success': False, 'error': 'No detections to save'}), 400
+        audio_base64 = base64.b64encode(audio_content).decode("utf-8")
+        audio_data_url = f"data:audio/mpeg;base64,{audio_base64}"
+        tts_cache[text] = audio_data_url
 
-        conn = get_db_connection()
-        if not conn:
-            return jsonify({'success': False, 'error': 'Database connection failed'}), 500
+        return jsonify({
+            "success": True,
+            "text": text,
+            "audio": audio_data_url
+        })
+    except Exception as error:
+        return jsonify({
+            "success": False,
+            "error": "tts_failed",
+            "message": str(error),
+        }), 502
 
-        try:
-            cursor = conn.cursor()
 
-            # Insert detections
-            for det in detections_to_save:
-                sql = """
-                INSERT INTO "YOLODetection" 
-                (userId, label, confidence, bbox, sessionId, frameNumber, source, "createdAt", "updatedAt")
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """
-                values = (
-                    user_id,
-                    det['label'],
-                    det['confidence'],
-                    json.dumps(det['bbox']),
-                    state.session_id,
-                    det.get('frame_number', 0),
-                    'webcam',
-                    datetime.now(),
-                    datetime.now(),
-                )
-                cursor.execute(sql, values)
+@app.post("/transcribe")
+def transcribe():
+    data = request.get_json(silent=True) or {}
+    audio_data = data.get("audio")
+    target = (data.get("target") or "").strip()
 
-            conn.commit()
-            cursor.close()
-            conn.close()
+    if not audio_data:
+        return jsonify({
+            "success": False,
+            "error": "audio_required",
+            "message": "Thiếu dữ liệu audio."
+        }), 400
 
+    if not target:
+        return jsonify({
+            "success": False,
+            "error": "target_required",
+            "message": "Thiếu từ mục tiêu."
+        }), 400
+
+    if whisper_model is None:
+        return jsonify({
+            "success": False,
+            "error": "whisper_not_configured",
+            "message": "Whisper local chưa sẵn sàng. Hãy kiểm tra faster-whisper và model."
+        }), 503
+
+    temp_audio_path = None
+
+    try:
+        temp_audio_path = save_audio_temp_file(audio_data)
+        transcript = transcribe_with_local_whisper(temp_audio_path)
+
+        if not transcript:
             return jsonify({
-                'success': True,
-                'count': len(detections_to_save),
-                'session_id': state.session_id,
-            })
+                "success": False,
+                "error": "empty_transcript",
+                "message": "Không nhận diện được transcript từ audio."
+            }), 422
 
-        except Exception as e:
-            conn.rollback()
-            cursor.close()
-            conn.close()
-            return jsonify({'success': False, 'error': str(e)}), 500
+        baseline = build_rule_based_assessment(transcript, target)
 
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-# ========================
-# BACKEND API INTEGRATION
-# ========================
-
-@app.route('/api/yolo/sync-backend', methods=['POST'])
-def sync_backend():
-    """Sync detections to Backend API"""
-    try:
-        data = request.json or {}
-        user_id = data.get('user_id', state.user_id)
-        detections_to_sync = data.get('detections', state.detections)
-
-        if not detections_to_sync:
-            return jsonify({'success': False, 'error': 'No detections to sync'}), 400
-
-        # Call backend API to save detections
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer {BACKEND_API_KEY}' if BACKEND_API_KEY else None,
-        }
-
-        payload = {
-            'detections': detections_to_sync,
-            'sessionId': state.session_id,
-        }
-
-        response = requests.post(
-            f'{BACKEND_URL}/api/yolo/batch-save',
-            json=payload,
-            headers=headers,
-            timeout=10
-        )
-
-        if response.status_code == 200:
-            result = response.json()
-            return jsonify({'success': True, **result})
+        if should_skip_gemini(transcript, target, baseline):
+            analysis = baseline
+            assessment_mode = "local_whisper_fast_path"
         else:
-            return jsonify({
-                'success': False,
-                'error': f'Backend error: {response.status_code}',
-                'details': response.text,
-            }), 500
+            try:
+                analysis = analyze_with_gemini(transcript, target, baseline)
+                assessment_mode = "local_whisper_plus_gemini_estimated"
+            except Exception:
+                analysis = baseline
+                assessment_mode = "local_whisper_rule_based_fallback"
 
-    except requests.exceptions.RequestException as e:
-        return jsonify({'success': False, 'error': f'Request error: {str(e)}'}), 500
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({
+            "success": True,
+            "assessment_mode": assessment_mode,
+            "transcribed_text": transcript,
+            "target_text": target,
+            "score": analysis["metrics"]["overall"],
+            "metrics": analysis["metrics"],
+            "issues": analysis["issues"],
+            "feedback_vi": analysis["feedback_vi"],
+            "gemini_model": GEMINI_MODEL if gemini_client else None,
+            "whisper_model": WHISPER_MODEL_SIZE,
+        })
 
-# ========================
-# VOICE SYNTHESIS
-# ========================
+    except Exception as error:
+        return jsonify({
+            "success": False,
+            "error": "transcription_failed",
+            "message": str(error),
+        }), 502
 
-@app.route('/api/yolo/speak', methods=['POST'])
-def speak():
-    try:
-        data = request.json or {}
-        text = data.get('text', '감지됨')
-        
-        tts = gTTS(text=text, lang='ko', slow=False)
-        audio_buffer = io.BytesIO()
-        tts.write_to_fp(audio_buffer)
-        audio_buffer.seek(0)
-        
-        return send_file(audio_buffer, mimetype='audio/mpeg')
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    finally:
+        if temp_audio_path and os.path.exists(temp_audio_path):
+            try:
+                os.unlink(temp_audio_path)
+            except Exception:
+                pass
 
-# ========================
-# RECORDING
-# ========================
 
-@app.route('/api/yolo/record/start', methods=['POST'])
-def start_recording():
-    try:
-        with state.lock:
-            if state.is_recording:
-                return jsonify({'success': False, 'error': 'Already recording'}), 400
-
-            state.is_recording = True
-            
-            # Initialize video writer
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            output_path = f'/tmp/detection_{timestamp}.avi'
-            
-            fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-            state.video_writer = cv2.VideoWriter(output_path, fourcc, 30.0, (640, 480))
-            
-            return jsonify({
-                'success': True,
-                'output_path': output_path,
-                'timestamp': timestamp,
-            })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@app.route('/api/yolo/record/stop', methods=['POST'])
-def stop_recording():
-    try:
-        with state.lock:
-            if not state.is_recording:
-                return jsonify({'success': False, 'error': 'Not recording'}), 400
-
-            state.is_recording = False
-            
-            if state.video_writer:
-                state.video_writer.release()
-                state.video_writer = None
-            
-            return jsonify({'success': True, 'message': 'Recording stopped'})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-# ========================
-# EXPORT
-# ========================
-
-@app.route('/api/yolo/export', methods=['GET'])
-def export_detections():
-    try:
-        format_type = request.args.get('format', 'json').lower()
-        detections = state.detection_history or state.detections
-
-        if format_type == 'csv':
-            output = io.StringIO()
-            writer = csv.DictWriter(output, fieldnames=['label', 'confidence', 'bbox', 'timestamp', 'frame_number'])
-            writer.writeheader()
-            
-            for det in detections:
-                writer.writerow({
-                    'label': det['label'],
-                    'confidence': f"{det['confidence']:.4f}",
-                    'bbox': json.dumps(det['bbox']),
-                    'timestamp': det.get('timestamp', ''),
-                    'frame_number': det.get('frame_number', 0),
-                })
-            
-            output.seek(0)
-            return send_file(
-                io.BytesIO(output.getvalue().encode()),
-                mimetype='text/csv',
-                as_attachment=True,
-                download_name=f'detections_{int(time.time())}.csv'
-            )
-
-        else:  # JSON
-            return send_file(
-                io.BytesIO(json.dumps(detections, indent=2, ensure_ascii=False).encode('utf-8')),
-                mimetype='application/json',
-                as_attachment=True,
-                download_name=f'detections_{int(time.time())}.json'
-            )
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-# ========================
-# CONTROL
-# ========================
-
-@app.route('/api/yolo/start', methods=['POST'])
-def start_detection():
-    with state.lock:
-        state.is_running = True
-    return jsonify({'success': True, 'message': 'Detection started'})
-
-@app.route('/api/yolo/stop', methods=['POST'])
-def stop_detection():
-    with state.lock:
-        state.is_running = False
-    return jsonify({'success': True, 'message': 'Detection stopped'})
-
-@app.route('/api/yolo/reset', methods=['POST'])
-def reset_state():
-    with state.lock:
-        state.detections = []
-        state.detection_history = []
-        state.frame_count = 0
-        state.session_id = str(int(time.time() * 1000))
-    return jsonify({'success': True, 'new_session_id': state.session_id})
-
-if __name__ == '__main__':
-    print(f"🚀 Starting YOLO Flask Server")
-    print(f"📡 Database: {DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['database']}")
-    print(f"🔗 Backend: {BACKEND_URL}")
-    app.run(host='0.0.0.0', port=5001, debug=False)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5001, debug=False)
