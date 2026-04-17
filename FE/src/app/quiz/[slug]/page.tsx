@@ -12,6 +12,7 @@ interface Question {
   korean: string;
   english: string;
   options: string[];
+  correctAnswer: string;
   difficulty: string;
   level: string;
   explanation?: string;
@@ -32,7 +33,7 @@ interface QuizState {
   unlockedMessage: string | null;
   correctAnswerText?: string;
   isAnswerCorrect?: boolean;
-  answers: Array<{ questionId: number; isCorrect: boolean }>;
+  answers: Array<{ questionId: number; isCorrect: boolean; selectedAnswer?: string }>;
 }
 
 // Fallback questions khi API fail
@@ -44,6 +45,7 @@ const FALLBACK_QUESTIONS: Question[] = [
     korean: '안녕하세요',
     english: 'Hello',
     options: ['안녕하세요', '감사합니다', '죄송합니다', '안녕'],
+    correctAnswer: 'Hello',
     difficulty: 'Easy',
     level: 'Beginner',
     explanation: '안녕하세요 (annyeonghaseyo) is the formal greeting in Korean. It literally means "Please be well."',
@@ -56,6 +58,7 @@ const FALLBACK_QUESTIONS: Question[] = [
     korean: '감사합니다',
     english: 'Thank you',
     options: ['안녕하세요', '감사합니다', '죄송합니다', '안녕'],
+    correctAnswer: 'Thank you',
     difficulty: 'Easy',
     level: 'Beginner',
     explanation: '감사합니다 (gamsahamnida) is a formal way to say thank you. It shows respect and is appropriate in most situations.',
@@ -68,6 +71,7 @@ const FALLBACK_QUESTIONS: Question[] = [
     korean: '죄송합니다',
     english: 'Sorry',
     options: ['안녕하세요', '감사합니다', '죄송합니다', '안녕'],
+    correctAnswer: 'Sorry',
     difficulty: 'Easy',
     level: 'Beginner',
     explanation: '죄송합니다 (joesonghamnida) is a formal apology. It\'s commonly used in formal settings or when apologizing sincerely.',
@@ -80,6 +84,7 @@ const FALLBACK_QUESTIONS: Question[] = [
     korean: '네',
     english: 'Yes',
     options: ['네', '아니요', '모르겠어요', '좋아요'],
+    correctAnswer: 'Yes',
     difficulty: 'Easy',
     level: 'Beginner',
     explanation: '네 (ne) is the basic affirmative response in Korean. It is polite and appropriate in most situations.',
@@ -92,6 +97,7 @@ const FALLBACK_QUESTIONS: Question[] = [
     korean: '아니요',
     english: 'No',
     options: ['네', '아니요', '모르겠어요', '좋아요'],
+    correctAnswer: 'No',
     difficulty: 'Easy',
     level: 'Beginner',
     explanation: '아니요 (aniyo) is the polite way to say no in Korean. It\'s used when you want to politely decline something.',
@@ -104,6 +110,7 @@ const FALLBACK_QUESTIONS: Question[] = [
     korean: '모르겠어요',
     english: 'I do not know',
     options: ['네', '아니요', '모르겠어요', '좋아요'],
+    correctAnswer: 'I do not know',
     difficulty: 'Easy',
     level: 'Beginner',
     explanation: '모르겠어요 (moreugesseoyo) literally means "I don\'t understand/know." It\'s a polite way to express uncertainty.',
@@ -116,6 +123,7 @@ const FALLBACK_QUESTIONS: Question[] = [
     korean: '좋아요',
     english: 'Good',
     options: ['나빠요', '좋아요', '최고예요', '괜찮아요'],
+    correctAnswer: 'Good',
     difficulty: 'Easy',
     level: 'Beginner',
     explanation: '좋아요 (johayo) means "good," "I like it," or "It\'s nice." It\'s one of the most commonly used positive expressions in Korean.',
@@ -128,6 +136,7 @@ const FALLBACK_QUESTIONS: Question[] = [
     korean: '나빠요',
     english: 'Bad',
     options: ['나빠요', '좋아요', '최고예요', '괜찮아요'],
+    correctAnswer: 'Bad',
     difficulty: 'Easy',
     level: 'Beginner',
     explanation: '나빠요 (nappayo) means "bad" or "it\'s not good." It\'s the opposite of 좋아요 and is used to express disapproval.',
@@ -140,6 +149,7 @@ const FALLBACK_QUESTIONS: Question[] = [
     korean: '최고예요',
     english: 'The best',
     options: ['나빠요', '좋아요', '최고예요', '괜찮아요'],
+    correctAnswer: 'The best',
     difficulty: 'Easy',
     level: 'Beginner',
     explanation: '최고예요 (choegoyeyo) means "the best" or "it\'s the best." It\'s used to express high satisfaction or praise.',
@@ -152,6 +162,7 @@ const FALLBACK_QUESTIONS: Question[] = [
     korean: '괜찮아요',
     english: 'It is okay/fine',
     options: ['나빠요', '좋아요', '최고예요', '괜찮아요'],
+    correctAnswer: 'It is okay/fine',
     difficulty: 'Easy',
     level: 'Beginner',
     explanation: '괜찮아요 (gwaenchanhayo) means "it\'s okay," "it\'s fine," or "it\'s alright." Use it to reassure someone or indicate acceptance.',
@@ -163,7 +174,7 @@ export default function QuizDetailPage() {
   const router = useRouter();
   const params = useParams();
   const { token } = useAuthStore();
-  const topicId = params.topicId as string;
+  const slug = params.slug as string;
 
   const [quiz, setQuiz] = useState<QuizState>({
     sessionId: null,
@@ -191,14 +202,14 @@ export default function QuizDetailPage() {
   });
 
   useEffect(() => {
-    if (!topicId) {
+    if (!slug) {
       return;
     }
 
     const loadQuiz = async () => {
       try {
         setQuiz((prev) => ({ ...prev, loading: true }));
-        console.log('🎬 Fetching quiz for topicId:', topicId);
+        console.log('🎬 Fetching quiz for slug:', slug);
 
         // Add authorization header with token
         const headers: any = {
@@ -209,64 +220,153 @@ export default function QuizDetailPage() {
           headers['Authorization'] = `Bearer ${token}`;
         }
 
-        // Fetch topic name first
+        // Fetch 10 random questions from topic by slug
         try {
-          const topicResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/topic/${topicId}`,
-            {
-              headers,
-            }
+          const randomQuestionsResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/quiz/random-questions/${slug}`
           );
-          if (topicResponse.ok) {
-            const topicData = await topicResponse.json();
-            // Backend returns topic data directly, not wrapped in 'data'
-            const name = topicData.name || topicData.data?.name || 'Quiz';
+          if (randomQuestionsResponse.ok) {
+            const randomData = await randomQuestionsResponse.json();
+            const name = randomData.topicName || 'Quiz';
             setTopicName(name);
-            console.log('📌 Topic name fetched:', name, 'Full response:', topicData);
+            console.log(`📌 Random 10 questions fetched from "${slug}":`, randomData.count);
+            
+            // Transform 10 random vocabulary into quiz questions
+            if (randomData.vocabulary && Array.isArray(randomData.vocabulary)) {
+              const questions = randomData.vocabulary.map((vocab: any, vocabIndex: number) => {
+                const correctAnswer = vocab.english;
+                
+                // Get wrong answers from OTHER vocabulary items IN SAME 10-ITEM SET
+                const wrongAnswers = randomData.vocabulary
+                  .filter((_: any, idx: number) => idx !== vocabIndex)
+                  .map((v: any) => v.english);
+                
+                // Shuffle and take 3 wrong answers
+                const selectedWrongAnswers = wrongAnswers
+                  .sort(() => Math.random() - 0.5)
+                  .slice(0, Math.min(3, wrongAnswers.length));
+                
+                // If not enough wrong answers, repeat some
+                while (selectedWrongAnswers.length < 3) {
+                  const randomPick = wrongAnswers[Math.floor(Math.random() * wrongAnswers.length)];
+                  if (!selectedWrongAnswers.includes(randomPick)) {
+                    selectedWrongAnswers.push(randomPick);
+                  } else if (selectedWrongAnswers.length < 3) {
+                    selectedWrongAnswers.push(randomPick);
+                  }
+                }
+                
+                // Combine all options and shuffle
+                const options = [correctAnswer, ...selectedWrongAnswers]
+                  .sort(() => Math.random() - 0.5);
+                
+                return {
+                  id: vocab.id,
+                  type: 'multiple-choice',
+                  question: `What is the English meaning of "${vocab.korean}"?`,
+                  korean: vocab.korean,
+                  english: vocab.english,
+                  vietnamese: vocab.vietnamese,
+                  options: options,
+                  correctAnswer: correctAnswer,
+                  difficulty: 'Medium',
+                  level: randomData.topicLevel,
+                  explanation: `${vocab.korean} (${vocab.romanization}) means "${vocab.english}"`,
+                  explanation_vi: `${vocab.korean} (${vocab.romanization}) tiếng Việt là "${vocab.vietnamese}"`,
+                };
+              });
+              
+              console.log(`✅ Converted ${questions.length} vocabulary items into quiz questions`);
+              
+              setQuiz((prev) => ({
+                ...prev,
+                questions,
+                loading: false,
+              }));
+              setStartTime(Date.now());
+              return;
+            }
           } else {
-            console.warn('⚠️ Topic fetch failed:', topicResponse.status);
+            console.warn('⚠️ Random questions fetch failed:', randomQuestionsResponse.status);
           }
         } catch (err) {
-          console.warn('⚠️ Could not fetch topic name:', err);
+          console.warn('⚠️ Could not fetch random questions:', err);
         }
 
+        // Fallback: try old topic endpoint (for backward compatibility)
         const response = await fetch(
-          `http://localhost:5000/api/quiz/generate?topicId=${topicId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/topic/slug/${slug}`,
           {
             headers,
           }
         );
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch quiz: ${response.status}`);
-        }
+        if (response.ok) {
+          const topicData = await response.json();
+          const name = topicData.name || 'Quiz';
+          setTopicName(name);
+          
+          // Fallback: Transform all vocabulary into questions, but limit to 10 (random)
+          if (topicData.vocabulary && Array.isArray(topicData.vocabulary)) {
+            // Shuffle and take 10
+            const randomVocab = topicData.vocabulary
+              .sort(() => Math.random() - 0.5)
+              .slice(0, 10);
+            
+            const questions = randomVocab.map((vocab: any, vocabIndex: number) => {
+              const correctAnswer = vocab.english;
+              
+              const wrongAnswers = randomVocab
+                .filter((_: any, idx: number) => idx !== vocabIndex)
+                .map((v: any) => v.english);
+              
+              const selectedWrongAnswers = wrongAnswers
+                .sort(() => Math.random() - 0.5)
+                .slice(0, Math.min(3, wrongAnswers.length));
+              
+              while (selectedWrongAnswers.length < 3) {
+                const randomPick = wrongAnswers[Math.floor(Math.random() * wrongAnswers.length)];
+                if (!selectedWrongAnswers.includes(randomPick)) {
+                  selectedWrongAnswers.push(randomPick);
+                } else if (selectedWrongAnswers.length < 3) {
+                  selectedWrongAnswers.push(randomPick);
+                }
+              }
+              
+              const options = [correctAnswer, ...selectedWrongAnswers]
+                .sort(() => Math.random() - 0.5);
+              
+              return {
+                id: vocab.id,
+                type: 'multiple-choice',
+                question: `What is the English meaning of "${vocab.korean}"?`,
+                korean: vocab.korean,
+                english: vocab.english,
+                vietnamese: vocab.vietnamese,
+                options: options,
+                correctAnswer: correctAnswer,
+                difficulty: 'Medium',
+                level: topicData.level,
+                explanation: `${vocab.korean} (${vocab.romanization}) means "${vocab.english}"`,
+                explanation_vi: `${vocab.korean} (${vocab.romanization}) tiếng Việt là "${vocab.vietnamese}"`,
+              };
+            });
+            
+            console.log('✅ Quiz loaded from fallback endpoint (topic/slug):', questions.length);
 
-        const data = await response.json();
-        
-        // Parse questions from new endpoint format
-        let questions = data.questions || [];
-        
-        // Transform the new quiz format to match expected interface
-        questions = questions.map((q: any) => ({
-          id: q.vocabularyId,
-          type: 'multiple-choice',
-          question: q.questionText,
-          korean: q.korean,
-          english: q.english,
-          options: q.answers.map((a: any) => a.text),
-          difficulty: 'Medium',
-          level: q.level,
-          explanation: `Correct answer: ${q.correctAnswerText}`,
-          explanation_vi: `Đáp án đúng: ${q.correctAnswerText}`,
-        }));
-        
-        console.log('✅ Quiz loaded from API:', questions.length);
-
-        // If API returns 0 questions, use fallback
-        if (!Array.isArray(questions) || questions.length === 0) {
-          console.warn('⚠️ API returned 0 questions, using fallback questions...');
-          questions = FALLBACK_QUESTIONS;
+            setQuiz((prev) => ({
+              ...prev,
+              questions,
+              loading: false,
+            }));
+            
+            setStartTime(Date.now());
+            return;
+          }
         }
+        
+        console.warn('⚠️ Using hardcoded fallback questions...');
+        const questions = FALLBACK_QUESTIONS;
 
         setQuiz((prev) => ({
           ...prev,
@@ -291,7 +391,7 @@ export default function QuizDetailPage() {
     };
 
     loadQuiz();
-  }, [topicId, token]);
+  }, [slug, token]);
 
   const handleAnswerSelect = (answer: string) => {
     if (quiz.showResult) return;
@@ -301,12 +401,39 @@ export default function QuizDetailPage() {
   const handleCheckAnswer = async (answer: string) => {
     if (quiz.showResult || !quiz.selectedAnswer) return;
 
-    setQuiz((prev) => ({ ...prev, showResult: true }));
+    const currentQuestion = quiz.questions[quiz.currentIndex];
+    
+    // Check answer client-side using correctAnswer field
+    const isCorrect = answer === currentQuestion.correctAnswer;
 
+    // Update UI immediately
+    setQuiz((prev) => ({
+      ...prev,
+      showResult: true,
+      correctAnswerText: currentQuestion.correctAnswer,
+      isAnswerCorrect: isCorrect,
+    }));
+
+    // If correct, increment score
+    if (isCorrect) {
+      setQuiz((prev) => ({ ...prev, score: prev.score + 1 }));
+    }
+
+    // Track answer (including the user's selected answer text)
+    setQuiz((prev) => {
+      const newAnswers = [...prev.answers];
+      const existingIndex = newAnswers.findIndex(a => a.questionId === currentQuestion.id);
+      if (existingIndex >= 0) {
+        newAnswers[existingIndex] = { questionId: currentQuestion.id, isCorrect: isCorrect, selectedAnswer: answer };
+      } else {
+        newAnswers.push({ questionId: currentQuestion.id, isCorrect: isCorrect, selectedAnswer: answer });
+      }
+      return { ...prev, answers: newAnswers };
+    });
+
+    // Send to API for logging/analytics (non-blocking)
     try {
-      const currentQuestion = quiz.questions[quiz.currentIndex];
-
-      const response = await fetch(`http://localhost:5000/api/quiz/submit-answer`, {
+      await fetch(`http://localhost:5000/api/quiz/submit-answer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -317,38 +444,8 @@ export default function QuizDetailPage() {
           userAnswer: answer,
         }),
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit answer');
-      }
-
-      const responseData = await response.json();
-      console.log('📝 Answer result:', { isCorrect: responseData.isCorrect, correctAnswer: responseData.correctAnswer });
-
-      // Store the correct answer info for display
-      setQuiz((prev) => {
-        const newAnswers = [...prev.answers];
-        // Add or update answer for this question
-        const existingIndex = newAnswers.findIndex(a => a.questionId === currentQuestion.id);
-        if (existingIndex >= 0) {
-          newAnswers[existingIndex] = { questionId: currentQuestion.id, isCorrect: responseData.isCorrect };
-        } else {
-          newAnswers.push({ questionId: currentQuestion.id, isCorrect: responseData.isCorrect });
-        }
-        
-        return {
-          ...prev,
-          correctAnswerText: responseData.correctAnswer,
-          isAnswerCorrect: responseData.isCorrect,
-          answers: newAnswers,
-        };
-      });
-
-      if (responseData.isCorrect) {
-        setQuiz((prev) => ({ ...prev, score: prev.score + 1 }));
-      }
     } catch (error) {
-      console.error('❌ Answer error:', error);
+      console.warn('⚠️ Could not log answer to server:', error);
     }
   };
 
@@ -384,13 +481,64 @@ export default function QuizDetailPage() {
         },
         body: JSON.stringify({
           answers: quiz.answers,  // Use tracked answers
-          topicId: parseInt(topicId),
+          slug: slug,  // Use slug instead of topicId
           score: quiz.score,
         }),
       });
 
       const submitData = await response.json();
       console.log('📊 Quiz submitted:', submitData);
+
+      // Save learning history (all 10 questions + correct answers + user's selected answers)
+      try {
+        console.log('💾 Saving learning history...');
+        
+        // Merge user's answers with questions data
+        const questionsWithAnswers = quiz.questions.map((q) => {
+          const userAnswer = quiz.answers.find((a) => a.questionId === q.id);
+          return {
+            ...q,
+            selectedAnswer: userAnswer?.selectedAnswer || null, // User's actual selected answer
+            isCorrect: userAnswer?.isCorrect || false,
+          };
+        });
+
+        console.log('📋 Questions with answers to save:', questionsWithAnswers);
+        
+        // 🔥 DEBUG: Log each answer detail
+        questionsWithAnswers.forEach((q, idx) => {
+          console.log(`📌 Q${idx + 1}: ${q.korean} → selected: ${q.selectedAnswer}, correct: ${q.correctAnswer}, isCorrect: ${q.isCorrect}`);
+        });
+        
+        const correctCount = questionsWithAnswers.filter((q) => q.isCorrect).length;
+        console.log(`🎯 DEBUG: ${correctCount}/${questionsWithAnswers.length} đúng`);
+
+        const historyResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/save-learning-history`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            questions: questionsWithAnswers, // Save all questions with user's answers
+            slug: slug,
+            skillType: 'QUIZ',
+          }),
+        });
+
+        console.log('📊 History response status:', historyResponse.status);
+        
+        if (historyResponse.ok) {
+          const historyData = await historyResponse.json();
+          console.log('✅ Learning history saved:', historyData);
+        } else {
+          const errorText = await historyResponse.text();
+          console.warn('⚠️ Failed to save learning history:', historyResponse.status, errorText);
+        }
+      } catch (err) {
+        console.warn('⚠️ Error saving learning history:', err);
+        // Don't fail the quiz submission if history save fails
+      }
 
       // Calculate completion stats
       const elapsedTime = startTime ? Date.now() - startTime : 0;
@@ -423,7 +571,7 @@ export default function QuizDetailPage() {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`,
             },
-            body: JSON.stringify({ topicId: parseInt(topicId) }),
+            body: JSON.stringify({ slug: slug }),
           });
 
           const completeData = await completeResponse.json();
@@ -465,6 +613,17 @@ export default function QuizDetailPage() {
     return (
       <div className="min-h-screen bg-[#fafaf5] font-['Be_Vietnam_Pro']">
         <Header />
+
+        {/* Back Button */}
+        <div className="fixed left-[20px] top-[95px] z-20">
+          <button
+            onClick={() => router.push('/quiz')}
+            className="flex items-center gap-2 px-4 py-2 text-[#72564c] hover:text-[#504441] font-semibold transition-all hover:scale-105 active:scale-95"
+          >
+            <span className="text-xl">←</span>
+            <span>Quay lại</span>
+          </button>
+        </div>
 
         <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-12 flex flex-col items-center justify-center min-h-[80vh]">
           {/* Hero Section */}
@@ -568,6 +727,17 @@ export default function QuizDetailPage() {
     <div className="min-h-screen bg-[#fafaf5]">
       <Header />
 
+      {/* Back Button */}
+      <div className="fixed left-[20px] top-[95px] z-20">
+        <button
+          onClick={() => router.push('/quiz')}
+          className="flex items-center gap-2 px-4 py-2 text-[#72564c] hover:text-[#504441] font-semibold transition-all hover:scale-105 active:scale-95"
+        >
+          <span className="text-xl">←</span>
+          <span>Quay lại</span>
+        </button>
+      </div>
+
       <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-12 flex flex-col items-center">
         {/* Progress Section */}
         <section className="w-full mb-16">
@@ -660,7 +830,7 @@ export default function QuizDetailPage() {
                         : 'text-[#72564c]/40'
                     }`}
                   >
-                    {answerLabels[idx]}
+                    {quiz.showResult && isCorrectOption ? '✓' : quiz.showResult && isSelected && !quiz.isAnswerCorrect ? '✗' : answerLabels[idx]}
                   </span>
                 </div>
               </button>
@@ -680,8 +850,11 @@ export default function QuizDetailPage() {
               <div className="mb-8">
                 <p className={`text-lg font-bold tracking-widest mb-2 ${quiz.isAnswerCorrect ? 'text-[#2e7d32]' : 'text-[#c62828]'}`}>
                   {quiz.isAnswerCorrect ? '✓ ĐÚN G' : '✗ SAI'}
-                </p>
-                <p className={`text-3xl font-bold ${quiz.isAnswerCorrect ? 'text-[#2e7d32]' : 'text-[#d32f2f]'}`}>
+                </p>                {!quiz.isAnswerCorrect && (
+                  <p className={`text-sm font-bold mb-2 text-[#c62828]`}>
+                    👇 Đáp án đúng:
+                  </p>
+                )}                <p className={`text-3xl font-bold ${quiz.isAnswerCorrect ? 'text-[#2e7d32]' : 'text-[#d32f2f]'}`}>
                   {quiz.correctAnswerText}
                 </p>
               </div>

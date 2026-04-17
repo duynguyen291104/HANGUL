@@ -277,4 +277,190 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
   }
 });
 
+// ========================
+// SAVED VOCABULARY COLLECTION
+// ========================
+
+// GET user's saved vocabulary collection
+router.get('/saved/collection', async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { source, limit = 100, offset = 0 } = req.query;
+
+    const where: any = { userId: req.user.id };
+    if (source) where.source = source;
+
+    const savedVocab = await prisma.savedVocabulary.findMany({
+      where,
+      include: {
+        vocabulary: {
+          include: { topic: true },
+        },
+      },
+      skip: parseInt(offset as string),
+      take: parseInt(limit as string),
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const total = await prisma.savedVocabulary.count({ where });
+
+    res.json({
+      total,
+      count: savedVocab.length,
+      data: savedVocab.map((sv) => ({
+        id: sv.id,
+        vocabulary: sv.vocabulary,
+        source: sv.source,
+        savedAt: sv.createdAt,
+      })),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch saved vocabulary' });
+  }
+});
+
+// SAVE vocabulary to collection
+router.post('/save', async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { vocabularyId, source = 'manual', sourceId } = req.body;
+
+    if (!vocabularyId) {
+      return res.status(400).json({ error: 'vocabularyId is required' });
+    }
+
+    // Check if vocabulary exists
+    const vocab = await prisma.vocabulary.findUnique({
+      where: { id: vocabularyId },
+    });
+
+    if (!vocab) {
+      return res.status(404).json({ error: 'Vocabulary not found' });
+    }
+
+    // Check if already saved
+    const existing = await prisma.savedVocabulary.findFirst({
+      where: {
+        userId: req.user.id,
+        vocabularyId,
+      },
+    });
+
+    if (existing) {
+      return res.status(400).json({ error: 'Already saved' });
+    }
+
+    // Create saved vocabulary record
+    const saved = await prisma.savedVocabulary.create({
+      data: {
+        userId: req.user.id,
+        vocabularyId,
+        source,
+        sourceId: sourceId || null,
+      },
+      include: {
+        vocabulary: { include: { topic: true } },
+      },
+    });
+
+    res.status(201).json({
+      message: 'Vocabulary saved',
+      data: saved,
+    });
+  } catch (error: any) {
+    console.error(error);
+    if (error.code === 'P2002') {
+      return res.status(400).json({ error: 'Already saved' });
+    }
+    res.status(500).json({ error: 'Failed to save vocabulary' });
+  }
+});
+
+// REMOVE vocabulary from collection
+router.delete('/saved/:id', async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { id } = req.params;
+
+    // Check permission
+    const saved = await prisma.savedVocabulary.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!saved || saved.userId !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    // Delete
+    await prisma.savedVocabulary.delete({
+      where: { id: parseInt(id) },
+    });
+
+    res.json({ message: 'Vocabulary removed from collection' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to remove vocabulary' });
+  }
+});
+
+// ========================
+// GET RANDOM VOCABULARY BY TOPIC
+// ========================
+router.get('/random-by-topic/:topicId', async (req: AuthRequest, res: Response) => {
+  try {
+    const { topicId } = req.params;
+    const { limit = 10 } = req.query;
+
+    const topicIdNum = parseInt(topicId as string);
+    const limitNum = parseInt(limit as string);
+
+    if (isNaN(topicIdNum) || isNaN(limitNum)) {
+      return res.status(400).json({ error: 'Invalid topicId or limit' });
+    }
+
+    // Get total count of vocabulary for this topic
+    const totalCount = await prisma.vocabulary.count({
+      where: {
+        topicId: topicIdNum,
+        isActive: true,
+      },
+    });
+
+    if (totalCount === 0) {
+      return res.json({
+        message: 'No vocabulary found for this topic',
+        count: 0,
+        data: [],
+      });
+    }
+
+    // Use PostgreSQL ORDER BY RANDOM() for random selection
+    const vocabulary = await prisma.$queryRaw<any[]>`
+      SELECT * FROM "Vocabulary"
+      WHERE "topicId" = ${topicIdNum} AND "isActive" = true
+      ORDER BY RANDOM()
+      LIMIT ${limitNum}
+    `;
+
+    res.json({
+      count: vocabulary.length,
+      total: totalCount,
+      data: vocabulary,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch random vocabulary' });
+  }
+});
+
 export default router;

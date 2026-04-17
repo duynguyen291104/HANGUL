@@ -205,4 +205,63 @@ export class AuthController {
       return res.status(500).json({ error: 'Failed to update level' });
     }
   }
+
+  /**
+   * Change password
+   */
+  static async changePassword(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id;
+      const { currentPassword, newPassword, confirmPassword } = req.body;
+
+      if (!userId) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+
+      // Validate input
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        return res.status(400).json({ error: 'All fields are required' });
+      }
+
+      // Check password match
+      if (newPassword !== confirmPassword) {
+        return res.status(400).json({ error: 'New passwords do not match' });
+      }
+
+      // Check password length
+      if (newPassword.length < 6) {
+        return res.status(400).json({ error: 'Password must be at least 6 characters' });
+      }
+
+      // Get user
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Verify current password
+      const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!passwordMatch) {
+        return res.status(401).json({ error: 'Current password is incorrect' });
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update password
+      await prisma.user.update({
+        where: { id: userId },
+        data: { password: hashedPassword },
+      });
+
+      console.log(`✅ Password changed for user ${userId}`);
+      return res.json({ success: true, message: 'Password changed successfully' });
+    } catch (error) {
+      console.error('❌ Change password error:', error);
+      return res.status(500).json({ error: 'Failed to change password' });
+    }
+  }
 }

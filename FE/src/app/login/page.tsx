@@ -130,6 +130,7 @@ export default function LoginPage() {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="hello@otter.edu"
+                autoComplete="email"
                 className="w-full px-4 py-4 bg-[#e8e8e3] rounded-lg border-none focus:ring-2 focus:ring-[#72564c]/20 focus:bg-white transition-all placeholder:text-[#827470]/50"
               />
             </div>
@@ -150,6 +151,7 @@ export default function LoginPage() {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="••••••••"
+                autoComplete="current-password"
                 className="w-full px-4 py-4 bg-[#e8e8e3] rounded-lg border-none focus:ring-2 focus:ring-[#72564c]/20 focus:bg-white transition-all placeholder:text-[#827470]/50"
               />
             </div>

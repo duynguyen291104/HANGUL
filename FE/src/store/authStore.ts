@@ -10,6 +10,8 @@ interface User {
   totalXP: number;
   trophy?: number;  // For tournament feature
   avatar?: string;
+  currentStreak?: number;  // For streak tracking
+  lastActiveAt?: string;
 }
 
 interface AuthStore {

@@ -21,4 +21,7 @@ router.get('/me', authenticate, AuthController.getCurrentUser);
 // PUT /auth/update-level - Update user level (requires auth)
 router.put('/update-level', authenticate, AuthController.updateLevel);
 
+// POST /auth/change-password - Change password (requires auth)
+router.post('/change-password', authenticate, AuthController.changePassword);
+
 export default router;

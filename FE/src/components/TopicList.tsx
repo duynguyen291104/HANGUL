@@ -9,6 +9,8 @@ import TopicCard from '@/components/TopicCard';
 interface Topic {
   id: number;
   name: string;
+  slug: string;
+  type: string;
   description: string;
   level: string;
   order: number;
@@ -26,8 +28,8 @@ export default function TopicList({ mode }: TopicListProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [mounted, setMounted] = useState(false);
-  const [questionCounts, setQuestionCounts] = useState<Record<number, number>>({});
-  const [progressData, setProgressData] = useState<Record<number, { completed: number; total: number; correctCount?: number; score?: number }>>({});
+  // const [questionCounts, _setQuestionCounts] = useState<Record<number, number>>({});
+  const [progressData, setProgressData] = useState<Record<number, { completed: number; total: number; correct?: number; done?: boolean; score?: number }>>({});
 
   useEffect(() => {
     setMounted(true);
@@ -41,75 +43,90 @@ export default function TopicList({ mode }: TopicListProps) {
       return;
     }
 
-    const fetchTopics = async () => {
+    const fetchTopicsAndProgress = async () => {
       try {
         setLoading(true);
         const level = user.level || 'NEWBIE';
         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
         
-        const response = await fetch(
+        // Fetch topics
+        const topicResponse = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/topic/by-level/${level}`,
           {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
           }
         );
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch topics: ${response.status}`);
+        if (!topicResponse.ok) {
+          throw new Error(`Failed to fetch topics: ${topicResponse.status}`);
         }
 
-        const data = await response.json();
-        const topicsData = data.data || [];
+        const topicData = await topicResponse.json();
+        const topicsData = topicData.data || [];
         setTopics(topicsData);
 
-        // Fetch progress data for each topic
-        const progress: Record<number, { completed: number; total: number; correctCount?: number; score?: number }> = {};
-        for (const topic of topicsData) {
+        // Fetch learning path to get progress data
+        if (token) {
           try {
-            const progressResponse = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/${mode}/user-progress/${topic.id}`,
+            const learningPathResponse = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/user/learning-path`,
               {
-                headers: token ? { Authorization: `Bearer ${token}` } : {},
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                },
               }
             );
-            if (progressResponse.ok) {
-              const progressData = await progressResponse.json();
-              const data = progressData.data || {};
+
+            if (learningPathResponse.ok) {
+              const learningPath = await learningPathResponse.json();
               
-              // For quiz mode, calculate completed count from score percentage
-              // Quiz always has 10 questions
-              if (mode === 'quiz') {
-                const hasAttempted = data.attempts && data.attempts > 0;
-                const totalQuestions = hasAttempted ? 10 : 0;
-                const completedCount = hasAttempted ? Math.round((data.score || 0) / 100 * 10) : 0;
-                
+              // Map progress data based on mode - NEW: use correct/total and done flag
+              const progress: Record<number, { completed: number; total: number; correct?: number; done?: boolean; score?: number }> = {};
+              for (const topic of learningPath.topics) {
+                let modeProgress;
+                if (mode === 'quiz') {
+                  modeProgress = topic.quiz;
+                } else if (mode === 'writing') {
+                  modeProgress = topic.writing;
+                } else if (mode === 'speak') {
+                  modeProgress = topic.pronunciation;
+                }
+
+                // NEW: Use correct/total from backend, done flag
                 progress[topic.id] = {
-                  completed: completedCount,
-                  total: totalQuestions,
-                  correctCount: completedCount,
-                  score: data.score,
-                };
-                console.log(`Progress for topic ${topic.id}:`, progress[topic.id]);
-              } else {
-                // For non-quiz modes, use the default format
-                progress[topic.id] = {
-                  completed: data.completedQuestions || 0,
-                  total: data.totalQuestions || 0,
-                  correctCount: data.correctCount,
-                  score: data.score,
+                  completed: modeProgress?.correct || 0, // NEW: Use correct count
+                  total: modeProgress?.total || 0,
+                  correct: modeProgress?.correct || 0,
+                  done: modeProgress?.done || false, // NEW: Track if completed
+                  score: modeProgress?.score,
                 };
               }
+              setProgressData(progress);
             } else {
-              console.warn(`Progress endpoint not found for topic ${topic.id}, setting default`);
-              progress[topic.id] = { completed: 0, total: 0 };
+              // Fallback: initialize with empty values
+              const emptyProgress: Record<number, { completed: number; total: number; correct?: number; done?: boolean; score?: number }> = {};
+              for (const topic of topicsData) {
+                emptyProgress[topic.id] = { completed: 0, total: 0, correct: 0, done: false };
+              }
+              setProgressData(emptyProgress);
             }
-          } catch (e) {
-            console.error(`Error fetching progress for topic ${topic.id}:`, e);
-            progress[topic.id] = { completed: 0, total: 0 };
+          } catch (err) {
+            console.warn('Failed to fetch learning path, using default progress:', err);
+            const emptyProgress: Record<number, { completed: number; total: number; correct?: number; done?: boolean; score?: number }> = {};
+            for (const topic of topicsData) {
+              emptyProgress[topic.id] = { completed: 0, total: 0, correct: 0, done: false };
+            }
+            setProgressData(emptyProgress);
           }
+        } else {
+          // No token, initialize with empty values
+          const emptyProgress: Record<number, { completed: number; total: number; correct?: number; done?: boolean; score?: number }> = {};
+          for (const topic of topicsData) {
+            emptyProgress[topic.id] = { completed: 0, total: 0, correct: 0, done: false };
+          }
+          setProgressData(emptyProgress);
         }
-        console.log('All progress data:', progress);
-        setProgressData(progress);
       } catch (err) {
         console.error(`Error:`, err);
         setError(err instanceof Error ? err.message : 'Failed to load topics');
@@ -118,7 +135,7 @@ export default function TopicList({ mode }: TopicListProps) {
       }
     };
 
-    fetchTopics();
+    fetchTopicsAndProgress();
     
     // Clear the refresh param from URL if it exists
     if (searchParams.get('refresh')) {
@@ -151,9 +168,9 @@ export default function TopicList({ mode }: TopicListProps) {
     }
   };
 
-  const handleStartTopic = (topicId: number) => {
+  const handleStartTopic = (slug: string) => {
     const routePath = mode === 'speak' ? 'pronunciation' : mode;
-    router.push(`/${routePath}/${topicId}`);
+    router.push(`/${routePath}/${slug}`);
   };
 
   const modeInfo = getModeInfo();
@@ -201,12 +218,17 @@ export default function TopicList({ mode }: TopicListProps) {
             {topics.map((topic) => (
               <TopicCard
                 key={topic.id}
-                {...topic}
-                mode={mode as 'quiz' | 'writing' | 'pronunciation'}
-                questionCount={questionCounts[topic.id] || 0}
+                id={topic.id}
+                name={topic.name}
+                description={topic.description}
+                level={topic.level}
+                order={topic.order}
+                mode={mode === 'speak' ? 'pronunciation' : mode}
                 completedQuestions={progressData[topic.id]?.completed || 0}
                 totalQuestions={progressData[topic.id]?.total || 0}
-                onClick={() => handleStartTopic(topic.id)}
+                done={progressData[topic.id]?.done || false} // NEW: Pass done status
+                score={progressData[topic.id]?.score}
+                onClick={() => handleStartTopic(topic.slug)}
               />
             ))}
           </div>

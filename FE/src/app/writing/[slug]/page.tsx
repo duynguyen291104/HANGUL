@@ -3,12 +3,21 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Header from '@/components/Header';
-import { ArrowLeft } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
+import ResultSummary, { type ResultItem } from '@/components/ResultSummary';
 
 interface ExercisePoint {
   x: number;
   y: number;
   time: number;
+}
+
+interface Vocabulary {
+  id: number;
+  korean: string;
+  english: string;
+  vietnamese: string;
+  romanization: string;
 }
 
 const CANVAS_WIDTH = 650;
@@ -17,79 +26,88 @@ const CANVAS_HEIGHT = 600;
 export default function WritingDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const topicId = params.topicId as string;
+  const { token } = useAuthStore();
+  const slug = params.slug as string;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [strokes, setStrokes] = useState<ExercisePoint[]>([]);
-  const [currentChar, setCurrentChar] = useState('한');
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
   const [feedback, setFeedback] = useState('');
   const [score, setScore] = useState<number | null>(null);
   const [brushSize, setBrushSize] = useState(3);
   const [brushColor, setBrushColor] = useState('#72564c');
   const [isCompleted, setIsCompleted] = useState(false);
-  const [startTime, setStartTime] = useState<number>(0);
   const [totalScores, setTotalScores] = useState<number[]>([]);
-  const [completionStats, setCompletionStats] = useState({
-    xp: 25,
-    accuracy: 0,
-    time: '00:00',
-  });
+  const [characters, setCharacters] = useState<Vocabulary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [questionStartTime, setQuestionStartTime] = useState<number>(0);
+  const [results, setResults] = useState<ResultItem[]>([]);
+  const [topicName, setTopicName] = useState('');
 
-  const [characters, setCharacters] = useState(() => {
-    // Initialize with exactly 10 characters
-    const chars = ['한', '글', '가', '나', '다', '라', '마', '바', '사', '아'];
-    return chars.slice(0, 10);
-  });
   const colors = ['#72564c', '#8d6e63', '#5b4137', '#827470', '#504441', '#ffdbce'];
 
-  const characterMeanings: { [key: string]: string } = {
-    '한': 'Hàn - Người Hàn Quốc',
-    '글': 'Geul - Chữ viết',
-    '가': 'Ga - Gia đình',
-    '나': 'Na - Tôi',
-    '다': 'Da - Tất cả',
-    '라': 'Ra - La',
-    '마': 'Ma - Ngựa',
-    '바': 'Ba - Ba',
-    '사': 'Sa - Sư',
-    '아': 'A - Con gái',
-  };
-
-  // Fetch writing exercises for this topic
+  // Fetch topic vocabulary
   useEffect(() => {
-    const fetchExercises = async () => {
+    const fetchTopic = async () => {
+      if (!slug) return;
+      
       try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/writing/exercises?topic=${topicId}&limit=10`,
-          {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          }
+        // Step 1: Fetch topic info to get topicId
+        const topicResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/topic/slug/${slug}`
         );
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.data && data.data.length > 0) {
-            const chars = data.data
-              .map((ex: any) => ex.character || ex.korean)
-              .slice(0, 10); // Limit to 10
-            setCharacters(chars.length > 0 ? chars : characters);
+        
+        if (topicResponse.ok) {
+          const topicData = await topicResponse.json();
+          setTopicName(topicData.name);
+          
+          // Step 2: Fetch random vocabulary from this topic
+          if (topicData.id) {
+            const vocabResponse = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/public-vocab/random-by-topic/${topicData.id}?limit=10`
+            );
+            
+            if (vocabResponse.ok) {
+              const vocabData = await vocabResponse.json();
+              if (vocabData.data && Array.isArray(vocabData.data)) {
+                setCharacters(vocabData.data);
+                setQuestionStartTime(Date.now()); // Set initial question start time
+              }
+            }
           }
         }
+        setLoading(false);
       } catch (error) {
-        console.warn('Failed to fetch writing exercises:', error);
-      } finally {
-        setStartTime(Date.now());
+        console.error('Failed to fetch topic:', error);
+        setLoading(false);
       }
     };
 
-    if (topicId) {
-      fetchExercises();
+    fetchTopic();
+  }, [slug]);
+
+  // Initialize canvas when component mounts or current character changes
+  useEffect(() => {
+    if (canvasRef.current) {
+      const canvas = canvasRef.current;
+      canvas.width = CANVAS_WIDTH;
+      canvas.height = CANVAS_HEIGHT;
+
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+      }
     }
-  }, [topicId]);
+    setStrokes([]);
+    setScore(null);
+    setFeedback('');
+  }, [currentCharIndex]);
+
+  const currentChar = characters.length > 0 ? characters[currentCharIndex]?.korean : '한';
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -216,6 +234,7 @@ export default function WritingDetailPage() {
   const markTopicComplete = async () => {
     try {
       const token = localStorage.getItem('token');
+      // TODO: Update to use slug when API supports it
       await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/quiz/progress/complete-topic`,
         {
@@ -224,7 +243,7 @@ export default function WritingDetailPage() {
             'Content-Type': 'application/json',
             ...(token && { Authorization: `Bearer ${token}` }),
           },
-          body: JSON.stringify({ topicId: Number(topicId), mode: 'writing' }),
+          body: JSON.stringify({ slug: 'placeholder', mode: 'writing' }),
         }
       );
       console.log('✅ Topic marked as completed');
@@ -233,40 +252,131 @@ export default function WritingDetailPage() {
     }
   };
 
+  const saveWritingHistory = async (resultsToSave: ResultItem[]) => {
+    try {
+      console.log('💾 Saving writing history...');
+      console.log('📦 Data being sent:', {
+        questionCount: resultsToSave.length,
+        slug,
+        skillType: 'WRITING',
+        questions: resultsToSave.map((r) => ({
+          korean: r.question,
+          accuracy: r.accuracy,
+        })),
+      });
+      
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/quiz/save-learning-history`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            questions: resultsToSave.map((result) => ({
+              korean: result.question,
+              vietnamese: characters.find(c => c.korean === result.question)?.vietnamese || '',
+              accuracy: result.accuracy,
+            })),
+            slug: slug,
+            skillType: 'WRITING',
+          }),
+        }
+      );
+
+      console.log(`📡 Response status: ${response.status}`);
+      
+      const result = await response.json();
+      if (response.ok) {
+        console.log('✅ Writing history saved:', result);
+      } else {
+        console.warn('⚠️ Failed to save history:', result.message, result);
+      }
+    } catch (error) {
+      console.error('❌ Error saving writing history:', error);
+    }
+  };
+
   const nextChar = async () => {
     if (score !== null) {
-      const nextIndex = currentCharIndex + 1;
+      const currentChar = characters[currentCharIndex];
+      const timeSpent = Math.round((Date.now() - questionStartTime) / 1000);
+      const isCorrect = score >= 50;
+      const xp = isCorrect ? 10 : 0;
       
-      // Add current score to total
+      // Build result item
+      const resultItem: ResultItem = {
+        question: currentChar.korean,
+        correctAnswer: currentChar.romanization,
+        accuracy: score,
+        isCorrect,
+        xp,
+        timeSpent,
+      };
+      
+      // Add to results array
+      setResults([...results, resultItem]);
       setTotalScores([...totalScores, score]);
 
-      // Check if completed all 10 characters
-      if (nextIndex >= 10 || nextIndex >= characters.length) {
+      const nextIndex = currentCharIndex + 1;
+
+      console.log(`📝 Progress: ${nextIndex}/${characters.length}, Score: ${score}%, Completed: ${nextIndex >= characters.length}`);
+
+      // Check if completed all characters
+      if (nextIndex >= characters.length) {
+        console.log('🏁 All characters completed! Saving history...');
+        console.log('📊 Results to save:', [...results, resultItem]);
+        
         await markTopicComplete();
         
-        // Calculate completion stats
-        const scores = [...totalScores, score];
-        const avgAccuracy = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
-        const elapsedTime = startTime ? Date.now() - startTime : 0;
-        const minutes = Math.floor(elapsedTime / 60000);
-        const seconds = Math.floor((elapsedTime % 60000) / 1000);
-        const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        // Calculate total time and log activity
+        const updatedResults = [...results, resultItem];
+        const totalTimeSpent = updatedResults.reduce((sum, r) => sum + r.timeSpent, 0);
+        console.log(`⏱️ Total time spent: ${totalTimeSpent}s`);
+        console.log(`📤 About to save to backend...`);
         
-        setCompletionStats({
-          xp: 25,
-          accuracy: avgAccuracy,
-          time: timeStr,
-        });
+        await saveWritingHistory(updatedResults);
+        await logLearningTime(totalTimeSpent, 'writing');
+        
+        console.log('✅ All save operations completed, setting isCompleted = true');
         setIsCompleted(true);
         return;
       }
 
       setCurrentCharIndex(nextIndex);
-      setCurrentChar(characters[nextIndex]);
+      setQuestionStartTime(Date.now());
       clearCanvas();
     } else {
       setFeedback('Great! Your stroke is very similar to the model.');
       setScore(Math.floor(Math.random() * 30 + 70));
+    }
+  };
+
+  const logLearningTime = async (totalSeconds: number, skillType: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/activity/log-time`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            totalSeconds: Math.round(totalSeconds),
+            skillType,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        console.log(`✅ Logged ${Math.round(totalSeconds)}s of ${skillType} learning`);
+      } else {
+        console.warn('⚠️ Failed to log learning time');
+      }
+    } catch (error) {
+      console.warn('⚠️ Error logging learning time:', error);
     }
   };
 
@@ -280,83 +390,20 @@ export default function WritingDetailPage() {
     >
       <Header />
 
-      {/* Completion Screen */}
-      {isCompleted ? (
-        <div className="flex flex-col items-center justify-center min-h-screen gap-12 px-4 py-12">
-          {/* Hero Section */}
-          <div className="relative w-full flex flex-col items-center">
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-full h-full bg-gradient-radial opacity-30 rounded-full blur-3xl"></div>
-            </div>
-            <div className="text-center">
-              <h1 className="font-extrabold text-5xl md:text-6xl text-[#72564c] tracking-tight">
-                Bài học hoàn tất!
-              </h1>
-              <p className="text-[#504441] font-medium mt-4 text-xl">
-                Hana rất tự hào về nỗ lực của bạn!
-              </p>
-            </div>
-          </div>
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-2xl">
-            {/* XP Card */}
-            <div className="bg-[#f4f4ef] rounded-lg p-6 flex flex-col items-center justify-center hover:bg-[#eeeee9] transition-colors">
-              <div className="w-12 h-12 rounded-full bg-[#ffdbce] flex items-center justify-center mb-3">
-                <span className="text-xl"></span>
-              </div>
-              <span className="font-bold text-2xl text-[#815300]">
-                +{completionStats.xp} XP
-              </span>
-              <span className="text-xs uppercase tracking-widest text-[#504441] mt-2">
-                Điểm kinh nghiệm
-              </span>
-            </div>
-
-            {/* Accuracy Card */}
-            <div className="bg-[#f4f4ef] rounded-lg p-6 flex flex-col items-center justify-center hover:bg-[#eeeee9] transition-colors">
-              <div className="w-12 h-12 rounded-full bg-[#ffdbce] flex items-center justify-center mb-3">
-                <span className="text-xl"></span>
-              </div>
-              <span className="font-bold text-2xl text-[#72564c]">
-                {completionStats.accuracy}%
-              </span>
-              <span className="text-xs uppercase tracking-widest text-[#504441] mt-2">
-                Độ chính xác
-              </span>
-            </div>
-
-            {/* Time Card */}
-            <div className="bg-[#f4f4ef] rounded-lg p-6 flex flex-col items-center justify-center hover:bg-[#eeeee9] transition-colors">
-              <div className="w-12 h-12 rounded-full bg-[#ffdbce] flex items-center justify-center mb-3">
-                <span className="text-xl"></span>
-              </div>
-              <span className="font-bold text-2xl text-[#5b4137]">
-                {completionStats.time}
-              </span>
-              <span className="text-xs uppercase tracking-widest text-[#504441] mt-2">
-                Thời gian học
-              </span>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col w-full max-w-sm gap-4">
-            <button
-              onClick={() => router.push('/writing')}
-              className="bg-gradient-to-r from-[#72564c] to-[#8d6e63] text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:from-[#8d6e63] hover:to-[#a0806e] active:scale-95 transition-all flex items-center justify-center gap-2"
-            >
-              Tiếp tục
-              <span>→</span>
-            </button>
-            <button
-              onClick={() => router.push('/writing')}
-              className="bg-[#ffdbce] text-[#2b160f] font-bold text-lg py-4 rounded-xl hover:bg-[#e4beb2] active:scale-95 transition-all"
-            >
-              Chọn bài khác
-            </button>
-          </div>
+      {/* Loading Screen */}
+      {loading ? (
+        <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#72564c] border-t-transparent"></div>
+          <p className="text-[#504441] font-medium">Đang tải các bài viết...</p>
         </div>
+      ) : isCompleted ? (
+        <ResultSummary
+          results={results}
+          mode="writing"
+          topicName={topicName}
+          backPath="/learning-map?refresh=true"
+          continueAction={() => router.push('/learning-map?refresh=true')}
+        />
       ) : (
         <>
           <div className="flex h-screen overflow-hidden">
@@ -364,10 +411,10 @@ export default function WritingDetailPage() {
           {/* Back Button */}
           <button
             onClick={() => router.push('/writing')}
-            className="absolute top-24 left-6 flex items-center gap-2 text-[#72564c] hover:text-[#8d6e63] font-semibold transition"
+            className="fixed top-[95px] left-[20px] z-20 flex items-center gap-2 px-4 py-2 text-[#72564c] hover:text-[#504441] font-semibold transition-all hover:scale-105 active:scale-95"
           >
-            <ArrowLeft size={20} />
-            Quay lại
+            <span className="text-xl">←</span>
+            <span>Quay lại</span>
           </button>
 
           {/* Progress Bar */}
@@ -496,7 +543,9 @@ export default function WritingDetailPage() {
 
                     <div className="mt-6 pt-6 border-t-2 border-[#f0f0f0]">
                       <p className="text-xs uppercase font-bold text-[#72564c]/60 tracking-wider mb-2">Meaning</p>
-                      <p className="text-md font-semibold text-[#72564c]">{characterMeanings[currentChar]}</p>
+                      <p className="text-md font-semibold text-[#72564c]">
+                        {characters[currentCharIndex]?.english} - {characters[currentCharIndex]?.vietnamese}
+                      </p>
                     </div>
                   </div>
                   <button

@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import Header from '@/components/Header';
@@ -8,8 +8,12 @@ import { Check } from 'lucide-react';
 
 interface SkillProgress {
   done: boolean;
+  correct?: number; // NEW: Add correct count
+  total?: number;   // NEW: Add total count
+  progress?: string; // NEW: Add progress string "X/Y"
   score?: number;
   attempts: number;
+  historyCount?: number;
 }
 
 interface Topic {
@@ -33,11 +37,11 @@ interface LearningPathData {
   trophy: number;
 }
 
-interface AnswerHistory {
+interface LearningHistoryItem {
   id: string;
-  question: string;
-  userAnswer: string;
+  questionText: string;
   correctAnswer: string;
+  selectedAnswer: string;
   isCorrect: boolean;
   createdAt: string;
 }
@@ -50,10 +54,15 @@ export default function LearningMapPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
+  // Track if we've already cleared storage to prevent infinite loop
+  const hasCleared = useRef(false);
+  
   // History state
   const [expandedSkill, setExpandedSkill] = useState<string | null>(null);
-  const [history, setHistory] = useState<Record<string, AnswerHistory[]>>({});
+  const [history, setHistory] = useState<Record<string, LearningHistoryItem[]>>({});
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [savingVocab, setSavingVocab] = useState<Record<string, boolean>>({});
+  const [savedHistoryIds, setSavedHistoryIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!token) {
@@ -64,7 +73,12 @@ export default function LearningMapPage() {
     const fetchTopics = async () => {
       try {
         setLoading(true);
-        console.log('📚 Fetching learning path...');
+        const isRefresh = searchParams.get('refresh') === 'true';
+        if (isRefresh) {
+          console.log('🔄 Refreshing progress after quiz/writing/pronunciation completion...');
+        } else {
+          console.log('📚 Fetching learning path...');
+        }
 
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/user/learning-path`,
@@ -84,8 +98,26 @@ export default function LearningMapPage() {
         console.log('✅ Learning path fetched:', learningPath);
         setData(learningPath);
         setError('');
+        
+        // Clear the refresh param from URL if it exists
+        if (isRefresh) {
+          window.history.replaceState({}, '', '/learning-map');
+        }
       } catch (error: any) {
         console.error('❌ Error fetching learning path:', error);
+        
+        // If 404, it means user doesn't exist in database
+        // Clear localStorage only once and redirect to login
+        if (error.message.includes('404') && !hasCleared.current) {
+          console.log('🔄 User session invalid (404). Clearing storage and redirecting...');
+          hasCleared.current = true;
+          localStorage.clear();
+          sessionStorage.clear();
+          // Use window.location to do a hard redirect
+          window.location.href = '/login';
+          return;
+        }
+        
         setError(error.message || 'Failed to load learning path');
       } finally {
         setLoading(false);
@@ -93,11 +125,6 @@ export default function LearningMapPage() {
     };
 
     fetchTopics();
-    
-    // Clear the refresh param from URL if it exists
-    if (searchParams.get('refresh')) {
-      window.history.replaceState({}, '', '/learning-map');
-    }
   }, [token, router, searchParams]);
 
   const handleToggleSkill = async (topicId: number, skillType: string) => {
@@ -112,8 +139,9 @@ export default function LearningMapPage() {
     setLoadingHistory(true);
 
     try {
+      // Fetch from unified learning-history endpoint with skillType parameter
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/learning-path/history?topicId=${topicId}&skillType=${skillType}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/learning-path/learning-history?topicId=${topicId}&skillType=${skillType}&limit=50`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -126,20 +154,76 @@ export default function LearningMapPage() {
         throw new Error('Failed to fetch history');
       }
 
-      const historyData = await response.json();
-      console.log(`✅ ${skillType} history fetched:`, historyData.length);
+      const result = await response.json();
+      console.log(`✅ ${skillType} history fetched:`, result.data);
+      
       setHistory((prev) => ({
         ...prev,
-        [key]: historyData,
+        [key]: result.data || [],
       }));
     } catch (err: any) {
-      console.error('❌ Error fetching history:', err);
+      console.error(`❌ Error fetching ${skillType} history:`, err);
       setHistory((prev) => ({
         ...prev,
         [key]: [],
       }));
     } finally {
       setLoadingHistory(false);
+    }
+  };
+
+  const handleSaveVocabulary = async (item: any, type: string, itemId: string) => {
+    setSavingVocab((prev) => ({ ...prev, [itemId]: true }));
+
+    try {
+      // Extract word and meaning based on type
+      let word = '';
+      let meaning = '';
+      
+      if (type === 'QUIZ') {
+        word = item.questionText || '';
+        meaning = item.correctAnswer || '';
+      } else if (type === 'WRITING') {
+        word = item.korean || item.word || '';
+        meaning = item.vietnamese || item.meaning || '';
+      } else if (type === 'PRONUNCIATION') {
+        word = item.korean || item.word || '';
+        meaning = item.vietnamese || item.meaning || '';
+      }
+
+      console.log('💾 Saving vocab:', { word, meaning, type });
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/learning-path/save-vocab-from-history`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            word,
+            meaning,
+            type: type.toLowerCase(),
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log('✅ Vocabulary saved:', result);
+        setSavedHistoryIds((prev) => new Set([...prev, itemId]));
+        alert('✅ Lưu từ vựng thành công');
+      } else {
+        console.warn('⚠️ Vocabulary save failed:', result);
+        alert('Không thể lưu từ vựng: ' + (result.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('❌ Error saving vocabulary:', error);
+      alert('Lỗi khi lưu từ vựng');
+    } finally {
+      setSavingVocab((prev) => ({ ...prev, [itemId]: false }));
     }
   };
 
@@ -246,10 +330,10 @@ export default function LearningMapPage() {
                       <span>Quiz</span>
                       <span className="text-sm">{expandedSkill === `${topic.id}-QUIZ` ? '▼' : '▶'}</span>
                     </div>
-                    {/* Show X/10 format instead of percentage */}
-                    {topic.quiz.done ? (
+                    {/* Show correct/total format NEW */}
+                    {topic.quiz.total && topic.quiz.total > 0 ? (
                       <div className="text-xs mt-1">
-                        {Math.round((topic.quiz.score || 0) / 100 * 10)}/10
+                        {topic.quiz.correct || 0}/{topic.quiz.total}
                       </div>
                     ) : (
                       <div className="text-xs mt-1 text-[#504441]">tiến độ: chưa làm</div>
@@ -262,12 +346,12 @@ export default function LearningMapPage() {
                       {loadingHistory ? (
                         <p className="text-[#504441] text-sm">Loading...</p>
                       ) : history[`${topic.id}-QUIZ`]?.length > 0 ? (
-                        history[`${topic.id}-QUIZ`].map((item, idx) => (
-                          <div key={idx} className="pb-3 border-b border-[#e8e8e3] last:border-0">
-                            <p className="text-sm font-semibold text-[#72564c]">{item.question}</p>
+                        history[`${topic.id}-QUIZ`].map((item: LearningHistoryItem) => (
+                          <div key={item.id} className="pb-3 border-b border-[#e8e8e3] last:border-0">
+                            <p className="text-sm font-semibold text-[#72564c]">{item.questionText}</p>
                             <p className="text-xs text-[#504441] mt-1">
                               <span className={item.isCorrect ? 'text-green-600' : 'text-red-600'}>
-                                Your answer: {item.userAnswer} {item.isCorrect ? '✅' : '❌'}
+                                Your answer: {item.selectedAnswer} {item.isCorrect ? '✅' : '❌'}
                               </span>
                             </p>
                             {!item.isCorrect && (
@@ -275,6 +359,20 @@ export default function LearningMapPage() {
                                 <span className="text-green-600">Correct: {item.correctAnswer}</span>
                               </p>
                             )}
+                            {/* Save Vocabulary Button */}
+                            <button
+                              onClick={() => handleSaveVocabulary(item, 'QUIZ', item.id)}
+                              disabled={savingVocab[item.id] || savedHistoryIds.has(item.id)}
+                              className={`mt-2 px-3 py-1 text-xs rounded font-semibold transition-all ${
+                                savedHistoryIds.has(item.id)
+                                  ? 'bg-green-100 text-green-700 cursor-default'
+                                  : savingVocab[item.id]
+                                  ? 'bg-gray-300 text-gray-600 cursor-wait'
+                                  : 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
+                              }`}
+                            >
+                              {savedHistoryIds.has(item.id) ? '✓ Saved' : savingVocab[item.id] ? 'Saving...' : '💾 Save Ngữ'}
+                            </button>
                           </div>
                         ))
                       ) : (
@@ -299,8 +397,12 @@ export default function LearningMapPage() {
                       <span>Writing</span>
                       <span className="text-sm">{expandedSkill === `${topic.id}-WRITING` ? '▼' : '▶'}</span>
                     </div>
-                    {topic.writing.score && (
-                      <div className="text-xs mt-1">{topic.writing.score}%</div>
+                    {topic.writing.total && topic.writing.total > 0 ? (
+                      <div className="text-xs mt-1">
+                        {topic.writing.correct || 0}/{topic.writing.total}
+                      </div>
+                    ) : (
+                      <div className="text-xs mt-1 text-[#504441]">tiến độ: chưa làm</div>
                     )}
                   </button>
 
@@ -310,19 +412,33 @@ export default function LearningMapPage() {
                       {loadingHistory ? (
                         <p className="text-[#504441] text-sm">Loading...</p>
                       ) : history[`${topic.id}-WRITING`]?.length > 0 ? (
-                        history[`${topic.id}-WRITING`].map((item, idx) => (
+                        history[`${topic.id}-WRITING`].map((item: any, idx) => (
                           <div key={idx} className="pb-3 border-b border-[#e8e8e3] last:border-0">
-                            <p className="text-sm font-semibold text-[#72564c]">{item.question}</p>
-                            <p className="text-xs text-[#504441] mt-1">
-                              <span className={item.isCorrect ? 'text-green-600' : 'text-red-600'}>
-                                Your answer: {item.userAnswer} {item.isCorrect ? '✅' : '❌'}
-                              </span>
+                            <p className="text-sm font-semibold text-[#72564c]">
+                              {item.korean || item.word}
                             </p>
-                            {!item.isCorrect && (
-                              <p className="text-xs text-[#504441] mt-1">
-                                <span className="text-green-600">Correct: {item.correctAnswer}</span>
+                            <p className="text-xs text-[#504441] mt-1">
+                              {item.vietnamese || item.meaning}
+                            </p>
+                            {item.accuracy !== null && item.accuracy !== undefined && (
+                              <p className="text-xs text-blue-600 font-semibold mt-2">
+                                🎯 Accuracy: {item.accuracy}%
                               </p>
                             )}
+                            {/* Save Vocabulary Button */}
+                            <button
+                              onClick={() => handleSaveVocabulary(item, 'WRITING', item.id || idx)}
+                              disabled={savingVocab[item.id || idx] || savedHistoryIds.has(item.id || idx)}
+                              className={`mt-2 px-3 py-1 text-xs rounded font-semibold transition-all ${
+                                savedHistoryIds.has(item.id || idx)
+                                  ? 'bg-green-100 text-green-700 cursor-default'
+                                  : savingVocab[item.id || idx]
+                                  ? 'bg-gray-300 text-gray-600 cursor-wait'
+                                  : 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
+                              }`}
+                            >
+                              {savedHistoryIds.has(item.id || idx) ? '✓ Saved' : savingVocab[item.id || idx] ? 'Saving...' : '💾 Save'}
+                            </button>
                           </div>
                         ))
                       ) : (
@@ -347,8 +463,12 @@ export default function LearningMapPage() {
                       <span>Speak</span>
                       <span className="text-sm">{expandedSkill === `${topic.id}-PRONUNCIATION` ? '▼' : '▶'}</span>
                     </div>
-                    {topic.pronunciation.score && (
-                      <div className="text-xs mt-1">{topic.pronunciation.score}%</div>
+                    {topic.pronunciation.total && topic.pronunciation.total > 0 ? (
+                      <div className="text-xs mt-1">
+                        {topic.pronunciation.correct || 0}/{topic.pronunciation.total}
+                      </div>
+                    ) : (
+                      <div className="text-xs mt-1 text-[#504441]">tiến độ: chưa làm</div>
                     )}
                   </button>
 
@@ -358,19 +478,33 @@ export default function LearningMapPage() {
                       {loadingHistory ? (
                         <p className="text-[#504441] text-sm">Loading...</p>
                       ) : history[`${topic.id}-PRONUNCIATION`]?.length > 0 ? (
-                        history[`${topic.id}-PRONUNCIATION`].map((item, idx) => (
+                        history[`${topic.id}-PRONUNCIATION`].map((item: any, idx) => (
                           <div key={idx} className="pb-3 border-b border-[#e8e8e3] last:border-0">
-                            <p className="text-sm font-semibold text-[#72564c]">{item.question}</p>
-                            <p className="text-xs text-[#504441] mt-1">
-                              <span className={item.isCorrect ? 'text-green-600' : 'text-red-600'}>
-                                Your answer: {item.userAnswer} {item.isCorrect ? '✅' : '❌'}
-                              </span>
+                            <p className="text-sm font-semibold text-[#72564c]">
+                              {item.korean || item.word}
                             </p>
-                            {!item.isCorrect && (
-                              <p className="text-xs text-[#504441] mt-1">
-                                <span className="text-green-600">Correct: {item.correctAnswer}</span>
+                            <p className="text-xs text-[#504441] mt-1">
+                              {item.vietnamese || item.meaning}
+                            </p>
+                            {item.accuracy !== null && item.accuracy !== undefined && (
+                              <p className="text-xs text-blue-600 font-semibold mt-2">
+                                🎯 Accuracy: {item.accuracy}%
                               </p>
                             )}
+                            {/* Save Vocabulary Button */}
+                            <button
+                              onClick={() => handleSaveVocabulary(item, 'PRONUNCIATION', item.id || idx)}
+                              disabled={savingVocab[item.id || idx] || savedHistoryIds.has(item.id || idx)}
+                              className={`mt-2 px-3 py-1 text-xs rounded font-semibold transition-all ${
+                                savedHistoryIds.has(item.id || idx)
+                                  ? 'bg-green-100 text-green-700 cursor-default'
+                                  : savingVocab[item.id || idx]
+                                  ? 'bg-gray-300 text-gray-600 cursor-wait'
+                                  : 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
+                              }`}
+                            >
+                              {savedHistoryIds.has(item.id || idx) ? '✓ Saved' : savingVocab[item.id || idx] ? 'Saving...' : '💾 Save'}
+                            </button>
                           </div>
                         ))
                       ) : (

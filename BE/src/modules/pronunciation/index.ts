@@ -117,6 +117,38 @@ router.post('/submit', authenticate, async (req: AuthRequest, res: Response) => 
       },
     });
 
+    // Save to LearningHistory (only if topicId provided)
+    // This uses REPLACE semantics: delete old record for this topic/skillType, then create new one
+    if (topicId) {
+      try {
+        // Delete old record for this user+topic+pronunciation skillType
+        await prisma.learningHistory.deleteMany({
+          where: {
+            userId,
+            topicId,
+            skillType: 'pronunciation',
+          },
+        });
+
+        // Create new record with vocabulary info and accuracy score
+        await prisma.learningHistory.create({
+          data: {
+            userId,
+            topicId,
+            korean: vocab.korean,
+            vietnamese: vocab.vietnamese || vocab.english,
+            accuracy: score,
+            skillType: 'pronunciation',
+          },
+        });
+
+        console.log(`💾 Pronunciation history saved for vocab "${vocab.korean}" with score ${score}%`);
+      } catch (err) {
+        console.error('⚠️ Failed to save pronunciation history:', err);
+        // Don't fail the request if history save fails
+      }
+    }
+
     // Save progress if topicId provided
     if (topicId) {
       const existing = await prisma.userProgress.findFirst({

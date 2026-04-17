@@ -14,6 +14,7 @@ const vocabularyRouter = require('./modules/vocabulary/index').default;
 const quizRouter = require('./modules/quiz/index').default;
 const quizAdminRouter = require('./modules/quizAdmin/index').default;
 const pronunciationRouter = require('./modules/pronunciation/index').default;
+const pronunciationScoringRouter = require('./modules/pronunciation/scoring').default;
 const cameraRouter = require('./modules/camera/index').default;
 const topicRouter = require('./modules/topic/index').default;
 const writingRouter = require('./modules/writing/index').default;
@@ -22,6 +23,7 @@ const tournamentRouter = require('./modules/tournament/index').default;
 const achievementsRouter = require('./modules/achievements/index').default;
 const learningPathRouter = require('./modules/learning-path/controller').default;
 const adminRouter = require('./modules/admin/index').default;
+const activityRouter = require('./modules/activity/index').default;
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -209,11 +211,15 @@ app.use('/api/user', authenticate, learningPathRouter);  // Learning path endpoi
 app.use('/api/learning-path', authenticate, learningPathRouter);  // Also available at this path
 app.use('/api/user', authenticate, userRouter);  // User management endpoints
 app.use('/api/vocabulary', authenticate, vocabularyRouter);
+
+// Public vocabulary routes (no authentication required)
+app.use('/api/public-vocab', vocabularyRouter);
+
 app.use('/api/quiz', quizRouter);  // Quiz endpoints (generate, submit)
 app.use('/api/question', quizRouter);  // Also available as /api/question for learning map
 app.use('/api/quiz', quizAdminRouter);  // Admin quiz management endpoints
 app.use('/api/writing', authenticate, writingRouter);
-app.use('/api/topic', authenticate, topicRouter);
+app.use('/api/topic', topicRouter);  // Topic endpoints are public for GET, protected for POST/PUT/DELETE
 
 // Semi-public routes (some endpoints public, some protected)
 app.use('/api/leaderboard', leaderboardRouter);
@@ -225,6 +231,12 @@ app.use('/api/camera', authenticate, cameraRouter);
 
 // Pronunciation route (public for testing)
 app.use('/api/pronunciation', pronunciationRouter);
+
+// Pronunciation scoring (requires authentication)
+app.use('/api/pronunciation', authenticate, pronunciationScoringRouter);
+
+// Activity tracking (requires authentication)
+app.use('/api/activity', authenticate, activityRouter);
 
 // ========================
 // 404 HANDLER
@@ -238,6 +250,28 @@ app.use((_req, res) => {
 // ERROR HANDLER (Must be last)
 // ========================
 app.use(errorHandler);
+
+// ========================
+// GLOBAL ERROR HANDLERS
+// ========================
+// Handle unhandled promise rejections (e.g., from Google Cloud auth attempts)
+process.on('unhandledRejection', (reason, promise) => {
+  if (reason && reason.toString && reason.toString().includes('Could not load the default credentials')) {
+    console.warn('⚠️ Google Cloud credentials not configured - fallback scoring enabled');
+  } else {
+    console.error('Unhandled Rejection:', reason);
+  }
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  if (error.message && error.message.includes('Could not load the default credentials')) {
+    console.warn('⚠️ Google Cloud credentials not configured - fallback scoring enabled');
+  } else {
+    console.error('Uncaught Exception:', error);
+    process.exit(1);
+  }
+});
 
 // ========================
 // START SERVER

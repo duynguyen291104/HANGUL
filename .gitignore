@@ -7,6 +7,8 @@
 # Dependencies
 node_modules/
 venv/
+whisper_env/
+env_*/
 __pycache__/
 *.pyc
 *.pyo
@@ -47,6 +49,8 @@ docker-compose.override.yml
 *.sql
 *.sqlite
 *.sqlite3
+postgres_backups/
+/tmp/*backup*
 
 # Cache
 .cache/

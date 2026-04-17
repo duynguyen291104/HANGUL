@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import prisma from '../../lib/prisma';
+import { authenticate } from '../../middleware/authenticate';
 
 const router = Router();
 
@@ -14,7 +15,7 @@ interface AuthRequest extends Request {
 // ========================
 // GET ALL TOPICS BY LEVEL
 // ========================
-router.get('/by-level/:level', async (req: AuthRequest, res: Response): Promise<void> => {
+router.get('/by-level/:level', async (req: Request, res: Response): Promise<void> => {
   try {
     const { level } = req.params;
 
@@ -34,7 +35,14 @@ router.get('/by-level/:level', async (req: AuthRequest, res: Response): Promise<
       orderBy: {
         order: 'asc',
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        type: true,
+        description: true,
+        level: true,
+        order: true,
         vocabulary: {
           select: {
             id: true,
@@ -124,9 +132,35 @@ router.get('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
 });
 
 // ========================
+// GET TOPIC BY SLUG
+// ========================
+router.get('/slug/:slug', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { slug } = req.params;
+
+    const topic = await prisma.topic.findUnique({
+      where: { slug: slug },
+      include: {
+        vocabulary: true,
+      },
+    });
+
+    if (!topic) {
+      res.status(404).json({ error: 'Topic not found' });
+      return;
+    }
+
+    res.json(topic);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch topic by slug' });
+  }
+});
+
+// ========================
 // CREATE TOPIC (ADMIN ONLY)
 // ========================
-router.post('/', async (req: AuthRequest, res: Response): Promise<void> => {
+router.post('/', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     if (req.user?.role !== 'ADMIN' && req.user?.role !== 'SUPER_ADMIN') {
       res.status(403).json({ error: 'Unauthorized: Admin access required' });
@@ -161,7 +195,7 @@ router.post('/', async (req: AuthRequest, res: Response): Promise<void> => {
 // ========================
 // UPDATE TOPIC (ADMIN ONLY)
 // ========================
-router.put('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
+router.put('/:id', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     if (req.user?.role !== 'ADMIN' && req.user?.role !== 'SUPER_ADMIN') {
       res.status(403).json({ error: 'Unauthorized: Admin access required' });
@@ -195,7 +229,7 @@ router.put('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
 // ========================
 // DELETE TOPIC (ADMIN ONLY)
 // ========================
-router.delete('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
+router.delete('/:id', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     if (req.user?.role !== 'ADMIN' && req.user?.role !== 'SUPER_ADMIN') {
       res.status(403).json({ error: 'Unauthorized: Admin access required' });

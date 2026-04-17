@@ -16,13 +16,29 @@ interface GameStats {
   eligible?: boolean;
 }
 
+interface ActivityData {
+  weekStart: string;
+  weekEnd: string;
+  totalSeconds: number;
+  totalMinutes: number;
+  totalHours: number;
+  avgSessionMinutes: number;
+  activityCount: number;
+  daily: Array<{
+    date: string;
+    dayOfWeek: string;
+    seconds: number;
+    minutes: number;
+    hours: string;
+  }>;
+}
+
 export default function Dashboard() {
   const router = useRouter();
-  const { user: authUser } = useAuthStore();
+  const { user: authUser, token } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<GameStats | null>(null);
-
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const [weeklyActivity, setWeeklyActivity] = useState<ActivityData | null>(null);
 
   useEffect(() => {
     if (!token) {
@@ -46,12 +62,16 @@ export default function Dashboard() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      const [, statsRes] = await Promise.allSettled([
+      const [, statsRes, activityRes] = await Promise.allSettled([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
           signal: controller.signal,
         }),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/stats`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/activity/weekly`, {
           headers: { Authorization: `Bearer ${token}` },
           signal: controller.signal,
         }),
@@ -61,6 +81,7 @@ export default function Dashboard() {
 
       // Check if requests succeeded
       const statsOk = statsRes.status === 'fulfilled' && statsRes.value.ok;
+      const activityOk = activityRes.status === 'fulfilled' && activityRes.value.ok;
 
       if (!statsOk) {
         console.warn('API calls failed, using default data');
@@ -79,6 +100,11 @@ export default function Dashboard() {
 
       const statsData = await statsRes.value.json();
       setStats(statsData);
+
+      if (activityOk) {
+        const activityData = await activityRes.value.json();
+        setWeeklyActivity(activityData);
+      }
       setLoading(false);
     } catch (err) {
       console.error('Lỗi tải dữ liệu:', err);
@@ -232,30 +258,70 @@ export default function Dashboard() {
             {/* Weekly Activity */}
             <div className="lg:col-span-2 bg-white p-8 rounded-lg border border-[#d4c3be]/10 flex flex-col justify-center">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="font-bold text-[#72564c]">Weekly Activity</h3>
+                <div>
+                  <h3 className="font-bold text-[#72564c] mb-1">Weekly Activity</h3>
+                  <p className="text-sm text-[#504441]/60">
+                    {weeklyActivity?.totalHours} hours this week
+                  </p>
+                </div>
                 <div className="flex gap-1">
                   <div className="w-3 h-3 rounded-full bg-[#815300]"></div>
                   <div className="w-3 h-3 rounded-full bg-[#ffdbce]"></div>
                 </div>
               </div>
-              <div className="flex items-end justify-between h-32 gap-2">
-                <div className="flex-grow bg-[#e3e3de] rounded-t-lg h-[40%]"></div>
-                <div className="flex-grow bg-[#e3e3de] rounded-t-lg h-[65%]"></div>
-                <div className="flex-grow bg-[#e3e3de] rounded-t-lg h-[45%]"></div>
-                <div className="flex-grow bg-[#815300] rounded-t-lg h-[90%]"></div>
-                <div className="flex-grow bg-[#8d6e63] rounded-t-lg h-[75%]"></div>
-                <div className="flex-grow bg-[#e3e3de] rounded-t-lg h-[20%]"></div>
-                <div className="flex-grow bg-[#e3e3de] rounded-t-lg h-[10%]"></div>
-              </div>
-              <div className="flex justify-between mt-4 text-[10px] font-bold text-[#827470] uppercase tracking-widest">
-                <span>Mon</span>
-                <span>Tue</span>
-                <span>Wed</span>
-                <span>Thu</span>
-                <span>Fri</span>
-                <span>Sat</span>
-                <span>Sun</span>
-              </div>
+              
+              {weeklyActivity ? (
+                <div>
+                  <div className="flex items-end justify-between h-32 gap-2 mb-4">
+                    {weeklyActivity.daily.map((day, idx) => {
+                      const maxSeconds = Math.max(...weeklyActivity.daily.map(d => d.seconds), 3600); // At least 1 hour for scale
+                      const heightPercent = (day.seconds / maxSeconds) * 100 || 5;
+                      const isToday = new Date(day.date).toDateString() === new Date().toDateString();
+                      
+                      return (
+                        <div key={idx} className="flex-grow flex flex-col items-center gap-1">
+                          <div 
+                            className={`flex-grow w-full rounded-t-md transition-all hover:opacity-80 cursor-pointer ${
+                              day.seconds === 0 
+                                ? 'bg-[#e3e3de]' 
+                                : isToday
+                                ? 'bg-[#815300]'
+                                : 'bg-[#8d6e63]'
+                            }`}
+                            style={{ height: `${Math.max(heightPercent, 10)}%` }}
+                            title={`${day.dayOfWeek}: ${day.minutes} min`}
+                          ></div>
+                          <span className="text-[10px] font-bold text-[#827470] uppercase tracking-widest">
+                            {day.dayOfWeek.slice(0, 3)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Activity Stats Row */}
+                  <div className="grid grid-cols-3 gap-2 pt-4 border-t border-[#e8e8e3]">
+                    <div className="text-center">
+                      <p className="text-xs text-[#504441]/60 mb-1">Total Time</p>
+                      <p className="font-bold text-[#72564c]">{weeklyActivity.totalHours}h</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs text-[#504441]/60 mb-1">Avg Session</p>
+                      <p className="font-bold text-[#72564c]">{weeklyActivity.avgSessionMinutes}m</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs text-[#504441]/60 mb-1">Sessions</p>
+                      <p className="font-bold text-[#72564c]">{weeklyActivity.activityCount}</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-end justify-between h-32 gap-2">
+                  {Array.from({ length: 7 }).map((_, i) => (
+                    <div key={i} className="flex-grow bg-[#e3e3de] rounded-t-lg h-[40%]"></div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </main>

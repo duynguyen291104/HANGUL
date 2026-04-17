@@ -219,16 +219,36 @@ def generate_frames():
 
             frame = state.frame.copy()
 
-            # Draw detections
-            for det in state.detections:
-                bbox = det['bbox']
-                x1, y1, x2, y2 = bbox['x1'], bbox['y1'], bbox['x2'], bbox['y2']
-                label = det['label']
-                confidence = det['confidence']
+            # Draw detections with Korean text support
+            if state.detections:
+                # Convert BGR to RGB for PIL
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                pil_image = Image.fromarray(frame_rgb)
+                draw = ImageDraw.Draw(pil_image)
 
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                text = f"{label}: {confidence:.2f}"
-                cv2.putText(frame, text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                for det in state.detections:
+                    bbox = det['bbox']
+                    x1, y1, x2, y2 = bbox['x1'], bbox['y1'], bbox['x2'], bbox['y2']
+                    label = det['label']
+                    confidence = det['confidence']
+
+                    # Draw rectangle on PIL (RGB format: green = (0, 255, 0))
+                    draw.rectangle([x1, y1, x2, y2], outline=(0, 255, 0), width=2)
+                    
+                    # Draw text with Korean font (PIL uses RGB format)
+                    text = f"{label}: {confidence:.2f}"
+                    if korean_font:
+                        # Draw background rectangle for text
+                        text_bbox = draw.textbbox((x1, y1 - 40), text, font=korean_font)
+                        draw.rectangle(text_bbox, fill=(0, 0, 0, 180))
+                        # Draw text in green
+                        draw.text((x1, y1 - 40), text, font=korean_font, fill=(0, 255, 0))
+                    else:
+                        # Fallback to cv2 rectangle on original frame
+                        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+
+                # Convert back to BGR for OpenCV
+                frame = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
 
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
