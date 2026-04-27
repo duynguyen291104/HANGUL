@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -131,43 +131,43 @@ export default function Dashboard() {
               className="text-[#72564c] rounded-lg mx-0 py-3 px-4 flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95"
             >
               <div className="flex flex-col">
-                <span className="font-bold">Quiz</span>
-                <span className="text-xs opacity-70 font-normal">Test knowledge</span>
+                <span className="font-bold text-xl leading-tight">Quiz</span>
+                <span className="text-xl opacity-70 font-normal leading-tight">Test knowledge</span>
               </div>
             </Link>
             
             <Link href="/camera" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95">
               <div className="flex flex-col">
-                <span className="font-bold">Camera to Vocab</span>
-                <span className="text-xs opacity-70 font-normal">Visual learning</span>
+                <span className="font-bold text-xl leading-tight">Camera to Vocab</span>
+                <span className="text-xl opacity-70 font-normal leading-tight">Visual learning</span>
               </div>
             </Link>
 
             <Link href="/writing" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95">
               <div className="flex flex-col">
-                <span className="font-bold">Writing Practice</span>
-                <span className="text-xs opacity-70 font-normal">Handwriting</span>
+                <span className="font-bold text-xl leading-tight">Writing Practice</span>
+                <span className="text-xl opacity-70 font-normal leading-tight">Handwriting</span>
               </div>
             </Link>
 
             <Link href="/pronunciation" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95">
               <div className="flex flex-col">
-                <span className="font-bold">Pronunciation</span>
-                <span className="text-xs opacity-70 font-normal">Speak & listen</span>
+                <span className="font-bold text-xl leading-tight">Pronunciation</span>
+                <span className="text-xl opacity-70 font-normal leading-tight">Speak & listen</span>
               </div>
             </Link>
 
             <Link href="/learning-map" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95">
               <div className="flex flex-col">
-                <span className="font-bold">Learning Path</span>
-                <span className="text-xs opacity-70 font-normal">Adjust level</span>
+                <span className="font-bold text-xl leading-tight">Learning Path</span>
+                <span className="text-xl opacity-70 font-normal leading-tight">Adjust level</span>
               </div>
             </Link>
 
             <Link href="/tournament" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95">
               <div className="flex flex-col">
-                <span className="font-bold">Tournament</span>
-                <span className="text-xs opacity-70 font-normal">Compete & rank</span>
+                <span className="font-bold text-xl leading-tight">Tournament</span>
+                <span className="text-xl opacity-70 font-normal leading-tight">Compete & rank</span>
               </div>
             </Link>
           </nav>
@@ -189,14 +189,14 @@ export default function Dashboard() {
         <main className="flex-grow p-8 lg:p-12 max-w-7xl mx-auto">
 
           {/* Welcome Section */}
-          <section className="relative mb-12 pt-8">
+          <section className="relative mb-10 pt-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
               <div className="lg:col-span-8">
-                <h1 className="text-5xl lg:text-7xl font-['Plus_Jakarta_Sans'] font-extrabold text-[#72564c] tracking-tighter mb-4 leading-none">
+                <h1 className="text-4xl lg:text-6xl font-['Plus_Jakarta_Sans'] font-extrabold text-[#72564c] tracking-tight mb-3 leading-[0.95]">
                   Welcome back,<br />
                   <span className="text-[#815300]">Explorer!</span>
                 </h1>
-                <p className="text-xl text-[#504441] max-w-lg font-['Be_Vietnam_Pro']">
+                <p className="text-lg text-[#504441] max-w-xl font-['Be_Vietnam_Pro'] leading-relaxed">
                   You're on a {stats?.quizCount ?? 0}-day streak. Keep the momentum going and master your next 10 characters today.
                 </p>
               </div>
@@ -215,8 +215,8 @@ export default function Dashboard() {
 
           {/* Game Stats */}
           {stats && (
-            <div className="mb-16">
-              <h2 className="text-2xl font-['Plus_Jakarta_Sans'] font-bold text-[#72564c] mb-6">📊 Your Stats</h2>
+            <div className="mb-12">
+              <h2 className="text-3xl font-['Plus_Jakarta_Sans'] font-bold text-[#72564c] mb-6">📊 Your Stats</h2>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div className="bg-gradient-to-br from-[#815300] to-[#a26900] rounded-lg p-4 text-white shadow-lg">
                   <p className="text-sm opacity-90 mb-2">Rank</p>
@@ -244,12 +244,41 @@ export default function Dashboard() {
 
           {/* Bento Grid Dashboard */}
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {/* Weekly Activity */}
+            <div className="md:col-span-3 lg:col-span-4 bg-white p-8 lg:p-10 rounded-xl border border-[#d4c3be]/10 flex flex-col justify-center">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-[#72564c] text-3xl">Weekly Activity</h3>
+                <div className="flex gap-1">
+                  <div className="w-3 h-3 rounded-full bg-[#815300]"></div>
+                  <div className="w-3 h-3 rounded-full bg-[#ffdbce]"></div>
+                </div>
+              </div>
+              <div className="flex items-end justify-between h-48 gap-3">
+                <div className="flex-grow bg-[#e3e3de] rounded-t-lg h-[40%]"></div>
+                <div className="flex-grow bg-[#e3e3de] rounded-t-lg h-[65%]"></div>
+                <div className="flex-grow bg-[#e3e3de] rounded-t-lg h-[45%]"></div>
+                <div className="flex-grow bg-[#815300] rounded-t-lg h-[90%]"></div>
+                <div className="flex-grow bg-[#8d6e63] rounded-t-lg h-[75%]"></div>
+                <div className="flex-grow bg-[#e3e3de] rounded-t-lg h-[20%]"></div>
+                <div className="flex-grow bg-[#e3e3de] rounded-t-lg h-[10%]"></div>
+              </div>
+              <div className="flex justify-between mt-4 text-xs font-bold text-[#827470] uppercase tracking-wide">
+                <span>Mon</span>
+                <span>Tue</span>
+                <span>Wed</span>
+                <span>Thu</span>
+                <span>Fri</span>
+                <span>Sat</span>
+                <span>Sun</span>
+              </div>
+            </div>
+
             {/* Daily Goal Progress */}
-            <div className="md:col-span-2 lg:col-span-2 bg-[#f4f4ef] p-8 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden group">
+            <div className="md:col-span-2 lg:col-span-2 bg-[#f4f4ef] p-8 lg:p-10 rounded-xl flex flex-col items-center justify-center text-center relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-4">
                 <span className="text-6xl opacity-20">✨</span>
               </div>
-              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-[#72564c] mb-8">Daily Goal</h3>
+              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-[#72564c] text-2xl mb-8">Daily Goal</h3>
               <div className="relative w-48 h-48 flex items-center justify-center mb-6">
                 <svg className="w-full h-full transform -rotate-90">
                   <circle cx="96" cy="96" r="88" fill="transparent" stroke="currentColor" strokeWidth="12" className="text-[#e8e8e3]"></circle>
@@ -257,10 +286,10 @@ export default function Dashboard() {
                 </svg>
                 <div className="absolute flex flex-col items-center">
                   <span className="text-4xl font-black font-['Plus_Jakarta_Sans'] text-[#72564c]">75%</span>
-                  <span className="text-xs uppercase tracking-widest font-bold opacity-60">Complete</span>
+                  <span className="text-sm uppercase tracking-wide font-bold opacity-60">Complete</span>
                 </div>
               </div>
-              <p className="text-sm font-['Be_Vietnam_Pro'] font-medium text-[#504441]">15 / 20 XP earned today</p>
+              <p className="text-base font-['Be_Vietnam_Pro'] font-medium text-[#504441]">15 / 20 XP earned today</p>
             </div>
 
             {/* Continue Lesson */}
@@ -302,34 +331,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Weekly Activity */}
-            <div className="lg:col-span-2 bg-white p-8 rounded-lg border border-[#d4c3be]/10 flex flex-col justify-center">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-[#72564c]">Weekly Activity</h3>
-                <div className="flex gap-1">
-                  <div className="w-3 h-3 rounded-full bg-[#815300]"></div>
-                  <div className="w-3 h-3 rounded-full bg-[#ffdbce]"></div>
-                </div>
-              </div>
-              <div className="flex items-end justify-between h-32 gap-2">
-                <div className="flex-grow bg-[#e3e3de] rounded-t-lg h-[40%]"></div>
-                <div className="flex-grow bg-[#e3e3de] rounded-t-lg h-[65%]"></div>
-                <div className="flex-grow bg-[#e3e3de] rounded-t-lg h-[45%]"></div>
-                <div className="flex-grow bg-[#815300] rounded-t-lg h-[90%]"></div>
-                <div className="flex-grow bg-[#8d6e63] rounded-t-lg h-[75%]"></div>
-                <div className="flex-grow bg-[#e3e3de] rounded-t-lg h-[20%]"></div>
-                <div className="flex-grow bg-[#e3e3de] rounded-t-lg h-[10%]"></div>
-              </div>
-              <div className="flex justify-between mt-4 text-[10px] font-bold text-[#827470] uppercase tracking-widest">
-                <span>Mon</span>
-                <span>Tue</span>
-                <span>Wed</span>
-                <span>Thu</span>
-                <span>Fri</span>
-                <span>Sat</span>
-                <span>Sun</span>
-              </div>
-            </div>
           </div>
         </main>
       </div>

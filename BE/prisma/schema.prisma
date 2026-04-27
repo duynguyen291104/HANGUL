@@ -97,27 +97,26 @@ model Topic {
 model Vocabulary {
   id          Int        @id @default(autoincrement())
   korean      String
-  vietnamese  String
+  vietnamese  String?    // ✅ cho optional
   english     String
   romanization String?
   audioUrl    String?
   imageUrl    String?
-  type        String     @default("noun")  // noun, verb, adjective, etc.
-  tags        String[]   @default([])      // ["school", "place", "building"]
+  type        String     @default("noun")
+  tags        String[]   @default([])
   level       String     @default("NEWBIE")
-  topic       Topic      @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  topicId     Int
-  
-  // Status
+
+  topic       Topic?     @relation(fields: [topicId], references: [id], onDelete: Cascade) // ✅ optional
+  topicId     Int?       // ✅ optional
+
   isActive    Boolean    @default(true)
   version     Int        @default(1)
-  
-  // Relations
+
   examples    VocabExample[]
   usersLearned User[]
   pronunciationWords PronunciationWord[]
   savedByUsers UserSavedVocabulary[]
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

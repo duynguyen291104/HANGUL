@@ -292,49 +292,49 @@ export default function QuizPage() {
             </Link>
           </div>
 
-          <nav className="flex-grow flex flex-col gap-1 px-4 text-sm">
+<nav className="flex-grow flex flex-col gap-1 px-4">
             <Link
               href="/quiz"
               className="text-[#72564c] rounded-lg mx-0 py-3 px-4 flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95 font-semibold"
             >
               <div className="flex flex-col">
-                <span className="font-bold">Quiz</span>
-                <span className="text-xs opacity-70 font-normal">Test knowledge</span>
+                <span className="font-bold text-xl">Quiz</span>
+                <span className="text-xl opacity-70 font-normal">Test knowledge</span>
               </div>
             </Link>
 
             <Link href="/camera" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95 font-semibold">
               <div className="flex flex-col">
-                <span className="font-bold">Camera to Vocab</span>
-                <span className="text-xs opacity-70 font-normal">Visual learning</span>
+                <span className="font-bold text-xl">Camera to Vocab</span>
+                <span className="text-xl opacity-70 font-normal">Visual learning</span>
               </div>
             </Link>
 
             <Link href="/writing" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95 font-semibold">
               <div className="flex flex-col">
-                <span className="font-bold">Writing Practice</span>
-                <span className="text-xs opacity-70 font-normal">Handwriting</span>
+                <span className="font-bold text-xl">Writing Practice</span>
+                <span className="text-xl opacity-70 font-normal">Handwriting</span>
               </div>
             </Link>
 
             <Link href="/pronunciation" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95 font-semibold">
               <div className="flex flex-col">
-                <span className="font-bold">Pronunciation</span>
-                <span className="text-xs opacity-70 font-normal">Speak & listen</span>
+                <span className="font-bold text-xl">Pronunciation</span>
+                <span className="text-xl opacity-70 font-normal">Speak & listen</span>
               </div>
             </Link>
 
             <Link href="/learning-map" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95 font-semibold">
               <div className="flex flex-col">
-                <span className="font-bold">Learning Path</span>
-                <span className="text-xs opacity-70 font-normal">Adjust level</span>
+                <span className="font-bold text-xl">Learning Path</span>
+                <span className="text-xl opacity-70 font-normal">Adjust level</span>
               </div>
             </Link>
 
             <Link href="/tournament" className="text-[#72564c] mx-0 py-3 px-4 rounded-lg flex items-center gap-3 hover:bg-[#72564c] hover:text-white transition-all active:scale-95 font-semibold">
               <div className="flex flex-col">
-                <span className="font-bold">Tournament</span>
-                <span className="text-xs opacity-70 font-normal">Compete & rank</span>
+                <span className="font-bold text-xl">Tournament</span>
+                <span className="text-xl opacity-70 font-normal">Compete & rank</span>
               </div>
             </Link>
           </nav>

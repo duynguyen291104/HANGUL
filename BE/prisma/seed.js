@@ -375,5 +375,6 @@ async function main() {
     await prisma.$disconnect();
   }
 }
+console.log(Object.keys(prisma));
 
 main();
